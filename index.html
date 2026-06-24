@@ -111,7 +111,7 @@
   <div class="card landing-card">
     <h2>Join an existing trip</h2>
     <p class="hint">Got a link from a friend? Paste the whole link or just the trip ID.</p>
-    <div class="field"><input id="lJoin" placeholder="https://…/trip/abc123  —or—  abc123" autocomplete="off" spellcheck="false"></div>
+    <div class="field"><input id="lJoin" placeholder="https://…/trip?t=abc123  —or—  abc123" autocomplete="off" spellcheck="false"></div>
     <button class="btn" type="button" id="lJoinGo" style="width:100%;justify-content:center">Open trip →</button>
   </div>
 
@@ -132,19 +132,20 @@
 /* ============================================================
    When Can We Go? — landing page
    Creates a brand-new trip (the ONLY place a room id is minted)
-   or opens an existing one, then sends you to /trip/<roomId>.
+   or opens an existing one, then sends you to the trip page.
    No room data is written until you actually create a trip.
 
-   The shareable URL is the clean /trip/<roomId>, but we *navigate*
-   to /trip/?r=<roomId> — a real file the server returns as 200 (both
-   GitHub Pages and the local dev server). trip/index.html then rewrites
-   the address bar to the clean /trip/<roomId> via history.replaceState.
-   ============================================================ */
+   The trip page is trip.html, served extensionless at /trip. The canonical
+   address is /trip?t=<roomId> — a real 200 file, so link previews render, and
+   it STAYS in the address bar. We *navigate* to /trip.html?t=<roomId> (a literal
+   file, so it 200s on the local dev server too); trip.html then normalises the
+   bar to /trip?t=<roomId>. Old /trip/<roomId> links forward via 404.html. */
 
-// navigation form (served 200 everywhere); the trip page cleans it to /trip/<roomId>
-const tripUrl = roomId => "/trip/?r=" + roomId;
-// the pretty form we hand out in share links
-const tripShareUrl = roomId => location.origin + "/trip/" + roomId;
+// navigation form — a literal file, so it 200s on every host incl. local dev;
+// trip.html normalises the address bar to the canonical /trip?t=<roomId>.
+const tripUrl = roomId => "/trip.html?t=" + roomId;
+// the canonical, pretty form we hand out in share links
+const tripShareUrl = roomId => location.origin + "/trip?t=" + roomId;
 
 /* ---------- toast ---------- */
 let toastTimer=null;
@@ -162,12 +163,15 @@ function addInviteeRow(name=""){
 }
 
 /* pull a room id out of whatever the user pastes:
-   "https://…/trip/abc123", "/trip/abc123", or a bare "abc123". */
+   "https://…/trip?t=abc123", a legacy "?r=abc123" link, an old
+   "https://…/trip/abc123" path, or a bare "abc123". */
 function parseRoomId(raw){
   const s=(raw||"").trim();
   if(!s) return "";
   let m;
-  if((m=s.match(/\/trip\/([A-Za-z0-9_-]+)/))) return m[1]; // /trip/<id> path
+  if((m=s.match(/[?&]t=([A-Za-z0-9_-]+)/))) return m[1];   // /trip?t=<id> share link
+  if((m=s.match(/[?&]r=([A-Za-z0-9_-]+)/))) return m[1];   // legacy ?r=<id> link
+  if((m=s.match(/\/trip\/([A-Za-z0-9_-]+)/))) return m[1]; // old /trip/<id> path
   if(/^[A-Za-z0-9_-]+$/.test(s)) return s;                 // bare id
   return "";
 }

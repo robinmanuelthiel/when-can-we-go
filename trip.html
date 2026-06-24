@@ -14,12 +14,19 @@
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://whencanwego.net/">
 <script>
-  /* We are reached as /trip/<id>. Direct visits hit GitHub Pages' 404 fallback,
-     and the create/join flow lands on /trip/?r=<id> (a real 200 file). In both
-     cases, normalise the address bar to the clean /trip/<id> before rendering. */
+  /* This page is trip.html, served at /trip (extensionless, 200) — so the
+     canonical URL is /trip?t=<id>, a real 200 file that link previews can read,
+     and it STAYS in the address bar. Old entry points are forwarded HERE, never
+     the reverse: a bare /trip/<id> or an old /trip/?t= link hits GitHub Pages'
+     404.html, which sends it to /trip?t=<id>; a /trip.html?t= URL or a legacy
+     ?r= param is normalised to /trip?t= in place. */
   (function(){
-    var r = new URLSearchParams(location.search).get("r");
-    if(r && /^[A-Za-z0-9_-]+$/.test(r)) history.replaceState(null, "", "/trip/" + r);
+    var p = new URLSearchParams(location.search);
+    var id = p.get("t") || p.get("r");
+    if(id && /^[A-Za-z0-9_-]+$/.test(id)){
+      var canonical = "/trip?t=" + id;
+      if(location.pathname + location.search !== canonical) history.replaceState(null, "", canonical);
+    }
   })();
 </script>
 <!-- Open Graph / social share -->
@@ -743,7 +750,9 @@ function openDayDetail(key){
 }
 
 /* ---------- share ---------- */
-function shareUrl(){ return location.origin+"/trip/"+state.roomId; }
+/* share the canonical /trip?t=<id> form: a real 200 file (trip.html served
+   extensionless), so link previews render. It's also what stays in the bar. */
+function shareUrl(){ return location.origin+"/trip?t="+state.roomId; }
 async function doShare(){
   const url=shareUrl();
   const isFile=location.protocol==="file:";
@@ -781,16 +790,21 @@ function bindUI(){
   bindCalendarEvents();
 }
 
-/* room id is the path segment after /trip/ : /trip/<id> → <id> */
-function roomIdFromPath(){
-  const m=location.pathname.match(/^\/trip\/([^\/?#]+)\/?$/);
-  if(!m || m[1]==="index.html") return null;
-  return /^[A-Za-z0-9_-]+$/.test(m[1]) ? m[1] : null;
+/* the room id rides in the ?t= query param (?r= = legacy); we also tolerate a
+   clean /trip/<id> path in case this file is ever served there directly. */
+function currentRoomId(){
+  const p=new URLSearchParams(location.search);
+  let id=p.get("t")||p.get("r");
+  if(!id){
+    const m=location.pathname.match(/^\/trip\/([A-Za-z0-9_-]+)\/?$/);
+    if(m && m[1]!=="index.html") id=m[1];
+  }
+  return (id && /^[A-Za-z0-9_-]+$/.test(id)) ? id : null;
 }
 
 async function init(){
   bindUI();
-  state.roomId=roomIdFromPath();
+  state.roomId=currentRoomId();
 
   // No room in the URL → this page has nothing to show. Bounce to the
   // landing page (site root) where you can create or join a trip.
