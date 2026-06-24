@@ -4,14 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#FBF7EF">
-<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
 <title>When Can We Go?</title>
+<meta name="description" content="Mark the days you can't make it and see the best windows for everyone.">
+<!-- GitHub Pages serves this file for /trip/<id> links too. Keep it out of search,
+     but DO carry the social tags below — crawlers don't run the redirect script,
+     so this is the only markup they ever see for a shared trip link. -->
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://whencanwego.net/">
+<!-- Open Graph / social share -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="When Can We Go?">
+<meta property="og:title" content="When Can We Go?">
+<meta property="og:description" content="Mark the days you can't make it and see the best windows for everyone.">
+<meta property="og:image" content="https://whencanwego.net/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="When Can We Go? — a group trip date planner">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="When Can We Go?">
+<meta name="twitter:description" content="Mark the days you can't make it and see the best windows for everyone.">
+<meta name="twitter:image" content="https://whencanwego.net/assets/og-image.png">
 <script>
   /* GitHub Pages serves this file (with a 404 status) for any path that
      isn't a real file — including a shared /trip/<roomId> link. Hand a
      /trip/<roomId> off to the planner via its /trip/?r=<id> entry point
      (a real 200 file); the planner then rewrites the bar to /trip/<id>.
-     Anything else is a genuine not-found → send it to the landing page. */
+     Anything else is a genuine not-found → send it to the landing page.
+     Crawlers don't run this, so they fall back to the meta tags above. */
   (function(){
     var m = location.pathname.match(/^\/trip\/([A-Za-z0-9_-]+)\/?$/);
     if(m) location.replace("/trip/?r=" + m[1]);
