@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF7EF">
+<title>Privacy Policy — When Can We Go?</title>
+<meta name="description" content="Privacy policy for When Can We Go? — what data is processed and how.">
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#ffffff; --ink:#1f2421; --muted:#7c857e;
+    --line:#ece6da; --accent:#E0524A; --accent-soft:#fbe9e7; --radius:16px;
+    --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(31,36,33,.05);
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;
+       -webkit-font-smoothing:antialiased;padding:0 0 env(safe-area-inset-bottom)}
+  .wrap{max-width:720px;margin:0 auto;padding:24px 18px 40px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+  .brand{display:inline-flex;align-items:center;gap:9px;font-weight:800;letter-spacing:-.02em;font-size:18px;text-decoration:none;color:var(--ink)}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,6vw,40px);line-height:1.08;margin:22px 0 4px;letter-spacing:-.01em}
+  .subtitle{color:var(--muted);font-size:14px;margin:0 0 22px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;margin-bottom:16px}
+  .card h2{font-size:17px;letter-spacing:-.01em;margin:0 0 10px}
+  .card p{margin:0 0 10px}
+  .card p:last-child,.card ul:last-child{margin-bottom:0}
+  .card a{color:var(--accent)}
+  .card ul{margin:0 0 10px;padding-left:20px}
+  .card li{margin-bottom:6px}
+  .highlight{background:var(--accent-soft);border:1px solid #f1c2bd;border-radius:var(--radius);padding:18px 22px;margin-bottom:16px}
+  .highlight h2{margin-top:0}
+  .highlight p:last-child{margin-bottom:0}
+  .contact-image{display:block;max-width:100%;height:auto;max-height:34px;margin:2px 0}
+  .back{display:inline-flex;align-items:center;gap:7px;margin-top:8px;font-weight:700;font-size:14.5px;
+        color:var(--ink);text-decoration:none;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow)}
+  footer{margin-top:auto;padding-top:28px;text-align:center;color:var(--muted);font-size:13px;line-height:1.8}
+  footer a{color:var(--muted)}
+  footer .sep{margin:0 8px;opacity:.5}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a href="/" class="brand"><span class="dot"></span> When Can We Go?</a>
+
+    <h1>Privacy Policy</h1>
+    <p class="subtitle">Last updated: 24 June 2026</p>
+
+    <div class="highlight">
+      <h2>The short version</h2>
+      <p>
+        When Can We Go? is a zero-login trip planner. There are no accounts, no advertising, and no
+        tracking or analytics. We only store what you actively type into a trip — your name and the
+        days you mark — so the people who share your trip link can see it. There are no tracking cookies,
+        so no cookie banner is needed.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Who is responsible</h2>
+      <p>The controller responsible for data processing on this website is:</p>
+      <img src="assets/imprint.png" alt="Robin-Manuel Thiel, postal address" class="imprint-image" style="max-height:96px">
+      <p style="margin-top:10px">Email:</p>
+      <img src="assets/contact.png" alt="Contact email address" class="contact-image">
+      <p style="margin-top:10px">See also our <a href="imprint.html">Imprint</a>.</p>
+    </div>
+
+    <div class="card">
+      <h2>What data we process</h2>
+      <p>When you create or take part in a trip, the following information is stored so the planner can work:</p>
+      <ul>
+        <li><strong>Trip details</strong> — the trip name and the date range you are considering.</li>
+        <li><strong>The names you enter</strong> — your own name and the names of anyone you invite. You decide what to type here; a first name or nickname is enough.</li>
+        <li><strong>Availability markings</strong> — the days each person marks as “can't make it” or “maybe not”.</li>
+        <li><strong>A random device key</strong> — stored in your browser so the app remembers which participant is “you” on this device. It is not linked to your identity.</li>
+      </ul>
+      <p>
+        We do not ask for an email address, password, or account. We do not collect your IP address for
+        our own purposes, and we run no analytics, profiling, or advertising.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>How a trip is shared</h2>
+      <p>
+        Each trip has a long, randomly generated ID that lives in the link's address (the part after
+        <code>#</code>). Anyone who has that link can view and edit the trip. Treat the link like a
+        shared document: only send it to the people you want to take part. The link is not listed
+        anywhere and is practically impossible to guess, but it is not password-protected.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Where data is stored (Firebase)</h2>
+      <p>
+        Trip data is stored and synchronised in real time using <strong>Firebase Realtime Database</strong>,
+        a service provided by Google. The database is hosted in Google's <strong>europe-west1 (Belgium, EU)</strong>
+        region. Google acts as our data processor under a data processing agreement (the Firebase Data
+        Processing and Security Terms).
+      </p>
+      <p>
+        To make this work, your browser loads the Firebase software library from Google's servers
+        (<code>gstatic.com</code>) and connects to the database. As a technically unavoidable part of any
+        such connection, your IP address is transmitted to Google. Google may process this on servers
+        operated by Google LLC (USA); transfers are covered by the EU Standard Contractual Clauses and the
+        EU–US Data Privacy Framework. More information:
+        <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">firebase.google.com/support/privacy</a>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Hosting</h2>
+      <p>
+        This website is hosted on <strong>GitHub Pages</strong>, a service of GitHub, Inc. (USA). When you
+        open the page, your browser transmits technical data (such as your IP address and the requested
+        file) to GitHub, which GitHub may log to deliver the site and protect against abuse. See GitHub's
+        privacy statement:
+        <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub Privacy Statement</a>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Cookies and local storage</h2>
+      <p>
+        We do not set any tracking or advertising cookies. The app uses your browser's
+        <strong>local storage</strong> only for strictly functional purposes: to cache your trip so it
+        loads quickly and works offline, and to remember which participant is “you” on this device. This
+        data stays in your browser, is not used to track you, and can be cleared at any time through your
+        browser settings. Because this storage is strictly necessary to provide the service you requested,
+        no consent banner is required (§ 25 (2) TDDDG).
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Legal basis</h2>
+      <p>
+        Processing of the trip information you enter is based on <strong>Art. 6 (1)(b) GDPR</strong>
+        (performance of the service you requested) and on our legitimate interest in providing a
+        functional, account-free planner, <strong>Art. 6 (1)(f) GDPR</strong>. Hosting and the technically
+        required connection to Firebase are likewise based on Art. 6 (1)(f) GDPR.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>How long data is kept</h2>
+      <p>
+        Trip data remains stored as long as the trip exists, so that participants can keep using the link.
+        We do not delete trips automatically. If you would like a trip and its contents removed, contact us
+        with the trip link and we will delete it. Functional data in your browser's local storage is removed
+        when you clear your browser data.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Your rights</h2>
+      <p>Under the GDPR you have the right to:</p>
+      <ul>
+        <li>access the personal data we hold about you (Art. 15);</li>
+        <li>have inaccurate data corrected (Art. 16);</li>
+        <li>have your data erased (Art. 17);</li>
+        <li>restrict or object to processing (Art. 18, 21);</li>
+        <li>receive your data in a portable format (Art. 20);</li>
+        <li>lodge a complaint with a supervisory authority (Art. 77).</li>
+      </ul>
+      <p>
+        To exercise any of these, contact us at the email address above. You can also remove a person and
+        their markings directly in the app, which deletes that information from the trip.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Children</h2>
+      <p>
+        This service is not directed at children. Please only enter the names of people who are aware that
+        their name and availability will be shared with everyone who has the trip link.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Changes to this policy</h2>
+      <p>
+        We may update this Privacy Policy as the app evolves. Changes are published on this page with an
+        updated date above. If we ever add analytics or other non-essential technologies, we will ask for
+        your consent first.
+      </p>
+    </div>
+
+    <a href="/" class="back">← Back to the app</a>
+
+    <footer>
+      <a href="/">Home</a><span class="sep">•</span>
+      <a href="imprint.html">Imprint</a><span class="sep">•</span>
+      <a href="privacy.html">Privacy</a>
+      <br>© 2026 Robin-Manuel Thiel
+    </footer>
+  </div>
+</body>
+</html>

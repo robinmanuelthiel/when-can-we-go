@@ -21,7 +21,7 @@
        padding-bottom:env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased}
   button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
   input{font-family:inherit;font-size:16px}
-  .wrap{max-width:1080px;margin:0 auto;padding:16px}
+  .wrap{max-width:1080px;margin:0 auto;padding:16px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
 
   /* ---------- Header ---------- */
   header.app{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;padding:6px 0 14px}
@@ -56,9 +56,6 @@
 
   /* ---------- Brush bar ---------- */
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .whoedit{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .whoedit select{appearance:none;border:1px solid var(--line);border-radius:11px;padding:9px 30px 9px 12px;font-weight:650;background:var(--card)
-       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237c857e' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center}
   .brushes{display:flex;gap:6px;background:#f3eee3;padding:4px;border-radius:13px}
   .brush{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:10px;font-weight:700;font-size:14px;color:var(--muted)}
   .brush .sw{width:14px;height:14px;border-radius:5px;border:1px solid rgba(0,0,0,.08)}
@@ -91,7 +88,7 @@
   .day.anchor{outline:3px solid var(--accent);outline-offset:-1px}
   /* group cell */
   .day .cnt{font-size:11px;font-weight:700;opacity:.85}
-  .day.full{box-shadow:inset 0 0 0 2px var(--yes)}
+  .day.full{border-color:#D3E2D8}
   .day.dim{opacity:.25}
 
   .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
@@ -117,6 +114,17 @@
   .person .sp{flex:1}
   .iconbtn{padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--card)}
   .iconbtn svg{width:16px;height:16px;display:block}
+  .person{cursor:pointer}
+  .person .chev{color:#c2c8c1;font-size:24px;font-weight:400;line-height:1;padding:0 2px 0 4px}
+
+  /* ---------- Person sub-navigation (inside People tab) ---------- */
+  .subnav{display:flex;align-items:center;gap:12px;margin:2px 0 14px;flex-wrap:wrap}
+  .backbtn{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:14.5px;color:var(--ink);
+       padding:9px 13px;border-radius:12px;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow);transition:.12s}
+  .backbtn:active{transform:translateY(1px)}
+  .backbtn svg{width:15px;height:15px}
+  .subnav .who{display:flex;align-items:center;gap:9px}
+  .subnav .who .nm{font-weight:750;font-size:16px}
 
   /* ---------- Modal / sheet ---------- */
   .scrim{position:fixed;inset:0;background:rgba(31,36,33,.42);backdrop-filter:blur(2px);display:flex;align-items:flex-end;justify-content:center;z-index:60;opacity:0;pointer-events:none;transition:.18s}
@@ -142,6 +150,21 @@
 
   .footnote{color:var(--muted);font-size:12.5px;text-align:center;padding:6px 0 26px;line-height:1.6}
   .footnote a{color:var(--accent)}
+
+  /* ---------- Shared site footer (pinned to bottom of viewport) ---------- */
+  .site-footer{margin-top:auto;padding:24px 0 calc(8px + env(safe-area-inset-bottom));text-align:center;color:var(--muted);font-size:13px;line-height:1.9}
+  .site-footer a{color:var(--muted)}
+  .site-footer .sep{margin:0 8px;opacity:.5}
+
+  /* ---------- Landing ---------- */
+  .landing-hero{padding:14px 2px 22px;max-width:640px}
+  .landing-hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,7vw,46px);line-height:1.06;margin:10px 0 12px;letter-spacing:-.01em}
+  .landing-hero .lead{color:var(--muted);font-size:16px;line-height:1.5;margin:0}
+  .landing-hero .lead em{color:var(--ink);font-style:normal;font-weight:650}
+  .landing-card{max-width:520px}
+  .invitee{display:flex;gap:8px;margin-bottom:8px}
+  .invitee input{flex:1;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6}
+  .field label .opt{color:var(--muted);font-weight:500}
   .hide{display:none!important}
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#1f2421;color:#fff;padding:11px 18px;border-radius:12px;font-weight:650;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:80}
   .toast.show{opacity:1;transform:translateX(-50%)}
@@ -149,6 +172,43 @@
 </head>
 <body>
 <div class="wrap">
+
+  <!-- LANDING (shown when the URL has no room — no DB entry is created until you make a trip) -->
+  <div id="landingView" class="hide">
+    <header class="app" style="padding-bottom:6px">
+      <div class="brand"><span class="dot"></span> When Can We Go?</div>
+    </header>
+    <div class="landing-hero">
+      <h1>Find a date that works for everyone.</h1>
+      <p class="lead">Set up a trip, invite your friends, and let everyone mark the days they <em>can’t</em> make it. The best windows rise to the top — no accounts, just a link to share.</p>
+    </div>
+    <div class="card landing-card">
+      <h2>Start a new trip</h2>
+      <p class="hint">Pick a name and the window you’re considering. You can change all of this later.</p>
+      <div class="field"><label>Trip name</label><input id="lName" placeholder="e.g. Summer in Portugal" value="Our Trip" autocomplete="off"></div>
+      <div class="field"><label>Dates to consider</label><div class="two">
+        <input id="lStart" type="date"><input id="lEnd" type="date"></div></div>
+      <div class="field"><label>Your name</label><input id="lYou" placeholder="So your answers are saved under your name" autocomplete="off"></div>
+      <div class="field">
+        <label>Invite friends <span class="opt">(optional — you can add more anytime)</span></label>
+        <div id="lInvitees"></div>
+        <button class="btn ghost" type="button" id="lAddInvitee" style="padding:6px 2px;color:var(--accent)">+ Add another person</button>
+      </div>
+      <button class="btn primary" type="button" id="lCreate" style="width:100%;justify-content:center;margin-top:6px">Create trip &amp; get link</button>
+    </div>
+
+    <div class="card landing-card">
+      <h2>Join an existing trip</h2>
+      <p class="hint">Got a link from a friend? Paste the whole link or just the trip ID.</p>
+      <div class="field"><input id="lJoin" placeholder="https://…/#abc123  —or—  abc123" autocomplete="off" spellcheck="false"></div>
+      <button class="btn" type="button" id="lJoinGo" style="width:100%;justify-content:center">Open trip →</button>
+    </div>
+
+    <p class="footnote">Everything syncs to everyone with the link. No account needed.</p>
+  </div>
+
+  <!-- APP (shown when a room is in the URL) -->
+  <div id="appView" class="hide">
   <header class="app">
     <div class="title-row">
       <div class="brand"><span class="dot"></span> When Can We Go?</div>
@@ -169,38 +229,16 @@
   </header>
 
   <nav class="tabs">
-    <button class="tab active" data-tab="me">When I'm out</button>
-    <button class="tab" data-tab="group">Group overview</button>
+    <button class="tab active" data-tab="group">Group overview</button>
     <button class="tab" data-tab="people">People <span class="ct" id="peopleCt"></span></button>
   </nav>
 
-  <!-- MY DATES -->
-  <section id="tab-me">
-    <div class="card">
-      <div class="toolbar">
-        <div class="whoedit">
-          <span style="font-weight:650;color:var(--muted);font-size:14px">Editing as</span>
-          <select id="whoSelect"></select>
-        </div>
-        <div style="flex:1"></div>
-        <div class="brushes" id="brushes">
-          <button class="brush active" data-b="block"><span class="sw"></span>Can't make it</button>
-          <button class="brush" data-b="maybe"><span class="sw"></span>Maybe not</button>
-          <button class="brush" data-b="none"><span class="sw"></span>Clear</button>
-        </div>
-        <button class="toggle" id="rangeToggle"><span class="switch"></span>Range fill</button>
-      </div>
-      <p class="hint" id="meHint" style="margin-top:12px;margin-bottom:0">Only mark the days you <strong>can’t</strong> make it — use “Maybe not” if you’re unsure. Leave the days you’re free blank.</p>
-    </div>
-    <div class="months" id="meMonths"></div>
-  </section>
-
   <!-- GROUP -->
-  <section id="tab-group" class="hide">
+  <section id="tab-group">
     <div class="card">
       <div class="legend">
-        <div class="it"><span class="sw" style="background:hsl(140 52% 82%)"></span>Everyone free</div>
-        <div class="it"><span class="sw" style="background:hsl(44 82% 78%)"></span>Only maybes</div>
+        <div class="it"><span class="sw" style="background:#F5FAF6"></span>Everyone free</div>
+        <div class="it"><span class="sw" style="background:var(--maybe-bg)"></span>Only maybes</div>
         <div class="scale"><span>1</span><span class="bar" id="scaleBar"></span><span>all out</span><span style="margin-left:4px">can’t make it</span></div>
         <div style="flex:1"></div>
         <button class="toggle" id="onlyAllToggle"><span class="switch"></span>Only days that work</button>
@@ -216,11 +254,31 @@
 
   <!-- PEOPLE -->
   <section id="tab-people" class="hide">
-    <div class="card">
-      <h2>Who’s answered</h2>
-      <p class="hint">Anyone can fill in or tweak any calendar — no logins, we trust each other.</p>
-      <div id="peopleList"></div>
-      <button class="btn primary" id="addPersonBtn" style="margin-top:14px;width:100%;justify-content:center">+ Add a person</button>
+    <!-- list view -->
+    <div id="peopleListWrap">
+      <div class="card">
+        <h2>Who’s answered</h2>
+        <p class="hint">Tap anyone to fill in or tweak their dates — no logins, we trust each other.</p>
+        <div id="peopleList"></div>
+        <button class="btn primary" id="addPersonBtn" style="margin-top:14px;width:100%;justify-content:center">+ Add a person</button>
+      </div>
+    </div>
+    <!-- per-person calendar (drill-in) -->
+    <div id="personDetailWrap" class="hide">
+      <div class="subnav" id="personDetailHead"></div>
+      <div class="card">
+        <div class="toolbar">
+          <div class="brushes" id="brushes">
+            <button class="brush active" data-b="block"><span class="sw"></span>Can't make it</button>
+            <button class="brush" data-b="maybe"><span class="sw"></span>Maybe not</button>
+            <button class="brush" data-b="none"><span class="sw"></span>Clear</button>
+          </div>
+          <div style="flex:1"></div>
+          <button class="toggle" id="rangeToggle"><span class="switch"></span>Range fill</button>
+        </div>
+        <p class="hint" id="meHint" style="margin-top:12px;margin-bottom:0">Only mark the days you <strong>can’t</strong> make it — use “Maybe not” if you’re unsure. Leave the days you’re free blank.</p>
+      </div>
+      <div class="months" id="meMonths"></div>
     </div>
   </section>
 
@@ -228,6 +286,14 @@
     Everything syncs automatically to everyone with the link. No account needed.<br>
     Share the link above so friends can mark the days they can’t make it — from any phone or laptop.
   </p>
+  </div><!-- /appView -->
+
+  <footer class="site-footer">
+    <a href="/">Home</a><span class="sep">•</span>
+    <a href="imprint.html">Imprint</a><span class="sep">•</span>
+    <a href="privacy.html">Privacy</a>
+    <br>© 2026 Robin-Manuel Thiel
+  </footer>
 </div>
 
 <!-- SCRIMS -->
@@ -288,7 +354,8 @@ let state = {
   data: null,            // {v, trip:{title,start,end,updatedAt}, people:{pid:{name,color,days,updatedAt,deleted}}}
   me: null,              // pid of "you" on this device
   activePid: null,       // whose calendar you're editing
-  tab: "me",
+  tab: "group",
+  peopleDetail: null,    // pid whose calendar is open inside the People tab (null = list)
   brush: "block",
   rangeMode: false,
   anchor: null,          // range-fill first pick
@@ -443,22 +510,8 @@ function render(){
   document.getElementById("answeredPill").textContent=`${n} answered`;
   document.getElementById("peopleCt").textContent=n?`(${n})`:"";
 
-  renderWhoSelect();
-  if(state.tab==="me") renderMe();
   if(state.tab==="group") renderGroup();
-  if(state.tab==="people") renderPeople();
-}
-
-function renderWhoSelect(){
-  const sel=document.getElementById("whoSelect");
-  const cur=state.activePid;
-  sel.innerHTML="";
-  people().forEach(([pid,p])=>{
-    const o=document.createElement("option"); o.value=pid;
-    o.textContent=p.name+(pid===state.me?" (you)":""); if(pid===cur)o.selected=true; sel.appendChild(o);
-  });
-  const o=document.createElement("option"); o.value="__add"; o.textContent="+ Add person…"; sel.appendChild(o);
-  if(!cur) { const o2=document.createElement("option"); o2.value=""; o2.textContent="— choose —"; o2.selected=true; sel.prepend(o2); }
+  if(state.tab==="people") renderPeople();   // renderPeople drills into renderMe when a person is open
 }
 
 function monthCells(year,month,renderCell){
@@ -487,7 +540,7 @@ function inRange(key){ return key>=state.data.trip.start && key<=state.data.trip
 function renderMe(){
   const pid=state.activePid;
   const cont=document.getElementById("meMonths");
-  if(!pid){ cont.innerHTML=`<div class="emptystate">Pick who you are above to start marking the days you can’t go.</div>`; updateBrushUI(); return; }
+  if(!pid){ cont.innerHTML=`<div class="emptystate">Pick a person to start marking the days they can’t go.</div>`; updateBrushUI(); return; }
   const p=personById(pid);
   cont.innerHTML=eachMonth((y,m)=>monthCells(y,m,(key,d)=>{
     const out=!inRange(key); const s=p.days[key];
@@ -501,19 +554,23 @@ function renderMe(){
   updateBrushUI();
 }
 
-function redShade(r){ return `hsl(7 ${58+24*r}% ${89-44*r}%)`; }       // 0→light, 1→deep red
+/* group heatmap shares the "When I'm out" palette: blockers run --block-bg→--block,
+   maybes run --maybe-bg→--maybe, so a "1 out" group cell == a personal "can't make it" cell. */
+function redShade(r){   return `hsl(5 ${73+9*r}% ${92-48*r}%)`; }   // 1 out → light red, all out → deep red
+function amberShade(r){ return `hsl(${44-6*r} ${83-2*r}% ${91-30*r}%)`; }  // few maybes → light amber, more → deeper
 function cellColor(st){
   if(!st.total) return "#f7f4ec";
-  if(st.block>0) return redShade(st.block/st.total);                   // someone can't make it → red
-  if(st.maybe>0) return `hsl(44 ${78+14*(st.maybe/st.total)}% ${87-14*(st.maybe/st.total)}%)`; // only maybes → yellow
-  return "hsl(140 52% 82%)";                                           // everyone free → green
+  const denom=Math.max(1, st.total-1);                                 // 1 person out → light (== personal cell), all out → deep
+  if(st.block>0) return redShade((st.block-1)/denom);                  // someone can't make it → red
+  if(st.maybe>0) return amberShade((st.maybe-1)/denom);               // only maybes → amber
+  return "#F5FAF6";                                           // everyone free → green
 }
 function renderGroup(){
   // red "can't make it" scale (1 … all out)
   const sb=document.getElementById("scaleBar");
   const total=people().length||1;
   sb.innerHTML="";
-  for(let i=1;i<=Math.min(total,6);i++){ const el=document.createElement("i"); el.style.background=redShade(i/total); sb.appendChild(el); }
+  for(let i=1;i<=Math.min(total,6);i++){ const el=document.createElement("i"); el.style.background=redShade((i-1)/Math.max(1,total-1)); sb.appendChild(el); }
 
   // best windows
   const bw=document.getElementById("bestWindows");
@@ -547,6 +604,23 @@ function renderGroup(){
 }
 
 function renderPeople(){
+  const listWrap=document.getElementById("peopleListWrap");
+  const detailWrap=document.getElementById("personDetailWrap");
+
+  // drill-in: a person's calendar is open
+  const dp=state.peopleDetail;
+  if(dp && personById(dp) && !personById(dp).deleted){
+    state.activePid=dp;
+    listWrap.classList.add("hide");
+    detailWrap.classList.remove("hide");
+    renderPersonDetail(dp);
+    return;
+  }
+  // list view
+  state.peopleDetail=null;
+  detailWrap.classList.add("hide");
+  listWrap.classList.remove("hide");
+
   const list=document.getElementById("peopleList");
   const ppl=people();
   if(!ppl.length){ list.innerHTML=`<div class="emptystate">Nobody yet — be the first to add your dates.</div>`; return; }
@@ -554,17 +628,31 @@ function renderPeople(){
     const block=Object.values(p.days).filter(v=>v==="block").length;
     const maybe=Object.values(p.days).filter(v=>v==="maybe").length;
     const init=p.name.trim().charAt(0).toUpperCase()||"?";
-    return `<div class="person">
+    return `<div class="person" data-open-person="${pid}">
       <div class="ava" style="background:${p.color}">${init}</div>
       <div><div class="nm">${escapeHtml(p.name)}${pid===state.me?" · you":""}</div>
         <div class="meta">${block} can’t make it · ${maybe} maybe</div></div>
       <div class="sp"></div>
-      <button class="iconbtn" data-edit-cal="${pid}" title="Edit this calendar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-      </button>
       <button class="iconbtn" data-ren="${pid}" title="Rename">✎</button>
+      <span class="chev">›</span>
     </div>`;
   }).join("");
+}
+
+function renderPersonDetail(pid){
+  const p=personById(pid);
+  const init=p.name.trim().charAt(0).toUpperCase()||"?";
+  document.getElementById("personDetailHead").innerHTML=`
+    <button class="backbtn" id="backToPeople">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      People
+    </button>
+    <div class="who">
+      <span class="ava" style="background:${p.color};width:30px;height:30px;font-size:13px">${init}</span>
+      <span class="nm">${escapeHtml(p.name)}${pid===state.me?" · you":""}</span>
+    </div>`;
+  document.getElementById("backToPeople").onclick=()=>{ state.peopleDetail=null; state.anchor=null; renderPeople(); };
+  renderMe();   // paints the calendar for state.activePid (== pid) into #meMonths
 }
 function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
@@ -650,9 +738,22 @@ function openIdentity(force){
   const jv=document.getElementById("justView"); if(jv) jv.onclick=()=>{ closeSheet(); };
 }
 function pickMe(pid){
-  state.me=pid; state.activePid=pid;
+  state.me=pid; state.activePid=pid; state.peopleDetail=pid; state.anchor=null;
   try{ localStorage.setItem(meKey(),pid); }catch(e){}
+  showTab("people");   // drop straight into your own calendar
   render();
+}
+function openPerson(pid){
+  state.peopleDetail=pid; state.activePid=pid; state.anchor=null;
+  showTab("people");
+  render();
+}
+/* toggle which top-level tab/section is visible */
+function showTab(name){
+  state.tab=name;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x.dataset.tab===name));
+  document.getElementById("tab-group").classList.toggle("hide",name!=="group");
+  document.getElementById("tab-people").classList.toggle("hide",name!=="people");
 }
 
 function openTripEdit(){
@@ -739,37 +840,113 @@ function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg
    ============================================================ */
 function bindUI(){
   document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
-    state.tab=t.dataset.tab;
-    document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));
-    document.getElementById("tab-me").classList.toggle("hide",state.tab!=="me");
-    document.getElementById("tab-group").classList.toggle("hide",state.tab!=="group");
-    document.getElementById("tab-people").classList.toggle("hide",state.tab!=="people");
-    state.anchor=null; render();
+    if(t.dataset.tab==="people") state.peopleDetail=null;   // tapping the tab lands on the list
+    state.anchor=null;
+    showTab(t.dataset.tab);
+    render();
   });
   document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; updateBrushUI(); });
   document.getElementById("rangeToggle").onclick=()=>{ state.rangeMode=!state.rangeMode; state.anchor=null; renderMe(); };
   document.getElementById("onlyAllToggle").onclick=()=>{ state.onlyAll=!state.onlyAll; document.querySelector("#onlyAllToggle .switch").classList.toggle("on",state.onlyAll); renderGroup(); };
-  document.getElementById("whoSelect").onchange=e=>{
-    const v=e.target.value;
-    if(v==="__add"){ openIdentity(false); renderWhoSelect(); return; }
-    state.activePid=v||null; state.anchor=null; renderMe();
-  };
   document.getElementById("shareBtn").onclick=doShare;
   document.getElementById("editTripBtn").onclick=openTripEdit;
   document.getElementById("addPersonBtn").onclick=()=>openIdentity(false);
   document.getElementById("peopleList").addEventListener("click",e=>{
-    const ec=e.target.closest("[data-edit-cal]"); if(ec){ state.activePid=ec.dataset.editCal; state.tab="me"; document.querySelector('.tab[data-tab="me"]').click(); return; }
-    const rn=e.target.closest("[data-ren]"); if(rn){ openRename(rn.dataset.ren); }
+    const rn=e.target.closest("[data-ren]"); if(rn){ openRename(rn.dataset.ren); return; }
+    const op=e.target.closest("[data-open-person]"); if(op){ openPerson(op.dataset.openPerson); }
   });
   bindCalendarEvents();
 }
 
+/* ---------- landing page (create a trip) ---------- */
+function showLanding(){
+  document.getElementById("appView").classList.add("hide");
+  document.getElementById("landingView").classList.remove("hide");
+  const d=defaultData().trip;                       // reuse the default 4-month window
+  const st=document.getElementById("lStart"), en=document.getElementById("lEnd");
+  if(!st.value) st.value=d.start;
+  if(!en.value) en.value=d.end;
+  if(!document.querySelector("#lInvitees .invitee")) addInviteeRow();
+}
+function showApp(){
+  document.getElementById("landingView").classList.add("hide");
+  document.getElementById("appView").classList.remove("hide");
+}
+function addInviteeRow(name=""){
+  const wrap=document.getElementById("lInvitees");
+  const row=document.createElement("div");
+  row.className="invitee";
+  row.innerHTML=`<input placeholder="Friend's name" value="${escapeHtml(name)}" autocomplete="off"><button class="iconbtn" type="button" data-rm title="Remove">✕</button>`;
+  row.querySelector("[data-rm]").onclick=()=>row.remove();
+  wrap.appendChild(row);
+  return row;
+}
+function bindLanding(){
+  const add=document.getElementById("lAddInvitee"); if(add) add.onclick=()=>addInviteeRow().querySelector("input").focus();
+  const create=document.getElementById("lCreate");  if(create) create.onclick=createTrip;
+  const join=document.getElementById("lJoinGo");    if(join) join.onclick=joinTrip;
+  const ji=document.getElementById("lJoin");        if(ji) ji.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); joinTrip(); } });
+}
+/* accept a full share link ("https://…/#abc123") or a bare id ("abc123") */
+function parseRoomId(raw){
+  let s=(raw||"").trim();
+  if(s.includes("#")) s=s.slice(s.lastIndexOf("#")+1).trim();   // take whatever follows the last #
+  return s;
+}
+async function joinTrip(){
+  const id=parseRoomId(document.getElementById("lJoin").value);
+  if(!id || !/^[A-Za-z0-9_-]+$/.test(id)){ toast("Paste a valid trip link or ID"); return; }
+  // confirm the room exists first, so a typo'd id never seeds a new empty room
+  if(firebaseConfigured()){
+    try{
+      const u=FIREBASE_CONFIG.databaseURL.replace(/\/+$/,"")+"/rooms/"+encodeURIComponent(id)+".json?shallow=true";
+      const r=await fetch(u);
+      if(r.ok && (await r.json())==null){ toast("No trip found with that link or ID"); return; }
+    }catch(e){ /* offline / blocked — fall through and let the room view try to load it */ }
+  }
+  location.hash=id;   // hashchange listener reloads → init() loads the existing room
+}
+async function createTrip(){
+  const title=document.getElementById("lName").value.trim()||"Our Trip";
+  let s=document.getElementById("lStart").value, e=document.getElementById("lEnd").value;
+  if(!s||!e){ toast("Pick both dates"); return; }
+  if(e<s){ [s,e]=[e,s]; }
+  const you=document.getElementById("lYou").value.trim();
+  const invitees=[...document.querySelectorAll("#lInvitees .invitee input")].map(i=>i.value.trim()).filter(Boolean);
+
+  // build a fresh room — this is the ONLY place a new room id is minted
+  const now=Date.now();
+  state.roomId=genRoomId();
+  state.data={ v:1, trip:{ title, start:s, end:e, updatedAt:now }, people:{} };
+  if(you){
+    const mePid=addPerson(you);
+    state.me=mePid; state.activePid=mePid;
+    try{ localStorage.setItem(meKey(),mePid); }catch(_){}
+  }
+  invitees.forEach(n=>addPerson(n));
+
+  history.replaceState(null,"","#"+state.roomId);   // replaceState → no hashchange reload
+  cacheSave();
+  showApp(); showTab("people"); render();
+
+  setSync("saving","Connecting…");
+  const hasFB = db ? true : await backendInit();
+  if(hasFB){ persistFullRoom(); subscribeRoom(); }  // writes the room to the DB exactly once
+  else { _local(); maybePromptIdentity(); }
+  toast("Trip created — tap Share to invite everyone");
+}
+
 async function init(){
   bindUI();
+  bindLanding();
   state.roomId=location.hash.slice(1)||null;
-  state.data=cacheLoad();
-  if(!state.roomId){ state.roomId=genRoomId(); history.replaceState(null,"","#"+state.roomId); }
-  if(!state.data) state.data=defaultData();
+
+  // No room in the URL → show the landing page. We do NOT generate a room id
+  // or write anything to the database until the user actually creates a trip.
+  if(!state.roomId){ showLanding(); return; }
+
+  showApp();
+  state.data=cacheLoad()||defaultData();
   restoreMe();
   render();
 
