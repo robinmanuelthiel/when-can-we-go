@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FBF7EF">
+<meta name="robots" content="noindex">
+<title>When Can We Go?</title>
+<script>
+  /* GitHub Pages serves this file (with a 404 status) for any path that
+     isn't a real file — including a shared /trip/<roomId> link. Hand a
+     /trip/<roomId> off to the planner via its /trip/?r=<id> entry point
+     (a real 200 file); the planner then rewrites the bar to /trip/<id>.
+     Anything else is a genuine not-found → send it to the landing page. */
+  (function(){
+    var m = location.pathname.match(/^\/trip\/([A-Za-z0-9_-]+)\/?$/);
+    if(m) location.replace("/trip/?r=" + m[1]);
+    else  location.replace("/");
+  })();
+</script>
+</head>
+<body></body>
+</html>
