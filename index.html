@@ -10,6 +10,7 @@
     --bg:#FBF7EF; --card:#ffffff; --ink:#1f2421; --muted:#7c857e;
     --line:#ece6da; --accent:#E0524A; --accent-soft:#fbe9e7;
     --yes:#3BA55C; --yes-bg:#dff3e6; --maybe:#E9A23B; --maybe-bg:#fbeed3;
+    --block:#E0524A; --block-bg:#fbe3e1;
     --radius:16px; --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(31,36,33,.05);
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
@@ -62,7 +63,7 @@
   .brush{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:10px;font-weight:700;font-size:14px;color:var(--muted)}
   .brush .sw{width:14px;height:14px;border-radius:5px;border:1px solid rgba(0,0,0,.08)}
   .brush.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
-  .brush[data-b="yes"] .sw{background:var(--yes)}
+  .brush[data-b="block"] .sw{background:var(--block)}
   .brush[data-b="maybe"] .sw{background:var(--maybe)}
   .brush[data-b="none"] .sw{background:#fff;border-style:dashed;border-color:#c9cfc9}
   .toggle{display:inline-flex;align-items:center;gap:8px;font-weight:650;font-size:14px;color:var(--muted)}
@@ -83,8 +84,8 @@
   .day:active{transform:scale(.94)}
   .day.empty{visibility:hidden}
   .day.out{opacity:.32;pointer-events:none}
-  /* my-states */
-  .day.s-yes{background:var(--yes-bg);border-color:#bfe6cd;color:#1d6b39}
+  /* my-states (what I CAN'T make) */
+  .day.s-block{background:var(--block-bg);border-color:#f1c2bd;color:#a32d23}
   .day.s-maybe{background:var(--maybe-bg);border-color:#f0d79b;color:#8a6113}
   .day .mk{position:absolute;top:5px;right:6px;font-size:10px}
   .day.anchor{outline:3px solid var(--accent);outline-offset:-1px}
@@ -137,7 +138,7 @@
   .det-row{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line)}
   .det-row:last-child{border:none}
   .tag{font-size:12px;font-weight:750;padding:3px 9px;border-radius:999px}
-  .tag.yes{background:var(--yes-bg);color:#1d6b39}.tag.maybe{background:var(--maybe-bg);color:#8a6113}.tag.no{background:#f0eee9;color:#9a9a90}
+  .tag.free{background:var(--yes-bg);color:#1d6b39}.tag.maybe{background:var(--maybe-bg);color:#8a6113}.tag.block{background:var(--block-bg);color:#a32d23}
 
   .footnote{color:var(--muted);font-size:12.5px;text-align:center;padding:6px 0 26px;line-height:1.6}
   .footnote a{color:var(--accent)}
@@ -168,7 +169,7 @@
   </header>
 
   <nav class="tabs">
-    <button class="tab active" data-tab="me">My dates</button>
+    <button class="tab active" data-tab="me">When I'm out</button>
     <button class="tab" data-tab="group">Group overview</button>
     <button class="tab" data-tab="people">People <span class="ct" id="peopleCt"></span></button>
   </nav>
@@ -183,13 +184,13 @@
         </div>
         <div style="flex:1"></div>
         <div class="brushes" id="brushes">
-          <button class="brush active" data-b="yes"><span class="sw"></span>Available</button>
-          <button class="brush" data-b="maybe"><span class="sw"></span>Maybe</button>
+          <button class="brush active" data-b="block"><span class="sw"></span>Can't make it</button>
+          <button class="brush" data-b="maybe"><span class="sw"></span>Maybe not</button>
           <button class="brush" data-b="none"><span class="sw"></span>Clear</button>
         </div>
         <button class="toggle" id="rangeToggle"><span class="switch"></span>Range fill</button>
       </div>
-      <p class="hint" id="meHint" style="margin-top:12px;margin-bottom:0">Tap a day to mark it. Pick a brush above. Turn on “Range fill” to set a start and end day at once.</p>
+      <p class="hint" id="meHint" style="margin-top:12px;margin-bottom:0">Only mark the days you <strong>can’t</strong> make it — use “Maybe not” if you’re unsure. Leave the days you’re free blank.</p>
     </div>
     <div class="months" id="meMonths"></div>
   </section>
@@ -198,16 +199,16 @@
   <section id="tab-group" class="hide">
     <div class="card">
       <div class="legend">
-        <div class="it"><span style="font-weight:650;color:var(--ink)">Who can make it</span></div>
-        <div class="scale"><span>fewer</span><span class="bar" id="scaleBar"></span><span>everyone</span></div>
-        <div class="it"><span class="sw" style="box-shadow:inset 0 0 0 2px var(--yes);background:#fff"></span>everyone’s in</div>
+        <div class="it"><span class="sw" style="background:hsl(140 52% 82%)"></span>Everyone free</div>
+        <div class="it"><span class="sw" style="background:hsl(44 82% 78%)"></span>Only maybes</div>
+        <div class="scale"><span>1</span><span class="bar" id="scaleBar"></span><span>all out</span><span style="margin-left:4px">can’t make it</span></div>
         <div style="flex:1"></div>
-        <button class="toggle" id="onlyAllToggle"><span class="switch"></span>Only days everyone can make</button>
+        <button class="toggle" id="onlyAllToggle"><span class="switch"></span>Only days that work</button>
       </div>
     </div>
     <div class="card">
       <h2>Best windows</h2>
-      <p class="hint">Longest stretches where everyone can come (✓ = all available, ~ = some only as “maybe”).</p>
+      <p class="hint">Longest stretches where nobody has a blocker (✓ = fully free, no maybes either).</p>
       <div id="bestWindows"></div>
     </div>
     <div class="months" id="groupMonths"></div>
@@ -224,8 +225,8 @@
   </section>
 
   <p class="footnote">
-    Your dates sync automatically to everyone with the link. No account needed.<br>
-    Share the link above so friends can add their availability from any phone or laptop.
+    Everything syncs automatically to everyone with the link. No account needed.<br>
+    Share the link above so friends can mark the days they can’t make it — from any phone or laptop.
   </p>
 </div>
 
@@ -237,12 +238,28 @@
 "use strict";
 /* ============================================================
    When Can We Go? — zero-login group trip availability planner
-   Storage: jsonblob.com (free, no signup, no key). Room id lives
-   in the URL hash, so the share link IS the room. localStorage is
-   used only to cache + remember who you are on this device.
+   Storage: Firebase Realtime Database. The room id lives in the
+   URL hash, so the share link IS the room. localStorage is only a
+   cache + remembers who you are on this device. If Firebase isn't
+   configured (or you're offline) the app still works locally.
    ============================================================ */
 
-const API = "https://jsonblob.com/api/jsonBlob";
+/* ▼▼▼  PASTE YOUR firebaseConfig OBJECT HERE  ▼▼▼
+   Firebase console → ⚙ Project settings → General → Your apps →
+   Web app (</>) → copy the firebaseConfig snippet. The databaseURL
+   line is required (Build → Realtime Database gives you that URL). */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDkO2vGr2w3PUqIdE0nFO4Byaib_R_6vy8",
+  authDomain: "when-can-we-go.firebaseapp.com",
+  databaseURL: "https://when-can-we-go-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "when-can-we-go",
+  storageBucket: "when-can-we-go.firebasestorage.app",
+  messagingSenderId: "755985092176",
+  appId: "1:755985092176:web:4d5153219cb88e3cbe0b55",
+  measurementId: "G-5WKC5X97G0"
+};
+/* ▲▲▲  nothing else to configure  ▲▲▲ */
+const FB_SDK = "https://www.gstatic.com/firebasejs/10.12.2";
 const PALETTE = ["#E0524A","#2A9D8F","#E9A23B","#5B7FE0","#9B5BE0","#E05B9B","#3BA55C","#C9772F","#4A78D4","#B0457B"];
 const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -272,13 +289,14 @@ let state = {
   me: null,              // pid of "you" on this device
   activePid: null,       // whose calendar you're editing
   tab: "me",
-  brush: "yes",
+  brush: "block",
   rangeMode: false,
   anchor: null,          // range-fill first pick
   onlyAll: false,
   online: true,
 };
-let saveTimer=null, pullTimer=null, painting=false;
+let db=null, FB=null, painting=false, firstSnap=true, identityPrompted=false;
+const _timers={};
 
 /* ---------- storage layer ---------- */
 function defaultData(){
@@ -292,23 +310,55 @@ const meKey    = () => "wcwg:me:"+state.roomId;
 function cacheSave(){ try{ localStorage.setItem(cacheKey(), JSON.stringify(state.data)); }catch(e){} }
 function cacheLoad(){ try{ const v=localStorage.getItem(cacheKey()); return v?JSON.parse(v):null; }catch(e){ return null; } }
 
-async function apiCreate(data){
-  const r = await fetch(API,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(data)});
-  if(!r.ok) throw new Error("create "+r.status);
-  let id = r.headers.get("X-jsonblob");
-  if(!id){ const loc=r.headers.get("Location"); if(loc) id=loc.split("/").pop(); }
-  if(!id) throw new Error("no id returned");
-  return id;
+const genRoomId = () => uid()+uid()+uid();   // ~unguessable room key for the share link
+function firebaseConfigured(){
+  const c=FIREBASE_CONFIG;
+  return !!(c && c.databaseURL && c.apiKey && !/PASTE_|YOUR_/.test(c.databaseURL+c.apiKey));
 }
-async function apiGet(id){
-  const r = await fetch(API+"/"+id,{headers:{"Accept":"application/json"}});
-  if(!r.ok) throw new Error("get "+r.status);
-  return r.json();
+async function backendInit(){
+  if(!firebaseConfigured()) return false;
+  try{
+    // dynamic import so a failed load (e.g. offline) never blocks the app
+    const appMod = await import(`${FB_SDK}/firebase-app.js`);
+    FB = await import(`${FB_SDK}/firebase-database.js`);
+    const app = appMod.initializeApp(FIREBASE_CONFIG);
+    db = FB.getDatabase(app);
+    return true;
+  }catch(e){ console.warn("Firebase unavailable — running local-only.",e); db=null; return false; }
 }
-async function apiPut(id,data){
-  const r = await fetch(API+"/"+id,{method:"PUT",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(data)});
-  if(!r.ok) throw new Error("put "+r.status);
-  return true;
+
+const base = () => "rooms/"+state.roomId;
+const _ok    = () => { state.online=true;  setSync("ok","Synced"); };
+const _off   = () => { state.online=false; setSync("off","Offline – will retry"); };
+const _local = () => setSync(firebaseConfigured()?"off":"off", firebaseConfigured()?"Offline – saved locally":"Local only – add Firebase to share");
+
+/* granular writes: each person node is written on its own path, so two
+   people editing different calendars never clobber each other. */
+function persistFullRoom(){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); FB.set(FB.ref(db,base()), state.data).then(_ok).catch(_off); }
+function persistTrip(){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); FB.set(FB.ref(db,base()+"/trip"), state.data.trip).then(_ok).catch(_off); }
+function persistPerson(pid){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); FB.set(FB.ref(db,base()+"/people/"+pid), state.data.people[pid]).then(_ok).catch(_off); }
+function persistPersonDebounced(pid){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); clearTimeout(_timers[pid]); _timers[pid]=setTimeout(()=>persistPerson(pid),350); }
+
+function subscribeRoom(){
+  FB.onValue(FB.ref(db,base()), snap=>{
+    const remote=snap.val();
+    if(remote){ state.data=mergeData(state.data,remote); state.online=true; cacheSave(); setSync("ok","Synced"); render(); }
+    else { persistFullRoom(); }              // room doesn't exist yet → seed it
+    if(firstSnap){ firstSnap=false; restoreMe(); render(); maybePromptIdentity(); }
+  }, err=>{
+    console.warn(err); state.online=false; setSync("off","Offline – saved locally");
+    if(firstSnap){ firstSnap=false; maybePromptIdentity(); }
+  });
+}
+
+function restoreMe(){
+  if(state.me) return;
+  let s=null; try{ s=localStorage.getItem(meKey()); }catch(e){}
+  if(s && state.data.people[s] && !state.data.people[s].deleted){ state.me=s; state.activePid=s; }
+}
+function maybePromptIdentity(){
+  if(state.me || identityPrompted) return;
+  identityPrompted=true; openIdentity(false);
 }
 
 /* ---------- merge (last-write-wins per person & per trip) ---------- */
@@ -331,36 +381,6 @@ function setSync(kind,txt){
   el.className="sync "+kind;
   el.querySelector(".txt").textContent=txt;
 }
-async function pull(){
-  if(!state.roomId) return;
-  try{
-    const remote=await apiGet(state.roomId);
-    const before=JSON.stringify(state.data);
-    state.data=mergeData(state.data,remote);
-    state.online=true;
-    cacheSave();
-    if(JSON.stringify(state.data)!==before) render();
-    if(state.online) setSync("ok","Synced");
-  }catch(e){ state.online=false; setSync("off","Offline – changes saved locally"); }
-}
-function scheduleSave(){
-  setSync("saving","Saving…");
-  cacheSave();
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(doSave,650);
-}
-async function doSave(){
-  if(!state.roomId) return;
-  try{
-    let remote=null;
-    try{ remote=await apiGet(state.roomId); }catch(e){}
-    const merged=mergeData(state.data,remote);   // our just-edited person has newest updatedAt → wins
-    await apiPut(state.roomId,merged);
-    state.data=merged; state.online=true; cacheSave();
-    setSync("ok","Synced");
-  }catch(e){ state.online=false; setSync("off","Offline – will retry"); }
-}
-
 /* ---------- person helpers ---------- */
 function people(){ return Object.entries(state.data.people).filter(([,p])=>!p.deleted); }
 function personById(pid){ return state.data.people[pid]; }
@@ -375,18 +395,22 @@ function setDay(pid,key,val){
   const p=personById(pid); if(!p) return;
   if(val==="none") delete p.days[key]; else p.days[key]=val;
   p.updatedAt=Date.now();
-  scheduleSave();
+  persistPersonDebounced(pid);
 }
 
-/* ---------- aggregate for group view ---------- */
+/* ---------- aggregate for group view (people mark when they're OUT) ---------- */
 function dayStats(key){
   const ppl=people();
-  let yes=0,maybe=0; const ins=[],mays=[],outs=[];
+  let block=0, maybe=0; const blocked=[], maybes=[], free=[];
   ppl.forEach(([,p])=>{ const s=p.days[key];
-    if(s==="yes"){yes++;ins.push(p);} else if(s==="maybe"){maybe++;mays.push(p);} else outs.push(p); });
+    if(s==="block"){block++;blocked.push(p);}
+    else if(s==="maybe"){maybe++;maybes.push(p);}
+    else free.push(p);
+  });
   const total=ppl.length;
-  return { yes, maybe, total, canGo:yes+maybe, ins, mays, outs,
-           everyone: total>0 && (yes+maybe)===total, allYes: total>0 && yes===total };
+  return { block, maybe, total, blocked, maybes, free,
+           works: total>0 && block===0,                 // candidate: nobody has a hard blocker
+           clear: total>0 && block===0 && maybe===0 };   // fully free: no blockers, no maybes
 }
 
 /* ---------- iterate trip days ---------- */
@@ -398,11 +422,11 @@ function tripDays(){
 function bestWindows(){
   const days=tripDays(); const runs=[]; let cur=null;
   days.forEach(k=>{ const st=dayStats(k);
-    if(st.everyone){ if(!cur) cur={start:k,end:k,len:1,allYes:st.allYes?1:0}; else {cur.end=k;cur.len++; if(st.allYes)cur.allYes++;} }
+    if(st.works){ if(!cur) cur={start:k,end:k,len:1,clear:st.clear?1:0}; else {cur.end=k;cur.len++; if(st.clear)cur.clear++;} }
     else { if(cur){runs.push(cur);cur=null;} }
   });
   if(cur) runs.push(cur);
-  runs.sort((a,b)=> b.len-a.len || b.allYes-a.allYes);
+  runs.sort((a,b)=> b.len-a.len || b.clear-a.clear);
   return runs.slice(0,4);
 }
 
@@ -463,44 +487,47 @@ function inRange(key){ return key>=state.data.trip.start && key<=state.data.trip
 function renderMe(){
   const pid=state.activePid;
   const cont=document.getElementById("meMonths");
-  if(!pid){ cont.innerHTML=`<div class="emptystate">Pick who you are above to start marking dates.</div>`; updateBrushUI(); return; }
+  if(!pid){ cont.innerHTML=`<div class="emptystate">Pick who you are above to start marking the days you can’t go.</div>`; updateBrushUI(); return; }
   const p=personById(pid);
   cont.innerHTML=eachMonth((y,m)=>monthCells(y,m,(key,d)=>{
     const out=!inRange(key); const s=p.days[key];
     const cls=["day","has"]; if(out)cls.push("out"); if(s)cls.push("s-"+s); if(state.anchor===key)cls.push("anchor");
-    const mk=s==="yes"?"✓":s==="maybe"?"~":"";
+    const mk=s==="block"?"✕":s==="maybe"?"~":"";
     return `<button class="${cls.join(" ")}" data-ymd="${key}">${d}${mk?`<span class="mk">${mk}</span>`:""}</button>`;
   }));
-  document.getElementById("meHint").textContent = state.rangeMode
+  document.getElementById("meHint").innerHTML = state.rangeMode
     ? (state.anchor? `Range start set to ${fmtShort(parseYmd(state.anchor))} — tap the end day.` : "Range fill on: tap a start day, then an end day.")
-    : "Tap a day to mark it. Pick a brush above, or turn on “Range fill” for whole stretches.";
+    : "Only mark the days you <strong>can’t</strong> make it — use “Maybe not” if unsure. Free days stay blank.";
   updateBrushUI();
 }
 
-function greenFor(canGo,total){
-  if(!total||!canGo) return "#f7f4ec";
-  const r=canGo/total;
-  const h=140-8*r, s=42+22*r, l=93-52*r;
-  return `hsl(${h} ${s}% ${l}%)`;
+function redShade(r){ return `hsl(7 ${58+24*r}% ${89-44*r}%)`; }       // 0→light, 1→deep red
+function cellColor(st){
+  if(!st.total) return "#f7f4ec";
+  if(st.block>0) return redShade(st.block/st.total);                   // someone can't make it → red
+  if(st.maybe>0) return `hsl(44 ${78+14*(st.maybe/st.total)}% ${87-14*(st.maybe/st.total)}%)`; // only maybes → yellow
+  return "hsl(140 52% 82%)";                                           // everyone free → green
 }
 function renderGroup(){
-  // scale bar
+  // red "can't make it" scale (1 … all out)
   const sb=document.getElementById("scaleBar");
   const total=people().length||1;
   sb.innerHTML="";
-  for(let i=1;i<=Math.min(total,6);i++){ const el=document.createElement("i"); el.style.background=greenFor(i,total); sb.appendChild(el); }
+  for(let i=1;i<=Math.min(total,6);i++){ const el=document.createElement("i"); el.style.background=redShade(i/total); sb.appendChild(el); }
 
   // best windows
   const bw=document.getElementById("bestWindows");
   const wins=bestWindows();
-  if(!people().length){ bw.innerHTML=`<div class="emptystate">No availability yet. Add yours in “My dates”.</div>`; }
-  else if(!wins.length){ bw.innerHTML=`<div class="emptystate">No day works for everyone yet — try the heatmap below to find near-misses.</div>`; }
+  if(!people().length){ bw.innerHTML=`<div class="emptystate">Best windows appear once people mark the days they can’t make it.</div>`; }
+  else if(!wins.length){ bw.innerHTML=`<div class="emptystate">Every day has at least one blocker right now — the heatmap below shows where the fewest people are out.</div>`; }
   else bw.innerHTML=wins.map((w,i)=>{
-    const partial=w.allYes<w.len;
+    const partial=w.clear<w.len;
     const span=fmtRange(parseYmd(w.start),parseYmd(w.end));
+    const sub=partial
+      ? `${w.len} day${w.len>1?"s":""} open · ${w.clear} fully free, ${w.len-w.clear} with maybes`
+      : `${w.len} day${w.len>1?"s":""} open · ✓ everyone free`;
     return `<div class="win ${partial?"partial":""}"><div class="rk">${i+1}</div>
-      <div><div class="wt">${span}</div>
-      <div class="wd">${w.len} day${w.len>1?"s":""} · all ${people().length} can come${partial?` · ${w.allYes} fully free`:" · ✓ all available"}</div></div></div>`;
+      <div><div class="wt">${span}</div><div class="wd">${sub}</div></div></div>`;
   }).join("");
 
   // calendar heatmap
@@ -509,10 +536,12 @@ function renderGroup(){
     const out=!inRange(key);
     const st=dayStats(key);
     const cls=["day","has"]; if(out)cls.push("out");
-    if(st.everyone)cls.push("full");
-    if(state.onlyAll && !st.everyone)cls.push("dim");
-    const bg=out?"":`style="background:${greenFor(st.canGo,st.total)}"`;
-    const cnt=(st.total&&st.canGo)?`<span class="cnt">${st.canGo}/${st.total}</span>`:"";
+    if(st.clear)cls.push("full");
+    if(state.onlyAll && !st.works)cls.push("dim");
+    const bg=out?"":`style="background:${cellColor(st)}"`;
+    let cnt="";
+    if(st.total && st.block>0) cnt=`<span class="cnt">${st.block}</span>`;
+    else if(st.total && st.maybe>0) cnt=`<span class="cnt">${st.maybe}~</span>`;
     return `<button class="${cls.join(" ")}" ${bg} data-detail="${key}">${d}${cnt}</button>`;
   }));
 }
@@ -522,13 +551,13 @@ function renderPeople(){
   const ppl=people();
   if(!ppl.length){ list.innerHTML=`<div class="emptystate">Nobody yet — be the first to add your dates.</div>`; return; }
   list.innerHTML=ppl.map(([pid,p])=>{
-    const yes=Object.values(p.days).filter(v=>v==="yes").length;
+    const block=Object.values(p.days).filter(v=>v==="block").length;
     const maybe=Object.values(p.days).filter(v=>v==="maybe").length;
     const init=p.name.trim().charAt(0).toUpperCase()||"?";
     return `<div class="person">
       <div class="ava" style="background:${p.color}">${init}</div>
       <div><div class="nm">${escapeHtml(p.name)}${pid===state.me?" · you":""}</div>
-        <div class="meta">${yes} available · ${maybe} maybe</div></div>
+        <div class="meta">${block} can’t make it · ${maybe} maybe</div></div>
       <div class="sp"></div>
       <button class="iconbtn" data-edit-cal="${pid}" title="Edit this calendar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -563,10 +592,10 @@ function applyBrushToDay(key){
 }
 function updateMeCell(cell,key){
   const p=personById(state.activePid); const s=p.days[key];
-  cell.classList.remove("s-yes","s-maybe");
+  cell.classList.remove("s-block","s-maybe");
   if(s) cell.classList.add("s-"+s);
   const old=cell.querySelector(".mk"); if(old) old.remove();
-  const mk=s==="yes"?"✓":s==="maybe"?"~":"";
+  const mk=s==="block"?"✕":s==="maybe"?"~":"";
   if(mk){ const span=document.createElement("span"); span.className="mk"; span.textContent=mk; cell.appendChild(span); }
 }
 
@@ -616,7 +645,7 @@ function openIdentity(force){
   sheet.querySelectorAll("[data-pickme]").forEach(b=>b.onclick=()=>{ pickMe(b.dataset.pickme); closeSheet(); });
   document.getElementById("newGo").onclick=()=>{
     const v=ni.value.trim(); if(!v){ ni.focus(); return; }
-    const pid=addPerson(v); pickMe(pid); scheduleSave(); closeSheet();
+    const pid=addPerson(v); pickMe(pid); persistPerson(pid); closeSheet();
   };
   const jv=document.getElementById("justView"); if(jv) jv.onclick=()=>{ closeSheet(); };
 }
@@ -646,7 +675,7 @@ function openTripEdit(){
     if(!s||!e){ toast("Pick both dates"); return; }
     if(e<s){ [s,e]=[e,s]; }
     state.data.trip={ title:name, start:s, end:e, updatedAt:Date.now() };
-    scheduleSave(); closeSheet(); render();
+    persistTrip(); closeSheet(); render();
   };
 }
 
@@ -660,12 +689,12 @@ function openRename(pid){
       <button class="btn primary" id="rnSave">Save</button>
     </div>
   `);
-  document.getElementById("rnSave").onclick=()=>{ p.name=document.getElementById("rn").value.trim()||p.name; touchPerson(pid); scheduleSave(); closeSheet(); render(); };
+  document.getElementById("rnSave").onclick=()=>{ p.name=document.getElementById("rn").value.trim()||p.name; touchPerson(pid); persistPerson(pid); closeSheet(); render(); };
   document.getElementById("rnDel").onclick=()=>{
     p.deleted=true; touchPerson(pid);
     if(state.me===pid){ state.me=null; try{localStorage.removeItem(meKey());}catch(e){} }
     if(state.activePid===pid) state.activePid=state.me||null;
-    scheduleSave(); closeSheet(); render();
+    persistPerson(pid); closeSheet(); render();
   };
 }
 
@@ -673,13 +702,16 @@ function openDayDetail(key){
   const st=dayStats(key); const d=parseYmd(key);
   const row=(p,tag,label)=>`<div class="det-row"><span class="ava" style="background:${p.color};width:26px;height:26px;font-size:12px">${p.name.charAt(0).toUpperCase()}</span><span style="flex:1;font-weight:650">${escapeHtml(p.name)}</span><span class="tag ${tag}">${label}</span></div>`;
   let body="";
-  st.ins.forEach(p=>body+=row(p,"yes","available"));
-  st.mays.forEach(p=>body+=row(p,"maybe","maybe"));
-  st.outs.forEach(p=>body+=row(p,"no","can’t / —"));
+  st.blocked.forEach(p=>body+=row(p,"block","can’t make it"));
+  st.maybes.forEach(p=>body+=row(p,"maybe","maybe not"));
+  st.free.forEach(p=>body+=row(p,"free","free"));
   if(!st.total) body=`<div class="emptystate">No answers yet.</div>`;
+  const head = st.block>0 ? `${st.block} of ${st.total} can’t make it`
+             : st.maybe>0 ? `Nobody’s blocked · ${st.maybe} maybe`
+             : `🎉 everyone’s free!`;
   openSheet(`
     <h3>${DOW[mondayIdx(d)]}, ${fmtFull(d)}</h3>
-    <p class="h">${st.canGo}/${st.total} can come${st.everyone?" · 🎉 everyone’s in!":""}</p>
+    <p class="h">${head}</p>
     ${body}
     <div class="row"><button class="btn primary" id="closeDet" style="justify-content:center">Close</button></div>
   `);
@@ -730,43 +762,21 @@ function bindUI(){
     const rn=e.target.closest("[data-ren]"); if(rn){ openRename(rn.dataset.ren); }
   });
   bindCalendarEvents();
-  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) pull(); });
 }
 
 async function init(){
   bindUI();
   state.roomId=location.hash.slice(1)||null;
-  state.data=cacheLoad()||null;
-
-  if(!state.roomId){
-    // brand new room
-    state.data=defaultData();
-    setSync("saving","Creating room…");
-    try{
-      state.roomId=await apiCreate(state.data);
-      history.replaceState(null,"","#"+state.roomId);
-      cacheSave(); setSync("ok","Synced");
-    }catch(e){
-      // offline: still usable locally with a temp id
-      state.roomId="local-"+uid(); state.online=false;
-      history.replaceState(null,"","#"+state.roomId);
-      setSync("off","Offline – sharing unavailable here");
-    }
-  } else {
-    if(!state.data) state.data=defaultData();
-    setSync("saving","Loading…");
-    await pull();
-    if(!state.data) state.data=defaultData();
-  }
-
-  // identity
-  let savedMe=null; try{ savedMe=localStorage.getItem(meKey()); }catch(e){}
-  if(savedMe && personById(savedMe) && !personById(savedMe).deleted){ state.me=savedMe; state.activePid=savedMe; }
+  state.data=cacheLoad();
+  if(!state.roomId){ state.roomId=genRoomId(); history.replaceState(null,"","#"+state.roomId); }
+  if(!state.data) state.data=defaultData();
+  restoreMe();
   render();
-  if(!state.me) openIdentity(false);
 
-  // background sync every 6s while visible
-  pullTimer=setInterval(()=>{ if(!document.hidden && !painting) pull(); },6000);
+  setSync("saving","Connecting…");
+  const hasFB=await backendInit();
+  if(hasFB){ subscribeRoom(); }            // realtime: onValue keeps everyone in sync live
+  else { _local(); maybePromptIdentity(); }
 }
 
 window.addEventListener("hashchange",()=>{ location.reload(); });
