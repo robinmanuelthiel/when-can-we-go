@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF7EF">
+<title>When Can We Go? — Group Trip Planner</title>
+<style>
+  :root{
+    --bg:#FBF7EF; --card:#ffffff; --ink:#1f2421; --muted:#7c857e;
+    --line:#ece6da; --accent:#E0524A; --accent-soft:#fbe9e7;
+    --yes:#3BA55C; --yes-bg:#dff3e6; --maybe:#E9A23B; --maybe-bg:#fbeed3;
+    --radius:16px; --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(31,36,33,.05);
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.45;
+       padding-bottom:env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input{font-family:inherit;font-size:16px}
+  .wrap{max-width:1080px;margin:0 auto;padding:16px}
+
+  /* ---------- Header ---------- */
+  header.app{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;padding:6px 0 14px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+  .title-row{flex:1 1 260px;min-width:0}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(26px,6vw,40px);line-height:1.05;margin:6px 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .sub .pill{background:#eef4ef;color:#3d7a52;border-radius:999px;padding:2px 10px;font-weight:600;font-size:12.5px}
+  .head-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:7px;border-radius:12px;padding:10px 14px;font-weight:650;
+       font-size:14.5px;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow);transition:.12s}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn.ghost{box-shadow:none;background:transparent}
+  .btn svg{width:16px;height:16px}
+  .sync{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .sync .led{width:8px;height:8px;border-radius:50%;background:#bcc4bd}
+  .sync.ok .led{background:var(--yes)} .sync.saving .led{background:var(--maybe)}
+  .sync.off .led{background:#cf8b85}
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex;gap:4px;background:#efe9dd;padding:4px;border-radius:14px;margin:4px 0 18px;position:sticky;top:8px;z-index:30;box-shadow:var(--shadow)}
+  .tab{flex:1;text-align:center;padding:10px 8px;border-radius:11px;font-weight:700;font-size:14.5px;color:var(--muted);transition:.12s}
+  .tab.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .tab .ct{font-weight:600;color:var(--muted);font-size:12px}
+
+  /* ---------- Cards ---------- */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+  .card h2{margin:0 0 2px;font-size:17px;letter-spacing:-.01em}
+  .card .hint{color:var(--muted);font-size:13px;margin:0 0 12px}
+
+  /* ---------- Brush bar ---------- */
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .whoedit{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .whoedit select{appearance:none;border:1px solid var(--line);border-radius:11px;padding:9px 30px 9px 12px;font-weight:650;background:var(--card)
+       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237c857e' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center}
+  .brushes{display:flex;gap:6px;background:#f3eee3;padding:4px;border-radius:13px}
+  .brush{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:10px;font-weight:700;font-size:14px;color:var(--muted)}
+  .brush .sw{width:14px;height:14px;border-radius:5px;border:1px solid rgba(0,0,0,.08)}
+  .brush.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .brush[data-b="yes"] .sw{background:var(--yes)}
+  .brush[data-b="maybe"] .sw{background:var(--maybe)}
+  .brush[data-b="none"] .sw{background:#fff;border-style:dashed;border-color:#c9cfc9}
+  .toggle{display:inline-flex;align-items:center;gap:8px;font-weight:650;font-size:14px;color:var(--muted)}
+  .switch{width:42px;height:25px;border-radius:999px;background:#d7dcd5;position:relative;transition:.15s;flex:none}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .switch.on{background:var(--accent)} .switch.on::after{left:20px}
+
+  /* ---------- Months ---------- */
+  .months{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+  .month h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:2px 2px 10px}
+  .dow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px}
+  .dow span{text-align:center;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.04em}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+  .day{aspect-ratio:1;border-radius:11px;border:1px solid var(--line);background:#f7f4ec;
+       display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+       font-weight:650;font-size:15px;position:relative;color:#aeb4ac;transition:background .1s,transform .05s;touch-action:manipulation}
+  .day.has{color:var(--ink)}
+  .day:active{transform:scale(.94)}
+  .day.empty{visibility:hidden}
+  .day.out{opacity:.32;pointer-events:none}
+  /* my-states */
+  .day.s-yes{background:var(--yes-bg);border-color:#bfe6cd;color:#1d6b39}
+  .day.s-maybe{background:var(--maybe-bg);border-color:#f0d79b;color:#8a6113}
+  .day .mk{position:absolute;top:5px;right:6px;font-size:10px}
+  .day.anchor{outline:3px solid var(--accent);outline-offset:-1px}
+  /* group cell */
+  .day .cnt{font-size:11px;font-weight:700;opacity:.85}
+  .day.full{box-shadow:inset 0 0 0 2px var(--yes)}
+  .day.dim{opacity:.25}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
+  .legend .it{display:flex;align-items:center;gap:6px}
+  .legend .sw{width:15px;height:15px;border-radius:5px;border:1px solid rgba(0,0,0,.06)}
+  .scale{display:flex;align-items:center;gap:6px}
+  .scale .bar{display:flex;border-radius:5px;overflow:hidden}
+  .scale .bar i{width:16px;height:14px;display:block}
+
+  /* ---------- Best windows ---------- */
+  .win{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;margin-bottom:9px;background:#f5faf6}
+  .win .rk{width:26px;height:26px;border-radius:50%;background:var(--yes);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+  .win.partial{background:#fbf7ef}.win.partial .rk{background:#c8ad6a}
+  .win .wt{font-weight:750}.win .wd{color:var(--muted);font-size:13px}
+  .emptystate{color:var(--muted);font-size:14px;text-align:center;padding:18px}
+
+  /* ---------- People ---------- */
+  .person{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line)}
+  .person:last-child{border-bottom:none}
+  .ava{width:34px;height:34px;border-radius:50%;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+  .person .nm{font-weight:700}
+  .person .meta{color:var(--muted);font-size:13px}
+  .person .sp{flex:1}
+  .iconbtn{padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--card)}
+  .iconbtn svg{width:16px;height:16px;display:block}
+
+  /* ---------- Modal / sheet ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(31,36,33,.42);backdrop-filter:blur(2px);display:flex;align-items:flex-end;justify-content:center;z-index:60;opacity:0;pointer-events:none;transition:.18s}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .sheet{background:var(--card);width:100%;max-width:460px;border-radius:22px 22px 0 0;padding:20px;box-shadow:0 -8px 40px rgba(0,0,0,.2);transform:translateY(20px);transition:.18s}
+  .scrim.show .sheet{transform:none}
+  @media(min-width:560px){.scrim{align-items:center}.sheet{border-radius:22px}}
+  .sheet h3{margin:0 0 4px;font-family:var(--serif);font-size:23px;font-weight:600}
+  .sheet p.h{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+  .field{margin-bottom:13px}
+  .field label{display:block;font-weight:650;font-size:13px;margin-bottom:5px;color:#4a514a}
+  .field input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6}
+  .field .two{display:flex;gap:10px}.field .two input{flex:1}
+  .sheet .row{display:flex;gap:10px;margin-top:8px}
+  .sheet .row .btn{flex:1;justify-content:center}
+  .picklist{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:46vh;overflow:auto}
+  .pick{display:flex;align-items:center;gap:11px;padding:11px;border:1px solid var(--line);border-radius:13px;text-align:left;width:100%;background:#fbfaf6;font-weight:650}
+  .pick:active{background:#f0ece2}
+  .det-row{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line)}
+  .det-row:last-child{border:none}
+  .tag{font-size:12px;font-weight:750;padding:3px 9px;border-radius:999px}
+  .tag.yes{background:var(--yes-bg);color:#1d6b39}.tag.maybe{background:var(--maybe-bg);color:#8a6113}.tag.no{background:#f0eee9;color:#9a9a90}
+
+  .footnote{color:var(--muted);font-size:12.5px;text-align:center;padding:6px 0 26px;line-height:1.6}
+  .footnote a{color:var(--accent)}
+  .hide{display:none!important}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#1f2421;color:#fff;padding:11px 18px;border-radius:12px;font-weight:650;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:80}
+  .toast.show{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <div class="title-row">
+      <div class="brand"><span class="dot"></span> When Can We Go?</div>
+      <h1 id="tripTitle">Our Trip</h1>
+      <div class="sub">
+        <span id="tripRange">—</span>
+        <span class="pill" id="answeredPill">0 answered</span>
+        <button class="btn ghost" id="editTripBtn" style="padding:3px 8px;font-size:13px">✎ Edit trip</button>
+      </div>
+    </div>
+    <div class="head-actions">
+      <div class="sync" id="syncBadge"><span class="led"></span><span class="txt">Starting…</span></div>
+      <button class="btn" id="shareBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+        Share
+      </button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="me">My dates</button>
+    <button class="tab" data-tab="group">Group overview</button>
+    <button class="tab" data-tab="people">People <span class="ct" id="peopleCt"></span></button>
+  </nav>
+
+  <!-- MY DATES -->
+  <section id="tab-me">
+    <div class="card">
+      <div class="toolbar">
+        <div class="whoedit">
+          <span style="font-weight:650;color:var(--muted);font-size:14px">Editing as</span>
+          <select id="whoSelect"></select>
+        </div>
+        <div style="flex:1"></div>
+        <div class="brushes" id="brushes">
+          <button class="brush active" data-b="yes"><span class="sw"></span>Available</button>
+          <button class="brush" data-b="maybe"><span class="sw"></span>Maybe</button>
+          <button class="brush" data-b="none"><span class="sw"></span>Clear</button>
+        </div>
+        <button class="toggle" id="rangeToggle"><span class="switch"></span>Range fill</button>
+      </div>
+      <p class="hint" id="meHint" style="margin-top:12px;margin-bottom:0">Tap a day to mark it. Pick a brush above. Turn on “Range fill” to set a start and end day at once.</p>
+    </div>
+    <div class="months" id="meMonths"></div>
+  </section>
+
+  <!-- GROUP -->
+  <section id="tab-group" class="hide">
+    <div class="card">
+      <div class="legend">
+        <div class="it"><span style="font-weight:650;color:var(--ink)">Who can make it</span></div>
+        <div class="scale"><span>fewer</span><span class="bar" id="scaleBar"></span><span>everyone</span></div>
+        <div class="it"><span class="sw" style="box-shadow:inset 0 0 0 2px var(--yes);background:#fff"></span>everyone’s in</div>
+        <div style="flex:1"></div>
+        <button class="toggle" id="onlyAllToggle"><span class="switch"></span>Only days everyone can make</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Best windows</h2>
+      <p class="hint">Longest stretches where everyone can come (✓ = all available, ~ = some only as “maybe”).</p>
+      <div id="bestWindows"></div>
+    </div>
+    <div class="months" id="groupMonths"></div>
+  </section>
+
+  <!-- PEOPLE -->
+  <section id="tab-people" class="hide">
+    <div class="card">
+      <h2>Who’s answered</h2>
+      <p class="hint">Anyone can fill in or tweak any calendar — no logins, we trust each other.</p>
+      <div id="peopleList"></div>
+      <button class="btn primary" id="addPersonBtn" style="margin-top:14px;width:100%;justify-content:center">+ Add a person</button>
+    </div>
+  </section>
+
+  <p class="footnote">
+    Your dates sync automatically to everyone with the link. No account needed.<br>
+    Share the link above so friends can add their availability from any phone or laptop.
+  </p>
+</div>
+
+<!-- SCRIMS -->
+<div class="scrim" id="scrim"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   When Can We Go? — zero-login group trip availability planner
+   Storage: jsonblob.com (free, no signup, no key). Room id lives
+   in the URL hash, so the share link IS the room. localStorage is
+   used only to cache + remember who you are on this device.
+   ============================================================ */
+
+const API = "https://jsonblob.com/api/jsonBlob";
+const PALETTE = ["#E0524A","#2A9D8F","#E9A23B","#5B7FE0","#9B5BE0","#E05B9B","#3BA55C","#C9772F","#4A78D4","#B0457B"];
+const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+/* ---------- date helpers (timezone-safe, local) ---------- */
+const pad = n => String(n).padStart(2,"0");
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseYmd = s => { const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); };
+const addDays = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+const mondayIdx = d => (d.getDay()+6)%7;            // Mon=0 … Sun=6
+const fmtShort = d => `${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}`;
+const fmtFull = d => `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+function fmtRange(a,b){
+  if(a.getTime()===b.getTime()) return fmtFull(a);
+  if(a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth())
+    return `${a.getDate()} – ${b.getDate()} ${MONTHS[a.getMonth()]} ${a.getFullYear()}`;
+  if(a.getFullYear()===b.getFullYear())
+    return `${fmtShort(a)} – ${fmtFull(b)}`;
+  return `${fmtFull(a)} – ${fmtFull(b)}`;
+}
+const uid = () => Math.random().toString(36).slice(2,9)+Math.random().toString(36).slice(2,6);
+
+/* ---------- app state ---------- */
+let state = {
+  roomId: null,
+  data: null,            // {v, trip:{title,start,end,updatedAt}, people:{pid:{name,color,days,updatedAt,deleted}}}
+  me: null,              // pid of "you" on this device
+  activePid: null,       // whose calendar you're editing
+  tab: "me",
+  brush: "yes",
+  rangeMode: false,
+  anchor: null,          // range-fill first pick
+  onlyAll: false,
+  online: true,
+};
+let saveTimer=null, pullTimer=null, painting=false;
+
+/* ---------- storage layer ---------- */
+function defaultData(){
+  const now=Date.now();
+  const s=new Date(); s.setDate(1);
+  const e=new Date(s.getFullYear(), s.getMonth()+4, 0); // last day of +3 months → 4 month span
+  return { v:1, trip:{ title:"Our Trip", start:ymd(s), end:ymd(e), updatedAt:now }, people:{} };
+}
+const cacheKey = () => "wcwg:data:"+state.roomId;
+const meKey    = () => "wcwg:me:"+state.roomId;
+function cacheSave(){ try{ localStorage.setItem(cacheKey(), JSON.stringify(state.data)); }catch(e){} }
+function cacheLoad(){ try{ const v=localStorage.getItem(cacheKey()); return v?JSON.parse(v):null; }catch(e){ return null; } }
+
+async function apiCreate(data){
+  const r = await fetch(API,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(data)});
+  if(!r.ok) throw new Error("create "+r.status);
+  let id = r.headers.get("X-jsonblob");
+  if(!id){ const loc=r.headers.get("Location"); if(loc) id=loc.split("/").pop(); }
+  if(!id) throw new Error("no id returned");
+  return id;
+}
+async function apiGet(id){
+  const r = await fetch(API+"/"+id,{headers:{"Accept":"application/json"}});
+  if(!r.ok) throw new Error("get "+r.status);
+  return r.json();
+}
+async function apiPut(id,data){
+  const r = await fetch(API+"/"+id,{method:"PUT",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(data)});
+  if(!r.ok) throw new Error("put "+r.status);
+  return true;
+}
+
+/* ---------- merge (last-write-wins per person & per trip) ---------- */
+function mergePeople(a={},b={}){
+  const out={}; const keys=new Set([...Object.keys(a),...Object.keys(b)]);
+  keys.forEach(k=>{ const pa=a[k],pb=b[k];
+    if(pa&&pb) out[k]=(pa.updatedAt||0)>=(pb.updatedAt||0)?pa:pb;
+    else out[k]=pa||pb; });
+  return out;
+}
+function mergeData(local,remote){
+  if(!remote) return local; if(!local) return remote;
+  const trip=((local.trip&&local.trip.updatedAt)||0)>=((remote.trip&&remote.trip.updatedAt)||0)?local.trip:remote.trip;
+  return { v:1, trip, people:mergePeople(local.people,remote.people) };
+}
+
+/* ---------- sync ---------- */
+function setSync(kind,txt){
+  const el=document.getElementById("syncBadge");
+  el.className="sync "+kind;
+  el.querySelector(".txt").textContent=txt;
+}
+async function pull(){
+  if(!state.roomId) return;
+  try{
+    const remote=await apiGet(state.roomId);
+    const before=JSON.stringify(state.data);
+    state.data=mergeData(state.data,remote);
+    state.online=true;
+    cacheSave();
+    if(JSON.stringify(state.data)!==before) render();
+    if(state.online) setSync("ok","Synced");
+  }catch(e){ state.online=false; setSync("off","Offline – changes saved locally"); }
+}
+function scheduleSave(){
+  setSync("saving","Saving…");
+  cacheSave();
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(doSave,650);
+}
+async function doSave(){
+  if(!state.roomId) return;
+  try{
+    let remote=null;
+    try{ remote=await apiGet(state.roomId); }catch(e){}
+    const merged=mergeData(state.data,remote);   // our just-edited person has newest updatedAt → wins
+    await apiPut(state.roomId,merged);
+    state.data=merged; state.online=true; cacheSave();
+    setSync("ok","Synced");
+  }catch(e){ state.online=false; setSync("off","Offline – will retry"); }
+}
+
+/* ---------- person helpers ---------- */
+function people(){ return Object.entries(state.data.people).filter(([,p])=>!p.deleted); }
+function personById(pid){ return state.data.people[pid]; }
+function addPerson(name){
+  const pid=uid();
+  const idx=Object.keys(state.data.people).length;
+  state.data.people[pid]={ name:name.trim()||"Friend", color:PALETTE[idx%PALETTE.length], days:{}, updatedAt:Date.now() };
+  return pid;
+}
+function touchPerson(pid){ const p=personById(pid); if(p) p.updatedAt=Date.now(); }
+function setDay(pid,key,val){
+  const p=personById(pid); if(!p) return;
+  if(val==="none") delete p.days[key]; else p.days[key]=val;
+  p.updatedAt=Date.now();
+  scheduleSave();
+}
+
+/* ---------- aggregate for group view ---------- */
+function dayStats(key){
+  const ppl=people();
+  let yes=0,maybe=0; const ins=[],mays=[],outs=[];
+  ppl.forEach(([,p])=>{ const s=p.days[key];
+    if(s==="yes"){yes++;ins.push(p);} else if(s==="maybe"){maybe++;mays.push(p);} else outs.push(p); });
+  const total=ppl.length;
+  return { yes, maybe, total, canGo:yes+maybe, ins, mays, outs,
+           everyone: total>0 && (yes+maybe)===total, allYes: total>0 && yes===total };
+}
+
+/* ---------- iterate trip days ---------- */
+function tripDays(){
+  const out=[]; const s=parseYmd(state.data.trip.start), e=parseYmd(state.data.trip.end);
+  for(let d=new Date(s); d<=e; d=addDays(d,1)) out.push(ymd(d));
+  return out;
+}
+function bestWindows(){
+  const days=tripDays(); const runs=[]; let cur=null;
+  days.forEach(k=>{ const st=dayStats(k);
+    if(st.everyone){ if(!cur) cur={start:k,end:k,len:1,allYes:st.allYes?1:0}; else {cur.end=k;cur.len++; if(st.allYes)cur.allYes++;} }
+    else { if(cur){runs.push(cur);cur=null;} }
+  });
+  if(cur) runs.push(cur);
+  runs.sort((a,b)=> b.len-a.len || b.allYes-a.allYes);
+  return runs.slice(0,4);
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(){
+  if(!state.data) return;
+  const t=state.data.trip;
+  document.getElementById("tripTitle").textContent=t.title;
+  document.title=t.title+" — When Can We Go?";
+  document.getElementById("tripRange").textContent=`${fmtShort(parseYmd(t.start))} – ${fmtFull(parseYmd(t.end))} · multi-day`;
+  const n=people().length;
+  document.getElementById("answeredPill").textContent=`${n} answered`;
+  document.getElementById("peopleCt").textContent=n?`(${n})`:"";
+
+  renderWhoSelect();
+  if(state.tab==="me") renderMe();
+  if(state.tab==="group") renderGroup();
+  if(state.tab==="people") renderPeople();
+}
+
+function renderWhoSelect(){
+  const sel=document.getElementById("whoSelect");
+  const cur=state.activePid;
+  sel.innerHTML="";
+  people().forEach(([pid,p])=>{
+    const o=document.createElement("option"); o.value=pid;
+    o.textContent=p.name+(pid===state.me?" (you)":""); if(pid===cur)o.selected=true; sel.appendChild(o);
+  });
+  const o=document.createElement("option"); o.value="__add"; o.textContent="+ Add person…"; sel.appendChild(o);
+  if(!cur) { const o2=document.createElement("option"); o2.value=""; o2.textContent="— choose —"; o2.selected=true; sel.prepend(o2); }
+}
+
+function monthCells(year,month,renderCell){
+  const first=new Date(year,month,1);
+  const lead=mondayIdx(first);
+  const dim=new Date(year,month+1,0).getDate();
+  let html=`<div class="dow">${DOW.map(d=>`<span>${d}</span>`).join("")}</div><div class="grid">`;
+  for(let i=0;i<lead;i++) html+=`<div class="day empty"></div>`;
+  for(let d=1;d<=dim;d++){ const key=ymd(new Date(year,month,d)); html+=renderCell(key,d); }
+  html+=`</div>`;
+  return html;
+}
+function eachMonth(cb){
+  const s=parseYmd(state.data.trip.start), e=parseYmd(state.data.trip.end);
+  let html="";
+  let y=s.getFullYear(), m=s.getMonth();
+  const endY=e.getFullYear(), endM=e.getMonth();
+  while(y<endY || (y===endY && m<=endM)){
+    html+=`<div class="month"><h3>${MONTHS[m]} ${y}</h3>${cb(y,m)}</div>`;
+    m++; if(m>11){m=0;y++;}
+  }
+  return html;
+}
+function inRange(key){ return key>=state.data.trip.start && key<=state.data.trip.end; }
+
+function renderMe(){
+  const pid=state.activePid;
+  const cont=document.getElementById("meMonths");
+  if(!pid){ cont.innerHTML=`<div class="emptystate">Pick who you are above to start marking dates.</div>`; updateBrushUI(); return; }
+  const p=personById(pid);
+  cont.innerHTML=eachMonth((y,m)=>monthCells(y,m,(key,d)=>{
+    const out=!inRange(key); const s=p.days[key];
+    const cls=["day","has"]; if(out)cls.push("out"); if(s)cls.push("s-"+s); if(state.anchor===key)cls.push("anchor");
+    const mk=s==="yes"?"✓":s==="maybe"?"~":"";
+    return `<button class="${cls.join(" ")}" data-ymd="${key}">${d}${mk?`<span class="mk">${mk}</span>`:""}</button>`;
+  }));
+  document.getElementById("meHint").textContent = state.rangeMode
+    ? (state.anchor? `Range start set to ${fmtShort(parseYmd(state.anchor))} — tap the end day.` : "Range fill on: tap a start day, then an end day.")
+    : "Tap a day to mark it. Pick a brush above, or turn on “Range fill” for whole stretches.";
+  updateBrushUI();
+}
+
+function greenFor(canGo,total){
+  if(!total||!canGo) return "#f7f4ec";
+  const r=canGo/total;
+  const h=140-8*r, s=42+22*r, l=93-52*r;
+  return `hsl(${h} ${s}% ${l}%)`;
+}
+function renderGroup(){
+  // scale bar
+  const sb=document.getElementById("scaleBar");
+  const total=people().length||1;
+  sb.innerHTML="";
+  for(let i=1;i<=Math.min(total,6);i++){ const el=document.createElement("i"); el.style.background=greenFor(i,total); sb.appendChild(el); }
+
+  // best windows
+  const bw=document.getElementById("bestWindows");
+  const wins=bestWindows();
+  if(!people().length){ bw.innerHTML=`<div class="emptystate">No availability yet. Add yours in “My dates”.</div>`; }
+  else if(!wins.length){ bw.innerHTML=`<div class="emptystate">No day works for everyone yet — try the heatmap below to find near-misses.</div>`; }
+  else bw.innerHTML=wins.map((w,i)=>{
+    const partial=w.allYes<w.len;
+    const span=fmtRange(parseYmd(w.start),parseYmd(w.end));
+    return `<div class="win ${partial?"partial":""}"><div class="rk">${i+1}</div>
+      <div><div class="wt">${span}</div>
+      <div class="wd">${w.len} day${w.len>1?"s":""} · all ${people().length} can come${partial?` · ${w.allYes} fully free`:" · ✓ all available"}</div></div></div>`;
+  }).join("");
+
+  // calendar heatmap
+  const cont=document.getElementById("groupMonths");
+  cont.innerHTML=eachMonth((y,m)=>monthCells(y,m,(key,d)=>{
+    const out=!inRange(key);
+    const st=dayStats(key);
+    const cls=["day","has"]; if(out)cls.push("out");
+    if(st.everyone)cls.push("full");
+    if(state.onlyAll && !st.everyone)cls.push("dim");
+    const bg=out?"":`style="background:${greenFor(st.canGo,st.total)}"`;
+    const cnt=(st.total&&st.canGo)?`<span class="cnt">${st.canGo}/${st.total}</span>`:"";
+    return `<button class="${cls.join(" ")}" ${bg} data-detail="${key}">${d}${cnt}</button>`;
+  }));
+}
+
+function renderPeople(){
+  const list=document.getElementById("peopleList");
+  const ppl=people();
+  if(!ppl.length){ list.innerHTML=`<div class="emptystate">Nobody yet — be the first to add your dates.</div>`; return; }
+  list.innerHTML=ppl.map(([pid,p])=>{
+    const yes=Object.values(p.days).filter(v=>v==="yes").length;
+    const maybe=Object.values(p.days).filter(v=>v==="maybe").length;
+    const init=p.name.trim().charAt(0).toUpperCase()||"?";
+    return `<div class="person">
+      <div class="ava" style="background:${p.color}">${init}</div>
+      <div><div class="nm">${escapeHtml(p.name)}${pid===state.me?" · you":""}</div>
+        <div class="meta">${yes} available · ${maybe} maybe</div></div>
+      <div class="sp"></div>
+      <button class="iconbtn" data-edit-cal="${pid}" title="Edit this calendar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      </button>
+      <button class="iconbtn" data-ren="${pid}" title="Rename">✎</button>
+    </div>`;
+  }).join("");
+}
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function updateBrushUI(){
+  document.querySelectorAll("#brushes .brush").forEach(b=>b.classList.toggle("active",b.dataset.b===state.brush));
+  document.querySelector("#rangeToggle .switch").classList.toggle("on",state.rangeMode);
+}
+
+/* ============================================================
+   INTERACTION
+   ============================================================ */
+function applyBrushToDay(key){
+  if(!state.activePid || !inRange(key)) return;
+  if(state.rangeMode){
+    if(!state.anchor){ state.anchor=key; renderMe(); return; }
+    const [a,b]=[state.anchor,key].sort();
+    for(let d=parseYmd(a); d<=parseYmd(b); d=addDays(d,1)){ const k=ymd(d); if(inRange(k)) setDay(state.activePid,k,state.brush); }
+    state.anchor=null; renderMe();
+  } else {
+    setDay(state.activePid,key,state.brush);
+    // light in-place update instead of full re-render for snappiness
+    const cell=document.querySelector(`#meMonths .day[data-ymd="${key}"]`);
+    if(cell) updateMeCell(cell,key);
+  }
+}
+function updateMeCell(cell,key){
+  const p=personById(state.activePid); const s=p.days[key];
+  cell.classList.remove("s-yes","s-maybe");
+  if(s) cell.classList.add("s-"+s);
+  const old=cell.querySelector(".mk"); if(old) old.remove();
+  const mk=s==="yes"?"✓":s==="maybe"?"~":"";
+  if(mk){ const span=document.createElement("span"); span.className="mk"; span.textContent=mk; cell.appendChild(span); }
+}
+
+function bindCalendarEvents(){
+  const me=document.getElementById("meMonths");
+  // tap
+  me.addEventListener("click",e=>{ const c=e.target.closest(".day[data-ymd]"); if(c) applyBrushToDay(c.dataset.ymd); });
+  // mouse drag-paint (desktop only; range mode uses clicks)
+  me.addEventListener("pointerdown",e=>{
+    if(e.pointerType!=="mouse"||state.rangeMode) return;
+    const c=e.target.closest(".day[data-ymd]"); if(!c) return;
+    painting=true;
+  });
+  me.addEventListener("pointerover",e=>{
+    if(!painting) return;
+    const c=e.target.closest(".day[data-ymd]"); if(!c||!inRange(c.dataset.ymd)||!state.activePid) return;
+    setDay(state.activePid,c.dataset.ymd,state.brush); updateMeCell(c,c.dataset.ymd);
+  });
+  window.addEventListener("pointerup",()=>painting=false);
+
+  // group day detail
+  document.getElementById("groupMonths").addEventListener("click",e=>{
+    const c=e.target.closest(".day[data-detail]"); if(c) openDayDetail(c.dataset.detail);
+  });
+}
+
+/* ---------- sheets / modals ---------- */
+const scrim=document.getElementById("scrim"), sheet=document.getElementById("sheet");
+function openSheet(html){ sheet.innerHTML=html; scrim.classList.add("show"); }
+function closeSheet(){ scrim.classList.remove("show"); }
+scrim.addEventListener("click",e=>{ if(e.target===scrim) closeSheet(); });
+
+function openIdentity(force){
+  const ppl=people();
+  const picks=ppl.map(([pid,p])=>`<button class="pick" data-pickme="${pid}"><span class="ava" style="background:${p.color};width:28px;height:28px;font-size:13px">${p.name.charAt(0).toUpperCase()}</span>${escapeHtml(p.name)}</button>`).join("");
+  openSheet(`
+    <h3>Who are you?</h3>
+    <p class="h">So your dates get saved under your name. Stored on this device only — you can switch anytime.</p>
+    ${ppl.length?`<div class="picklist">${picks}</div><div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:10px">— or —</div>`:""}
+    <div class="field"><label>Add yourself</label><input id="newName" placeholder="Your name" autocomplete="off"></div>
+    <div class="row">
+      <button class="btn primary" id="newGo" style="flex:1;justify-content:center">Add me</button>
+      ${force?"":`<button class="btn" id="justView">Just viewing</button>`}
+    </div>
+  `);
+  const ni=document.getElementById("newName"); if(ni&&!ppl.length) setTimeout(()=>ni.focus(),200);
+  sheet.querySelectorAll("[data-pickme]").forEach(b=>b.onclick=()=>{ pickMe(b.dataset.pickme); closeSheet(); });
+  document.getElementById("newGo").onclick=()=>{
+    const v=ni.value.trim(); if(!v){ ni.focus(); return; }
+    const pid=addPerson(v); pickMe(pid); scheduleSave(); closeSheet();
+  };
+  const jv=document.getElementById("justView"); if(jv) jv.onclick=()=>{ closeSheet(); };
+}
+function pickMe(pid){
+  state.me=pid; state.activePid=pid;
+  try{ localStorage.setItem(meKey(),pid); }catch(e){}
+  render();
+}
+
+function openTripEdit(){
+  const t=state.data.trip;
+  openSheet(`
+    <h3>Edit trip</h3>
+    <p class="h">Set the name and the window to look at. Everyone sees the same.</p>
+    <div class="field"><label>Trip name</label><input id="tName" value="${escapeHtml(t.title)}"></div>
+    <div class="field"><label>Date range</label><div class="two">
+      <input id="tStart" type="date" value="${t.start}"><input id="tEnd" type="date" value="${t.end}"></div></div>
+    <div class="row">
+      <button class="btn" id="tCancel">Cancel</button>
+      <button class="btn primary" id="tSave">Save</button>
+    </div>
+  `);
+  document.getElementById("tCancel").onclick=closeSheet;
+  document.getElementById("tSave").onclick=()=>{
+    const name=document.getElementById("tName").value.trim()||"Our Trip";
+    let s=document.getElementById("tStart").value, e=document.getElementById("tEnd").value;
+    if(!s||!e){ toast("Pick both dates"); return; }
+    if(e<s){ [s,e]=[e,s]; }
+    state.data.trip={ title:name, start:s, end:e, updatedAt:Date.now() };
+    scheduleSave(); closeSheet(); render();
+  };
+}
+
+function openRename(pid){
+  const p=personById(pid);
+  openSheet(`
+    <h3>Rename</h3>
+    <div class="field"><label>Name</label><input id="rn" value="${escapeHtml(p.name)}"></div>
+    <div class="row">
+      <button class="btn" id="rnDel" style="color:var(--accent)">Remove person</button>
+      <button class="btn primary" id="rnSave">Save</button>
+    </div>
+  `);
+  document.getElementById("rnSave").onclick=()=>{ p.name=document.getElementById("rn").value.trim()||p.name; touchPerson(pid); scheduleSave(); closeSheet(); render(); };
+  document.getElementById("rnDel").onclick=()=>{
+    p.deleted=true; touchPerson(pid);
+    if(state.me===pid){ state.me=null; try{localStorage.removeItem(meKey());}catch(e){} }
+    if(state.activePid===pid) state.activePid=state.me||null;
+    scheduleSave(); closeSheet(); render();
+  };
+}
+
+function openDayDetail(key){
+  const st=dayStats(key); const d=parseYmd(key);
+  const row=(p,tag,label)=>`<div class="det-row"><span class="ava" style="background:${p.color};width:26px;height:26px;font-size:12px">${p.name.charAt(0).toUpperCase()}</span><span style="flex:1;font-weight:650">${escapeHtml(p.name)}</span><span class="tag ${tag}">${label}</span></div>`;
+  let body="";
+  st.ins.forEach(p=>body+=row(p,"yes","available"));
+  st.mays.forEach(p=>body+=row(p,"maybe","maybe"));
+  st.outs.forEach(p=>body+=row(p,"no","can’t / —"));
+  if(!st.total) body=`<div class="emptystate">No answers yet.</div>`;
+  openSheet(`
+    <h3>${DOW[mondayIdx(d)]}, ${fmtFull(d)}</h3>
+    <p class="h">${st.canGo}/${st.total} can come${st.everyone?" · 🎉 everyone’s in!":""}</p>
+    ${body}
+    <div class="row"><button class="btn primary" id="closeDet" style="justify-content:center">Close</button></div>
+  `);
+  document.getElementById("closeDet").onclick=closeSheet;
+}
+
+/* ---------- share ---------- */
+function shareUrl(){ return location.origin+location.pathname+"#"+state.roomId; }
+async function doShare(){
+  const url=shareUrl();
+  const isFile=location.protocol==="file:";
+  if(!isFile && navigator.share){
+    try{ await navigator.share({title:state.data.trip.title, text:"Add your dates for our trip:", url}); return; }catch(e){}
+  }
+  try{ await navigator.clipboard.writeText(url); toast(isFile?"Link copied — but host the file online so friends can open it":"Link copied! Send it to your friends"); }
+  catch(e){ openSheet(`<h3>Share link</h3><p class="h">Copy this and send it to your friends.</p><div class="field"><input value="${url}" readonly onclick="this.select()"></div>${isFile?`<p class="h" style="color:var(--accent)">You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link.</p>`:""}<div class="row"><button class="btn primary" style="justify-content:center" onclick="document.getElementById('scrim').classList.remove('show')">Done</button></div>`); }
+}
+
+/* ---------- toast ---------- */
+let toastTimer=null;
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),2600); }
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+function bindUI(){
+  document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+    state.tab=t.dataset.tab;
+    document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));
+    document.getElementById("tab-me").classList.toggle("hide",state.tab!=="me");
+    document.getElementById("tab-group").classList.toggle("hide",state.tab!=="group");
+    document.getElementById("tab-people").classList.toggle("hide",state.tab!=="people");
+    state.anchor=null; render();
+  });
+  document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; updateBrushUI(); });
+  document.getElementById("rangeToggle").onclick=()=>{ state.rangeMode=!state.rangeMode; state.anchor=null; renderMe(); };
+  document.getElementById("onlyAllToggle").onclick=()=>{ state.onlyAll=!state.onlyAll; document.querySelector("#onlyAllToggle .switch").classList.toggle("on",state.onlyAll); renderGroup(); };
+  document.getElementById("whoSelect").onchange=e=>{
+    const v=e.target.value;
+    if(v==="__add"){ openIdentity(false); renderWhoSelect(); return; }
+    state.activePid=v||null; state.anchor=null; renderMe();
+  };
+  document.getElementById("shareBtn").onclick=doShare;
+  document.getElementById("editTripBtn").onclick=openTripEdit;
+  document.getElementById("addPersonBtn").onclick=()=>openIdentity(false);
+  document.getElementById("peopleList").addEventListener("click",e=>{
+    const ec=e.target.closest("[data-edit-cal]"); if(ec){ state.activePid=ec.dataset.editCal; state.tab="me"; document.querySelector('.tab[data-tab="me"]').click(); return; }
+    const rn=e.target.closest("[data-ren]"); if(rn){ openRename(rn.dataset.ren); }
+  });
+  bindCalendarEvents();
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) pull(); });
+}
+
+async function init(){
+  bindUI();
+  state.roomId=location.hash.slice(1)||null;
+  state.data=cacheLoad()||null;
+
+  if(!state.roomId){
+    // brand new room
+    state.data=defaultData();
+    setSync("saving","Creating room…");
+    try{
+      state.roomId=await apiCreate(state.data);
+      history.replaceState(null,"","#"+state.roomId);
+      cacheSave(); setSync("ok","Synced");
+    }catch(e){
+      // offline: still usable locally with a temp id
+      state.roomId="local-"+uid(); state.online=false;
+      history.replaceState(null,"","#"+state.roomId);
+      setSync("off","Offline – sharing unavailable here");
+    }
+  } else {
+    if(!state.data) state.data=defaultData();
+    setSync("saving","Loading…");
+    await pull();
+    if(!state.data) state.data=defaultData();
+  }
+
+  // identity
+  let savedMe=null; try{ savedMe=localStorage.getItem(meKey()); }catch(e){}
+  if(savedMe && personById(savedMe) && !personById(savedMe).deleted){ state.me=savedMe; state.activePid=savedMe; }
+  render();
+  if(!state.me) openIdentity(false);
+
+  // background sync every 6s while visible
+  pullTimer=setInterval(()=>{ if(!document.hidden && !painting) pull(); },6000);
+}
+
+window.addEventListener("hashchange",()=>{ location.reload(); });
+init();
+</script>
+</body>
+</html>
