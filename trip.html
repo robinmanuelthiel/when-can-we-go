@@ -383,6 +383,11 @@ function setSync(kind,txt){
 function people(){ return Object.entries(state.data.people).filter(([,p])=>!p.deleted); }
 function personById(pid){ return state.data.people[pid]; }
 function eventData(){ return state.data.event; }
+function currentViewerPid(){
+  if(state.activePid && personById(state.activePid) && !personById(state.activePid).deleted) return state.activePid;
+  if(state.me && personById(state.me) && !personById(state.me).deleted) return state.me;
+  return null;
+}
 function addPerson(name){
   const pid=uid();
   const idx=Object.keys(state.data.people).length;
@@ -471,7 +476,7 @@ function eachMonth(cb){
 function inRange(key){ return key>=eventData().start && key<=eventData().end; }
 
 function renderEditCalendar(){
-  const pid=state.activePid || state.me;
+  const pid=currentViewerPid();
   const cont=document.getElementById("groupMonths");
   if(!pid || !personById(pid)){ cont.innerHTML=`<div class="emptystate">Choose who you are, then edit your availability here.</div>`; updateBrushUI(); return; }
   const p=personById(pid);
@@ -695,7 +700,8 @@ function openAddPerson(selectAfter=false){
   };
 }
 function openSettings(){
-  const options=`<option value="">Just viewing</option>`+people().map(([pid,p])=>`<option value="${pid}" ${pid===state.me?"selected":""}>${escapeHtml(p.name)}</option>`).join("");
+  const viewer=currentViewerPid();
+  const options=`<option value="">Just viewing</option>`+people().map(([pid,p])=>`<option value="${pid}" ${pid===viewer?"selected":""}>${escapeHtml(p.name)}</option>`).join("");
   openSheet(`
     <h3>Settings</h3>
     <p class="h">Choose who you’re viewing as when you edit availability.</p>
@@ -719,10 +725,11 @@ function openSettings(){
   document.getElementById("settingsAddPerson").onclick=()=>{ closeSheet(); openAddPerson(false); };
 }
 function enterEditMode(){
-  if(!state.me){ openIdentity(true); return; }
+  const viewer=currentViewerPid();
+  if(!viewer){ openIdentity(true); return; }
   painting=false;
   paintMoved=false;
-  state.activePid=state.me;
+  state.activePid=viewer;
   state.editMode=true;
   state.anchor=null;
   showTab("group");
