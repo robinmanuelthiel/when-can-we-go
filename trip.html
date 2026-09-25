@@ -771,9 +771,10 @@ function openRename(pid){
   `);
   document.getElementById("rnSave").onclick=()=>{ p.name=document.getElementById("rn").value.trim()||p.name; touchPerson(pid); persistPerson(pid); closeSheet(); render(); };
   document.getElementById("rnDel").onclick=()=>{
+    const activeWasDeleted=state.activePid===pid;
     p.deleted=true; touchPerson(pid);
     if(state.me===pid) clearMe();
-    if(state.activePid===pid) state.activePid=state.me||null;
+    if(activeWasDeleted) state.activePid=state.me&&state.me!==pid ? state.me : null;
     persistPerson(pid); closeSheet(); render();
   };
 }
@@ -813,7 +814,7 @@ async function doShare(){
     try{ await navigator.share({title:eventData().title, text:"Add your availability for this event:", url}); return; }catch(e){}
   }
   try{ await navigator.clipboard.writeText(url); toast(isFile?"Link copied — but host the file online so friends can open it":"Link copied! Send it to your friends"); }
-  catch(e){ openSheet(`<h3>Share link</h3><p class="h">Copy this and send it to your friends.</p><div class="field"><input value="${url}" readonly onclick="this.select()"></div>${isFile?`<p class="h" style="color:var(--accent)">You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link.</p>`:""}<div class="row"><button class="btn primary" style="justify-content:center" onclick="document.getElementById('scrim').classList.remove('show')">Done</button></div>`); }
+  catch(e){ openSheet(`<h3>Share link</h3><p class="h">Copy this and send it to your friends.</p><div class="field"><input value="${escapeHtml(url)}" readonly onclick="this.select()"></div>${isFile?`<p class="h" style="color:var(--accent)">You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link.</p>`:""}<div class="row"><button class="btn primary" style="justify-content:center" onclick="document.getElementById('scrim').classList.remove('show')">Done</button></div>`); }
 }
 
 /* ---------- toast ---------- */
