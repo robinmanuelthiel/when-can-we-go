@@ -66,10 +66,26 @@ async function backendInit(){
 /* ---------- misc helpers ---------- */
 function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
-/* default trip window: this month through the end of +3 months (4-month span) */
+/* default event window: this month through the end of +3 months (4-month span) */
 function defaultData(){
   const now=Date.now();
   const s=new Date(); s.setDate(1);
   const e=new Date(s.getFullYear(), s.getMonth()+4, 0); // last day of +3 months → 4 month span
-  return { v:1, trip:{ title:"Our Trip", start:ymd(s), end:ymd(e), updatedAt:now }, people:{} };
+  return { v:2, event:{ title:"Our Event", start:ymd(s), end:ymd(e), updatedAt:now }, people:{} };
+}
+
+function normalizeData(data){
+  if(!data || typeof data!=="object") return defaultData();
+  const fallback=defaultData().event;
+  const event=data.event || data.trip || {};
+  return {
+    v:data.v || 2,
+    event:{
+      title:event.title || fallback.title,
+      start:event.start || fallback.start,
+      end:event.end || fallback.end,
+      updatedAt:event.updatedAt || Date.now(),
+    },
+    people:data.people || {},
+  };
 }

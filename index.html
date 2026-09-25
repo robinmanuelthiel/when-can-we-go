@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
-<title>When Can We Go? | Group Trip Planner</title>
+<title>When Can We Go? | Group Event Planner</title>
 <meta name="description" content="Find a date that works for everyone. Everyone marks the days they can't make it, and the best windows rise to the top — no accounts, just a link to share.">
 <link rel="canonical" href="https://whencanwego.net/">
 <!-- Open Graph / social share -->
@@ -20,7 +20,7 @@
 <meta property="og:image" content="https://whencanwego.net/assets/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="When Can We Go? — a group trip date planner">
+<meta property="og:image:alt" content="When Can We Go? — a group event date planner">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="When Can We Go?">
 <meta name="twitter:description" content="Find a date that works for everyone. Everyone marks the days they can't make it, and the best windows rise to the top — no accounts, just a link to share.">
@@ -90,29 +90,29 @@
 
   <div class="landing-hero">
     <h1>Find a date that works for everyone.</h1>
-    <p class="lead">Set up a trip, invite your friends, and let everyone mark the days they <em>can’t</em> make it. The best windows rise to the top — no accounts, just a link to share.</p>
+    <p class="lead">Set up an event, invite your friends, and let everyone mark the days they <em>can’t</em> make it. The best windows rise to the top — no accounts, just a link to share.</p>
   </div>
 
   <div class="card landing-card">
-    <h2>Start a new trip</h2>
+    <h2>Start a new event</h2>
     <p class="hint">Pick a name and the window you’re considering. You can change all of this later.</p>
-    <div class="field"><label>Trip name</label><input id="lName" placeholder="e.g. Summer in Portugal" value="Our Trip" autocomplete="off"></div>
-    <div class="field"><label>Dates to consider</label><div class="two">
-      <input id="lStart" type="date"><input id="lEnd" type="date"></div></div>
+    <div class="field"><label>Event name</label><input id="lName" placeholder="e.g. Summer in Portugal" value="Our Event" autocomplete="off"></div>
+    <div class="field"><label>Find a slot between these dates</label><div class="two">
+      <div><label for="lStart"><span class="opt">From</span></label><input id="lStart" type="date"></div><div><label for="lEnd"><span class="opt">To</span></label><input id="lEnd" type="date"></div></div></div>
     <div class="field"><label>Your name</label><input id="lYou" placeholder="So your answers are saved under your name" autocomplete="off"></div>
     <div class="field">
       <label>Invite friends <span class="opt">(optional — you can add more anytime)</span></label>
       <div id="lInvitees"></div>
       <button class="btn ghost" type="button" id="lAddInvitee" style="padding:6px 2px;color:var(--accent)">+ Add another person</button>
     </div>
-    <button class="btn primary" type="button" id="lCreate" style="width:100%;justify-content:center;margin-top:6px">Create trip &amp; get link</button>
+    <button class="btn primary" type="button" id="lCreate" style="width:100%;justify-content:center;margin-top:6px">Create event &amp; get link</button>
   </div>
 
   <div class="card landing-card">
-    <h2>Join an existing trip</h2>
-    <p class="hint">Got a link from a friend? Paste the whole link or just the trip ID.</p>
+    <h2>Join an existing event</h2>
+    <p class="hint">Got a link from a friend? Paste the whole link or just the event ID.</p>
     <div class="field"><input id="lJoin" placeholder="https://…/trip?t=abc123  —or—  abc123" autocomplete="off" spellcheck="false"></div>
-    <button class="btn" type="button" id="lJoinGo" style="width:100%;justify-content:center">Open trip →</button>
+    <button class="btn" type="button" id="lJoinGo" style="width:100%;justify-content:center">Open event →</button>
   </div>
 
   <footer class="site-footer">
@@ -131,11 +131,11 @@
 "use strict";
 /* ============================================================
    When Can We Go? — landing page
-   Creates a brand-new trip (the ONLY place a room id is minted)
-   or opens an existing one, then sends you to the trip page.
+   Creates a brand-new event (the ONLY place a room id is minted)
+   or opens an existing one, then sends you to the event page.
    No room data is written until you actually create a trip.
 
-   The trip page is trip.html, served extensionless at /trip. The canonical
+   The event page is trip.html, served extensionless at /trip. The canonical
    address is /trip?t=<roomId> — a real 200 file, so link previews render, and
    it STAYS in the address bar. We *navigate* to /trip.html?t=<roomId> (a literal
    file, so it 200s on the local dev server too); trip.html then normalises the
@@ -143,9 +143,9 @@
 
 // navigation form — a literal file, so it 200s on every host incl. local dev;
 // trip.html normalises the address bar to the canonical /trip?t=<roomId>.
-const tripUrl = roomId => "/trip.html?t=" + roomId;
+const eventUrl = roomId => "/trip.html?t=" + roomId;
 // the canonical, pretty form we hand out in share links
-const tripShareUrl = roomId => location.origin + "/trip?t=" + roomId;
+const eventShareUrl = roomId => location.origin + "/trip?t=" + roomId;
 
 /* ---------- toast ---------- */
 let toastTimer=null;
@@ -175,22 +175,22 @@ function parseRoomId(raw){
   if(/^[A-Za-z0-9_-]+$/.test(s)) return s;                 // bare id
   return "";
 }
-async function joinTrip(){
+async function joinEvent(){
   const id=parseRoomId(document.getElementById("lJoin").value);
-  if(!id || !/^[A-Za-z0-9_-]+$/.test(id)){ toast("Paste a valid trip link or ID"); return; }
+  if(!id || !/^[A-Za-z0-9_-]+$/.test(id)){ toast("Paste a valid event link or ID"); return; }
   // confirm the room exists first, so a typo'd id never opens an empty room
   if(firebaseConfigured()){
     try{
       const u=FIREBASE_CONFIG.databaseURL.replace(/\/+$/,"")+"/rooms/"+encodeURIComponent(id)+".json?shallow=true";
       const r=await fetch(u);
-      if(r.ok && (await r.json())==null){ toast("No trip found with that link or ID"); return; }
-    }catch(e){ /* offline / blocked — fall through and let the trip page try to load it */ }
+      if(r.ok && (await r.json())==null){ toast("No event found with that link or ID"); return; }
+    }catch(e){ /* offline / blocked — fall through and let the event page try to load it */ }
   }
-  location.href=tripUrl(id);
+  location.href=eventUrl(id);
 }
 
-async function createTrip(){
-  const title=document.getElementById("lName").value.trim()||"Our Trip";
+async function createEvent(){
+  const title=document.getElementById("lName").value.trim()||"Our Event";
   let s=document.getElementById("lStart").value, e=document.getElementById("lEnd").value;
   if(!s||!e){ toast("Pick both dates"); return; }
   if(e<s){ [s,e]=[e,s]; }
@@ -200,7 +200,7 @@ async function createTrip(){
   // build a fresh room — this is the ONLY place a new room id is minted
   const now=Date.now();
   const roomId=genRoomId();
-  const data={ v:1, trip:{ title, start:s, end:e, updatedAt:now }, people:{} };
+  const data={ v:2, event:{ title, start:s, end:e, updatedAt:now }, people:{} };
   const addP=name=>{ const pid=uid(); const idx=Object.keys(data.people).length;
     data.people[pid]={ name:name.trim()||"Friend", color:PALETTE[idx%PALETTE.length], days:{}, updatedAt:now }; return pid; };
   let mePid=null;
@@ -211,7 +211,7 @@ async function createTrip(){
   try{ localStorage.setItem("wcwg:data:"+roomId, JSON.stringify(data)); }catch(_){}
   if(mePid){ try{ localStorage.setItem("wcwg:me:"+roomId, mePid); }catch(_){} }
 
-  // write the room to the DB once, then hand off to the trip page.
+  // write the room to the DB once, then hand off to the event page.
   // (await the write so the navigation doesn't abort an in-flight request)
   const create=document.getElementById("lCreate");
   create.disabled=true; create.textContent="Creating…";
@@ -220,19 +220,19 @@ async function createTrip(){
     try{ await FB.set(FB.ref(db,"rooms/"+roomId), data); }
     catch(_){ /* offline — cache carries it; trip.html re-seeds the DB when back online */ }
   }
-  location.href=tripUrl(roomId);
+  location.href=eventUrl(roomId);
 }
 
 function init(){
-  const d=defaultData().trip;                       // reuse the default 4-month window
+  const d=defaultData().event;                      // reuse the default 4-month window
   document.getElementById("lStart").value=d.start;
   document.getElementById("lEnd").value=d.end;
   addInviteeRow();
 
   document.getElementById("lAddInvitee").onclick=()=>addInviteeRow().querySelector("input").focus();
-  document.getElementById("lCreate").onclick=createTrip;
-  document.getElementById("lJoinGo").onclick=joinTrip;
-  document.getElementById("lJoin").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); joinTrip(); } });
+  document.getElementById("lCreate").onclick=createEvent;
+  document.getElementById("lJoinGo").onclick=joinEvent;
+  document.getElementById("lJoin").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); joinEvent(); } });
 }
 init();
 </script>
