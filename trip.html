@@ -488,7 +488,9 @@ function renderEditCalendar(){
   }));
   document.getElementById("meHint").innerHTML = state.rangeMode
     ? (state.anchor? `Range start set to ${fmtShort(parseYmd(state.anchor))} — click the end day.` : "Range fill is on: click a start day, then an end day. Pick Busy, Maybe, or Free above before you fill.")
-    : "With <strong>Cycle</strong> selected, click a day to rotate through <strong>Busy</strong>, <strong>Maybe</strong>, and <strong>Free</strong>. Pick Busy, Maybe, or Free above if you want to drag-paint or set one exact status.";
+    : state.brush==="cycle"
+      ? "With <strong>Cycle</strong> selected, click a day to rotate through <strong>Busy</strong>, <strong>Maybe</strong>, and <strong>Free</strong>. Pick Busy, Maybe, or Free above if you want to drag-paint or set one exact status."
+      : `With <strong>${state.brush==="block"?"Busy":state.brush==="maybe"?"Maybe":"Free"}</strong> selected, click or drag to paint that exact status. Switch back to <strong>Cycle</strong> if you want repeated clicks to rotate through all three states.`;
   updateBrushUI();
 }
 
@@ -719,8 +721,8 @@ function openSettings(){
   document.getElementById("settingsCancel").onclick=closeSheet;
   document.getElementById("settingsSave").onclick=()=>{
     const pid=document.getElementById("viewingAs").value;
-    if(pid) pickMe(pid); else clearMe();
     closeSheet();
+    if(pid) pickMe(pid); else clearMe();
   };
   document.getElementById("settingsAddSelf").onclick=()=>{ closeSheet(); openAddPerson(true); };
   document.getElementById("settingsAddPerson").onclick=()=>{ closeSheet(); openAddPerson(false); };
