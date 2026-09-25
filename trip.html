@@ -307,6 +307,7 @@ let state = {
   brush: "cycle",
   rangeMode: false,
   anchor: null,          // range-fill first pick
+  pendingFocusDay: null,
   onlyAll: false,
   online: true,
 };
@@ -492,6 +493,14 @@ function renderEditCalendar(){
       ? "With <strong>Cycle</strong> selected, click a day to rotate through <strong>Busy</strong>, <strong>Maybe</strong>, and <strong>Free</strong>. Pick Busy, Maybe, or Free above if you want to drag-paint or set one exact status."
       : `With <strong>${state.brush==="block"?"Busy":state.brush==="maybe"?"Maybe":"Free"}</strong> selected, click or drag to paint that exact status. Switch back to <strong>Cycle</strong> if you want repeated clicks to rotate through all three states.`;
   updateBrushUI();
+  if(state.pendingFocusDay){
+    const key=state.pendingFocusDay;
+    state.pendingFocusDay=null;
+    requestAnimationFrame(()=>{
+      const cell=document.querySelector(`#groupMonths .day[data-ymd="${key}"]`);
+      if(cell) cell.focus();
+    });
+  }
 }
 
 /* group heatmap shares the "When I'm out" palette: blockers run --block-bg→--block,
@@ -727,8 +736,9 @@ function openSettings(){
   document.getElementById("settingsAddSelf").onclick=()=>{ closeSheet(); openAddPerson(true); };
   document.getElementById("settingsAddPerson").onclick=()=>{ closeSheet(); openAddPerson(false); };
 }
-function enterEditMode(){
+function enterEditMode(focusDay=null){
   const viewer=currentViewerPid();
+  if(focusDay) state.pendingFocusDay=focusDay;
   if(!viewer){ openIdentity(true); return; }
   painting=false;
   paintMoved=false;
@@ -743,6 +753,7 @@ function exitEditMode(){
   paintMoved=false;
   state.editMode=false;
   state.anchor=null;
+  state.pendingFocusDay=null;
   render();
 }
 /* toggle which top-level tab/section is visible */
@@ -826,7 +837,7 @@ function openDayDetail(key){
     </div>
   `);
   document.getElementById("closeDet").onclick=closeSheet;
-  document.getElementById("editDet").onclick=()=>{ closeSheet(); enterEditMode(); };
+  document.getElementById("editDet").onclick=()=>{ closeSheet(); enterEditMode(key); };
 }
 
 /* ---------- share ---------- */
