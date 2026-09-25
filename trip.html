@@ -313,6 +313,7 @@ let state = {
 };
 let painting=false, paintMoved=false, firstSnap=true, identityPrompted=false, loadedFromCache=false;
 const _timers={};
+const dirtyPeople=new Set();
 
 /* ---------- storage layer ---------- */
 const cacheKey = () => "wcwg:data:"+state.roomId;
@@ -329,7 +330,15 @@ const _local = () => setSync(firebaseConfigured()?"off":"off", firebaseConfigure
    people editing different calendars never clobber each other. */
 function persistFullRoom(){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); FB.set(FB.ref(db,base()), state.data).then(_ok).catch(_off); }
 function persistEvent(){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); FB.set(FB.ref(db,base()+"/event"), state.data.event).then(_ok).catch(_off); }
-function persistPerson(pid){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); FB.set(FB.ref(db,base()+"/people/"+pid), state.data.people[pid]).then(_ok).catch(_off); }
+function persistPerson(pid){
+  cacheSave();
+  if(!db){_local();return;}
+  setSync("saving","Saving…");
+  FB.set(FB.ref(db,base()+"/people/"+pid), state.data.people[pid]).then(()=>{
+    dirtyPeople.delete(pid);
+    _ok();
+  }).catch(_off);
+}
 function persistPersonDebounced(pid){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); clearTimeout(_timers[pid]); _timers[pid]=setTimeout(()=>persistPerson(pid),350); }
 
 function subscribeRoom(){
@@ -361,7 +370,8 @@ function maybePromptIdentity(){
 function mergePeople(a={},b={}){
   const out={}; const keys=new Set([...Object.keys(a),...Object.keys(b)]);
   keys.forEach(k=>{ const pa=a[k],pb=b[k];
-    if(pa&&pb) out[k]=(pa.updatedAt||0)>=(pb.updatedAt||0)?pa:pb;
+    if(dirtyPeople.has(k) && pa) out[k]=pa;
+    else if(pa&&pb) out[k]=(pa.updatedAt||0)>=(pb.updatedAt||0)?pa:pb;
     else out[k]=pa||pb; });
   return out;
 }
@@ -399,6 +409,7 @@ function setDay(pid,key,val){
   const p=personById(pid); if(!p) return;
   if(val==="none") delete p.days[key]; else p.days[key]=val;
   p.updatedAt=Date.now();
+  dirtyPeople.add(pid);
   persistPersonDebounced(pid);
 }
 
@@ -653,7 +664,11 @@ function bindCalendarEvents(){
     state.activePid=viewer;
     setDay(viewer,c.dataset.ymd,state.brush); updateMeCell(c,c.dataset.ymd);
   });
-  window.addEventListener("pointerup",()=>painting=false);
+  window.addEventListener("pointerup",()=>{
+    painting=false;
+    if(paintMoved) setTimeout(()=>{ paintMoved=false; },0);
+  });
+  window.addEventListener("pointercancel",()=>{ painting=false; paintMoved=false; });
 }
 
 /* ---------- sheets / modals ---------- */
