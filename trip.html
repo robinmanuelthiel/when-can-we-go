@@ -487,8 +487,8 @@ function renderEditCalendar(){
     return `<button class="${cls.join(" ")}" data-ymd="${key}">${d}${mk?`<span class="mk">${mk}</span>`:""}</button>`;
   }));
   document.getElementById("meHint").innerHTML = state.rangeMode
-    ? (state.anchor? `Range start set to ${fmtShort(parseYmd(state.anchor))} — click the end day.` : "Range fill is on: click a start day, then an end day. Pick Busy, Maybe, or Free above to choose what gets filled.")
-    : "With <strong>Cycle</strong> selected, click a day to rotate through <strong>Busy</strong>, <strong>Maybe</strong>, and <strong>Free</strong>. Pick Busy, Maybe, or Free above if you want single clicks to paint one exact status.";
+    ? (state.anchor? `Range start set to ${fmtShort(parseYmd(state.anchor))} — click the end day.` : "Range fill is on: click a start day, then an end day. Pick Busy, Maybe, or Free above before you fill.")
+    : "With <strong>Cycle</strong> selected, click a day to rotate through <strong>Busy</strong>, <strong>Maybe</strong>, and <strong>Free</strong>. Pick Busy, Maybe, or Free above if you want to drag-paint or set one exact status.";
   updateBrushUI();
 }
 
@@ -584,10 +584,10 @@ function updateEditControls(){
 function applyBrushToDay(key){
   if(!state.activePid || !inRange(key)) return;
   if(state.rangeMode){
-    const fillBrush=state.brush==="cycle" ? "block" : state.brush;
+    if(state.brush==="cycle"){ toast("Pick Busy, Maybe, or Free before using range fill"); return; }
     if(!state.anchor){ state.anchor=key; renderEditCalendar(); return; }
     const [a,b]=[state.anchor,key].sort();
-    for(let d=parseYmd(a); d<=parseYmd(b); d=addDays(d,1)){ const k=ymd(d); if(inRange(k)) setDay(state.activePid,k,fillBrush); }
+    for(let d=parseYmd(a); d<=parseYmd(b); d=addDays(d,1)){ const k=ymd(d); if(inRange(k)) setDay(state.activePid,k,state.brush); }
     state.anchor=null; renderEditCalendar();
   } else {
     const p=personById(state.activePid);
@@ -621,7 +621,7 @@ function bindCalendarEvents(){
     if(detailCell && !state.editMode) openDayDetail(detailCell.dataset.detail);
   });
   calendar.addEventListener("pointerdown",e=>{
-    if(!state.editMode || e.pointerType!=="mouse" || state.rangeMode) return;
+    if(!state.editMode || e.pointerType!=="mouse" || state.rangeMode || state.brush==="cycle") return;
     const c=e.target.closest(".day[data-ymd]"); if(!c) return;
     painting=true;
     paintMoved=false;
@@ -630,8 +630,7 @@ function bindCalendarEvents(){
     if(!painting) return;
     const c=e.target.closest(".day[data-ymd]"); if(!c||!inRange(c.dataset.ymd)||!state.activePid) return;
     paintMoved=true;
-    const paintBrush=state.brush==="cycle" ? "block" : state.brush;
-    setDay(state.activePid,c.dataset.ymd,paintBrush); updateMeCell(c,c.dataset.ymd);
+    setDay(state.activePid,c.dataset.ymd,state.brush); updateMeCell(c,c.dataset.ymd);
   });
   window.addEventListener("pointerup",()=>painting=false);
 }
@@ -701,11 +700,10 @@ function openAddPerson(selectAfter=false){
 }
 function openSettings(){
   const viewer=currentViewerPid();
-  const options=`<option value="">Just viewing</option>`+people().map(([pid,p])=>`<option value="${pid}" ${pid===viewer?"selected":""}>${escapeHtml(p.name)}</option>`).join("");
   openSheet(`
     <h3>Settings</h3>
     <p class="h">Choose who you’re viewing as when you edit availability.</p>
-    <div class="field"><label>Viewing as</label><select id="viewingAs">${options}</select></div>
+    <div class="field"><label>Viewing as</label><select id="viewingAs"></select></div>
     <div class="row">
       <button class="btn" id="settingsCancel">Cancel</button>
       <button class="btn primary" id="settingsSave">Save</button>
@@ -715,6 +713,9 @@ function openSettings(){
       <button class="btn" id="settingsAddPerson">Add a person</button>
     </div>
   `);
+  const select=document.getElementById("viewingAs");
+  select.appendChild(new Option("Just viewing","",!viewer,!viewer));
+  people().forEach(([pid,p])=>select.appendChild(new Option(p.name,pid,false,pid===viewer)));
   document.getElementById("settingsCancel").onclick=closeSheet;
   document.getElementById("settingsSave").onclick=()=>{
     const pid=document.getElementById("viewingAs").value;
