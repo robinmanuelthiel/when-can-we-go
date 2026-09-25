@@ -95,7 +95,7 @@ function normalizeData(data){
       title:event.title || fallback.title,
       start:event.start || fallback.start,
       end:event.end || fallback.end,
-      updatedAt:event.updatedAt || Date.now(),
+      updatedAt:typeof event.updatedAt==="number" ? event.updatedAt : 0,
     },
     people,
   };

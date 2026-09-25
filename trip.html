@@ -637,8 +637,13 @@ function bindCalendarEvents(){
   calendar.addEventListener("pointerdown",e=>{
     if(!state.editMode || e.pointerType!=="mouse" || state.rangeMode || state.brush==="cycle") return;
     const c=e.target.closest(".day[data-ymd]"); if(!c) return;
+    const viewer=currentViewerPid();
+    if(!viewer || !inRange(c.dataset.ymd)) return;
     painting=true;
     paintMoved=false;
+    state.activePid=viewer;
+    setDay(viewer,c.dataset.ymd,state.brush);
+    updateMeCell(c,c.dataset.ymd);
   });
   calendar.addEventListener("pointerover",e=>{
     if(!painting) return;
