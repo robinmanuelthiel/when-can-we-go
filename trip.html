@@ -788,8 +788,16 @@ function openRename(pid){
   document.getElementById("rnSave").onclick=()=>{ p.name=document.getElementById("rn").value.trim()||p.name; touchPerson(pid); persistPerson(pid); closeSheet(); render(); };
   document.getElementById("rnDel").onclick=()=>{
     const activeWasDeleted=state.activePid===pid;
+    const deletingCurrentViewer=state.me===pid;
     p.deleted=true; touchPerson(pid);
-    if(state.me===pid) clearMe();
+    if(deletingCurrentViewer){
+      state.me=null;
+      state.editMode=false;
+      state.anchor=null;
+      painting=false;
+      paintMoved=false;
+      try{ localStorage.removeItem(meKey()); }catch(e){}
+    }
     if(activeWasDeleted) state.activePid=state.me&&state.me!==pid ? state.me : null;
     persistPerson(pid); closeSheet(); render();
   };
