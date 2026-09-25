@@ -385,7 +385,6 @@ function people(){ return Object.entries(state.data.people).filter(([,p])=>!p.de
 function personById(pid){ return state.data.people[pid]; }
 function eventData(){ return state.data.event; }
 function currentViewerPid(){
-  if(state.activePid && personById(state.activePid) && !personById(state.activePid).deleted) return state.activePid;
   if(state.me && personById(state.me) && !personById(state.me).deleted) return state.me;
   return null;
 }
@@ -593,25 +592,29 @@ function updateEditControls(){
    INTERACTION
    ============================================================ */
 function applyBrushToDay(key){
-  if(!state.activePid || !inRange(key)) return;
+  const viewer=currentViewerPid();
+  if(!viewer || !inRange(key)) return;
+  state.activePid=viewer;
   if(state.rangeMode){
     if(state.brush==="cycle"){ toast("Pick Busy, Maybe, or Free before using range fill"); return; }
     if(!state.anchor){ state.anchor=key; renderEditCalendar(); return; }
     const [a,b]=[state.anchor,key].sort();
-    for(let d=parseYmd(a); d<=parseYmd(b); d=addDays(d,1)){ const k=ymd(d); if(inRange(k)) setDay(state.activePid,k,state.brush); }
+    for(let d=parseYmd(a); d<=parseYmd(b); d=addDays(d,1)){ const k=ymd(d); if(inRange(k)) setDay(viewer,k,state.brush); }
     state.anchor=null; renderEditCalendar();
   } else {
-    const p=personById(state.activePid);
+    const p=personById(viewer);
     const cur=p&&p.days ? p.days[key] : null;
     const next=state.brush==="cycle" ? (cur==="block" ? "maybe" : cur==="maybe" ? "none" : "block") : state.brush;
-    setDay(state.activePid,key,next);
+    setDay(viewer,key,next);
     // light in-place update instead of full re-render for snappiness
     const cell=document.querySelector(`#groupMonths .day[data-ymd="${key}"]`);
     if(cell) updateMeCell(cell,key);
   }
 }
 function updateMeCell(cell,key){
-  const p=personById(state.activePid); const s=p.days[key];
+  const viewer=currentViewerPid();
+  if(!viewer) return;
+  const p=personById(viewer); const s=p.days[key];
   cell.classList.remove("s-block","s-maybe");
   if(s) cell.classList.add("s-"+s);
   const old=cell.querySelector(".mk"); if(old) old.remove();
@@ -639,9 +642,11 @@ function bindCalendarEvents(){
   });
   calendar.addEventListener("pointerover",e=>{
     if(!painting) return;
-    const c=e.target.closest(".day[data-ymd]"); if(!c||!inRange(c.dataset.ymd)||!state.activePid) return;
+    const viewer=currentViewerPid();
+    const c=e.target.closest(".day[data-ymd]"); if(!c||!inRange(c.dataset.ymd)||!viewer) return;
     paintMoved=true;
-    setDay(state.activePid,c.dataset.ymd,state.brush); updateMeCell(c,c.dataset.ymd);
+    state.activePid=viewer;
+    setDay(viewer,c.dataset.ymd,state.brush); updateMeCell(c,c.dataset.ymd);
   });
   window.addEventListener("pointerup",()=>painting=false);
 }
@@ -710,7 +715,6 @@ function openAddPerson(selectAfter=false){
   };
 }
 function openSettings(){
-  const viewer=currentViewerPid();
   openSheet(`
     <h3>Settings</h3>
     <p class="h">Choose who you’re viewing as when you edit availability.</p>
@@ -725,8 +729,8 @@ function openSettings(){
     </div>
   `);
   const select=document.getElementById("viewingAs");
-  select.appendChild(new Option("Just viewing","",!viewer,!viewer));
-  people().forEach(([pid,p])=>select.appendChild(new Option(p.name,pid,false,pid===viewer)));
+  select.appendChild(new Option("Just viewing","",!state.me,!state.me));
+  people().forEach(([pid,p])=>select.appendChild(new Option(p.name,pid,false,pid===state.me)));
   document.getElementById("settingsCancel").onclick=closeSheet;
   document.getElementById("settingsSave").onclick=()=>{
     const pid=document.getElementById("viewingAs").value;
