@@ -99,6 +99,7 @@
   .brush{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:10px;font-weight:700;font-size:14px;color:var(--muted)}
   .brush .sw{width:14px;height:14px;border-radius:5px;border:1px solid rgba(0,0,0,.08)}
   .brush.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .brush[data-b="cycle"] .sw{background:conic-gradient(from 180deg,var(--block),var(--maybe),#ffffff,var(--block));border-color:#d2cabd}
   .brush[data-b="block"] .sw{background:var(--block)}
   .brush[data-b="maybe"] .sw{background:var(--maybe)}
   .brush[data-b="none"] .sw{background:#fff;border-style:dashed;border-color:#c9cfc9}
@@ -240,7 +241,8 @@
       <div class="toolbar">
         <button class="btn primary" id="editModeBtn">Edit my availability</button>
         <div class="brushes hide" id="brushes">
-          <button class="brush active" data-b="block"><span class="sw"></span>Busy</button>
+          <button class="brush active" data-b="cycle"><span class="sw"></span>Cycle</button>
+          <button class="brush" data-b="block"><span class="sw"></span>Busy</button>
           <button class="brush" data-b="maybe"><span class="sw"></span>Maybe</button>
           <button class="brush" data-b="none"><span class="sw"></span>Free</button>
         </div>
@@ -302,7 +304,7 @@ let state = {
   activePid: null,       // whose calendar you're editing
   tab: "group",
   editMode: false,
-  brush: "block",
+  brush: "cycle",
   rangeMode: false,
   anchor: null,          // range-fill first pick
   onlyAll: false,
@@ -325,7 +327,7 @@ const _local = () => setSync(firebaseConfigured()?"off":"off", firebaseConfigure
 /* granular writes: each person node is written on its own path, so two
    people editing different calendars never clobber each other. */
 function persistFullRoom(){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); FB.set(FB.ref(db,base()), state.data).then(_ok).catch(_off); }
-function persistEvent(){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); FB.set(FB.ref(db,base()), state.data).then(_ok).catch(_off); }
+function persistEvent(){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); FB.set(FB.ref(db,base()+"/event"), state.data.event).then(_ok).catch(_off); }
 function persistPerson(pid){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); FB.set(FB.ref(db,base()+"/people/"+pid), state.data.people[pid]).then(_ok).catch(_off); }
 function persistPersonDebounced(pid){ cacheSave(); if(!db){_local();return;} setSync("saving","Saving…"); clearTimeout(_timers[pid]); _timers[pid]=setTimeout(()=>persistPerson(pid),350); }
 
@@ -480,8 +482,8 @@ function renderEditCalendar(){
     return `<button class="${cls.join(" ")}" data-ymd="${key}">${d}${mk?`<span class="mk">${mk}</span>`:""}</button>`;
   }));
   document.getElementById("meHint").innerHTML = state.rangeMode
-    ? (state.anchor? `Range start set to ${fmtShort(parseYmd(state.anchor))} — click the end day.` : "Range fill is on: click a start day, then an end day.")
-    : "Click a day to cycle through <strong>Busy</strong>, <strong>Maybe</strong>, and <strong>Free</strong>. Use the buttons above if you want to paint or range-fill one specific status.";
+    ? (state.anchor? `Range start set to ${fmtShort(parseYmd(state.anchor))} — click the end day.` : "Range fill is on: click a start day, then an end day. Pick Busy, Maybe, or Free above to choose what gets filled.")
+    : "With <strong>Cycle</strong> selected, click a day to rotate through <strong>Busy</strong>, <strong>Maybe</strong>, and <strong>Free</strong>. Pick Busy, Maybe, or Free above if you want single clicks to paint one exact status.";
   updateBrushUI();
 }
 
@@ -577,14 +579,15 @@ function updateEditControls(){
 function applyBrushToDay(key){
   if(!state.activePid || !inRange(key)) return;
   if(state.rangeMode){
+    const fillBrush=state.brush==="cycle" ? "block" : state.brush;
     if(!state.anchor){ state.anchor=key; renderEditCalendar(); return; }
     const [a,b]=[state.anchor,key].sort();
-    for(let d=parseYmd(a); d<=parseYmd(b); d=addDays(d,1)){ const k=ymd(d); if(inRange(k)) setDay(state.activePid,k,state.brush); }
+    for(let d=parseYmd(a); d<=parseYmd(b); d=addDays(d,1)){ const k=ymd(d); if(inRange(k)) setDay(state.activePid,k,fillBrush); }
     state.anchor=null; renderEditCalendar();
   } else {
     const p=personById(state.activePid);
     const cur=p&&p.days ? p.days[key] : null;
-    const next=cur==="block" ? "maybe" : cur==="maybe" ? "none" : "block";
+    const next=state.brush==="cycle" ? (cur==="block" ? "maybe" : cur==="maybe" ? "none" : "block") : state.brush;
     setDay(state.activePid,key,next);
     // light in-place update instead of full re-render for snappiness
     const cell=document.querySelector(`#groupMonths .day[data-ymd="${key}"]`);
@@ -622,7 +625,8 @@ function bindCalendarEvents(){
     if(!painting) return;
     const c=e.target.closest(".day[data-ymd]"); if(!c||!inRange(c.dataset.ymd)||!state.activePid) return;
     paintMoved=true;
-    setDay(state.activePid,c.dataset.ymd,state.brush); updateMeCell(c,c.dataset.ymd);
+    const paintBrush=state.brush==="cycle" ? "block" : state.brush;
+    setDay(state.activePid,c.dataset.ymd,paintBrush); updateMeCell(c,c.dataset.ymd);
   });
   window.addEventListener("pointerup",()=>painting=false);
 }
@@ -716,6 +720,8 @@ function openSettings(){
 }
 function enterEditMode(){
   if(!state.me){ openIdentity(true); return; }
+  painting=false;
+  paintMoved=false;
   state.activePid=state.me;
   state.editMode=true;
   state.anchor=null;
@@ -723,6 +729,8 @@ function enterEditMode(){
   render();
 }
 function exitEditMode(){
+  painting=false;
+  paintMoved=false;
   state.editMode=false;
   state.anchor=null;
   render();
