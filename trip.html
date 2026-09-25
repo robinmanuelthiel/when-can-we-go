@@ -656,7 +656,7 @@ function bindCalendarEvents(){
     setDay(viewer,c.dataset.ymd,state.brush);
     updateMeCell(c,c.dataset.ymd);
   });
-  calendar.addEventListener("pointerover",e=>{
+  calendar.addEventListener("pointermove",e=>{
     if(!painting) return;
     const viewer=currentViewerPid();
     const c=e.target.closest(".day[data-ymd]"); if(!c||!inRange(c.dataset.ymd)||!viewer) return;
