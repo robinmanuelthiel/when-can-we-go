@@ -78,6 +78,17 @@ function normalizeData(data){
   if(!data || typeof data!=="object") return defaultData();
   const fallback=defaultData().event;
   const event=data.event || data.trip || {};
+  const people={};
+  Object.entries(data.people || {}).forEach(([pid,p],idx)=>{
+    if(!p || typeof p!=="object") return;
+    people[pid]={
+      name:p.name || "Friend",
+      color:p.color || PALETTE[idx%PALETTE.length],
+      days:p.days || {},
+      updatedAt:p.updatedAt || 0,
+      ...(p.deleted ? { deleted:true } : {}),
+    };
+  });
   return {
     v:data.v || 2,
     event:{
@@ -86,6 +97,6 @@ function normalizeData(data){
       end:event.end || fallback.end,
       updatedAt:event.updatedAt || Date.now(),
     },
-    people:data.people || {},
+    people,
   };
 }
