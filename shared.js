@@ -70,7 +70,7 @@ function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;","
 function defaultData(){
   const now=Date.now();
   const s=new Date();
-  const e=new Date(s.getFullYear(), s.getMonth()+5, 0);
+  const e=new Date(s.getFullYear(), s.getMonth()+4, 0);
   // (event details live under the legacy `trip` key so existing rooms keep working)
   return { v:1, trip:{ title:"", start:ymd(s), end:ymd(e), updatedAt:now }, people:{} };
 }
