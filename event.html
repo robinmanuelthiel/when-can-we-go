@@ -704,7 +704,7 @@ function showSheet(titleId, focusEl){
   prepareSheetDialog(titleId);
   scrim.classList.add("show");
   const firstFocusable=[...sheet.querySelectorAll('button,[href],input,select,textarea,[tabindex]')].filter(isSheetFocusable)[0];
-  (focusEl||firstFocusable||sheet).focus();
+  (isSheetFocusable(focusEl)?focusEl:firstFocusable||sheet).focus();
 }
 function isSheetFocusable(el){
   return !!el && !el.disabled && !el.hidden && !el.closest("[hidden],[inert]") &&
