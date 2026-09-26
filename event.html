@@ -183,6 +183,10 @@
   @media(min-width:560px){.scrim{align-items:center}.sheet{border-radius:22px}}
   .sheet h3{margin:0 0 4px;font-family:var(--serif);font-size:23px;font-weight:600}
   .sheet p.h{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+  .sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .field-actions{display:flex;gap:10px;align-items:flex-end;margin-bottom:13px}
+  .field-actions .field{flex:1;min-width:0;margin-bottom:0}
+  .field-actions .iconbtn{height:46px;display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
   .field{margin-bottom:13px}
   .field label{display:block;font-weight:650;font-size:13px;margin-bottom:5px;color:#4a514a}
   .field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6;font-family:inherit;font-size:16px;color:inherit}
@@ -687,9 +691,82 @@ function setEditing(on){
 
 /* ---------- sheets / modals ---------- */
 const scrim=document.getElementById("scrim"), sheet=document.getElementById("sheet");
-function openSheet(html){ sheet.innerHTML=html; scrim.classList.add("show"); }
-function closeSheet(){ scrim.classList.remove("show"); }
+let lastSheetFocus=null;
+function prepareSheetDialog(titleId){
+  sheet.setAttribute("role","dialog");
+  sheet.setAttribute("aria-modal","true");
+  sheet.tabIndex=-1;
+  const title=titleId ? document.getElementById(titleId) : sheet.querySelector("h3");
+  if(title){
+    if(!title.id) title.id="sheetTitle";
+    sheet.setAttribute("aria-labelledby",title.id);
+  }else{
+    sheet.removeAttribute("aria-labelledby");
+  }
+}
+function showSheet(titleId, focusEl){
+  prepareSheetDialog(titleId);
+  scrim.classList.add("show");
+  const firstFocusable=[...sheet.querySelectorAll('button,[href],input,select,textarea,[tabindex]')].filter(isSheetFocusable)[0];
+  (isSheetFocusable(focusEl)?focusEl:firstFocusable||sheet).focus();
+}
+function isSheetFocusable(el){
+  return !!el && !el.disabled && !el.hidden && !el.closest("[hidden],[inert]") &&
+    (el.tabIndex>=0 || /^(A|BUTTON|INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) &&
+    !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+}
+function openSheet(html){
+  lastSheetFocus=document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  sheet.innerHTML=html; showSheet();
+}
+function closeSheet(){
+  scrim.classList.remove("show");
+  sheet.removeAttribute("role");
+  sheet.removeAttribute("aria-modal");
+  sheet.removeAttribute("aria-labelledby");
+  sheet.removeAttribute("tabindex");
+  if(lastSheetFocus && lastSheetFocus.isConnected) lastSheetFocus.focus();
+  lastSheetFocus=null;
+}
 scrim.addEventListener("click",e=>{ if(e.target===scrim) closeSheet(); });
+document.addEventListener("keydown",e=>{
+  if(!scrim.classList.contains("show")) return;
+  if(e.key==="Escape"){
+    const active=document.activeElement;
+    if(active && sheet.contains(active) && (active.tagName==="INPUT" || active.tagName==="TEXTAREA" || active.tagName==="SELECT" || active.isContentEditable)) return;
+    closeSheet();
+    return;
+  }
+  if(e.key!=="Tab") return;
+  const focusables=[...sheet.querySelectorAll('button,[href],input,select,textarea,[tabindex]')].filter(isSheetFocusable);
+  if(!focusables.length){
+    e.preventDefault();
+    sheet.focus();
+    return;
+  }
+  const first=focusables[0], last=focusables[focusables.length-1];
+  if(!sheet.contains(document.activeElement)){
+    e.preventDefault();
+    first.focus();
+    return;
+  }
+  if(e.shiftKey && document.activeElement===first){
+    e.preventDefault();
+    last.focus();
+  }else if(!e.shiftKey && document.activeElement===last){
+    e.preventDefault();
+    first.focus();
+  }
+});
+sheet.addEventListener("click",e=>{
+  const closeBtn=e.target.closest("[data-sheet-close]");
+  if(closeBtn){ e.preventDefault(); closeSheet(); return; }
+  const btn=e.target.closest("[data-share-action]");
+  if(!btn) return;
+  e.preventDefault();
+  if(btn.dataset.shareAction==="copy") copyShareUrl();
+  if(btn.dataset.shareAction==="native") nativeShareUrl();
+});
 
 /* "Who are you?" — ONLY used to pick your own identity (first visit, from
    Settings, or when you hit "Edit my availability" without one). */
@@ -852,14 +929,135 @@ function openDayDetail(key){
 /* share the canonical /event?e=<id> form: a real 200 file (event.html served
    extensionless), so link previews render. It's also what stays in the bar. */
 function shareUrl(){ return location.origin+"/event?e="+state.roomId; }
-async function doShare(){
+function shareText(){ return "When can you make it? Add your dates:"; }
+function shareUrlPayload(url){ return {url}; }
+function sharePayload(url){ return {title:ev().title||"When Can We Go?", text:shareText(), url}; }
+function copyIcon(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`; }
+function shareIcon(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>`; }
+function closeIcon(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>`; }
+function nativeSharePayload(url){
+  if(location.protocol==="file:" || !navigator.share) return null;
+  const full=sharePayload(url);
+  if(!navigator.canShare) return full;
+  if(navigator.canShare(full)) return full;
+  const urlOnly=shareUrlPayload(url);
+  return navigator.canShare(urlOnly) ? urlOnly : null;
+}
+function canNativeShare(url){
+  return !!nativeSharePayload(url);
+}
+async function copyShareUrl(){
   const url=shareUrl();
   const isFile=location.protocol==="file:";
-  if(!isFile && navigator.share){
-    try{ await navigator.share({title:ev().title||"When Can We Go?", text:"When can you make it? Add your dates:", url}); return; }catch(e){}
+  try{
+    await navigator.clipboard.writeText(url);
+    toast(isFile?"Link copied — but host the file online so friends can open it":"Link copied! Send it to your friends");
+    return true;
   }
-  try{ await navigator.clipboard.writeText(url); toast(isFile?"Link copied — but host the file online so friends can open it":"Link copied! Send it to your friends"); }
-  catch(e){ openSheet(`<h3>Share link</h3><p class="h">Copy this and send it to your friends.</p><div class="field"><input value="${url}" readonly onclick="this.select()"></div>${isFile?`<p class="h" style="color:var(--accent)">You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link.</p>`:""}<div class="row"><button class="btn primary" style="justify-content:center" onclick="document.getElementById('scrim').classList.remove('show')">Done</button></div>`); }
+  catch(e){
+    let input=document.getElementById("shareUrlField");
+    if(!input){
+      openShareSheet();
+      input=document.getElementById("shareUrlField");
+    }
+    if(input){ input.focus(); input.select(); }
+    toast("Copy the link manually");
+    return false;
+  }
+}
+async function nativeShareUrl(){
+  const url=shareUrl();
+  const payload=nativeSharePayload(url);
+  if(!payload) return;
+  try{ await navigator.share(payload); }
+  catch(e){
+    if(e && e.name==="AbortError") return;
+    let input=document.getElementById("shareUrlField");
+    if(!scrim.classList.contains("show")){
+      openShareSheet();
+      input=document.getElementById("shareUrlField");
+    }
+    if(input){ input.focus(); input.select(); }
+    toast("Couldn’t open the share menu. Copy the link instead.");
+  }
+}
+function openShareSheet(){
+  const url=shareUrl();
+  const nativeShareAvailable=canNativeShare(url);
+  const isFile=location.protocol==="file:";
+  lastSheetFocus=document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  sheet.innerHTML="";
+
+  const head=document.createElement("div");
+  head.className="sheet-head";
+  const title=document.createElement("h3");
+  title.id="shareSheetTitle";
+  title.textContent="Share link";
+  head.append(title);
+
+  const closeBtn=document.createElement("button");
+  closeBtn.className="iconbtn";
+  closeBtn.type="button";
+  closeBtn.dataset.sheetClose="true";
+  closeBtn.setAttribute("aria-label","Close");
+  closeBtn.innerHTML=closeIcon();
+  head.append(closeBtn);
+
+  const help=document.createElement("p");
+  help.className="h";
+  help.textContent="Copy this and send it to your friends, or open the share menu when you’re ready.";
+
+  const fieldActions=document.createElement("div");
+  fieldActions.className="field-actions";
+  const field=document.createElement("div");
+  field.className="field";
+  const label=document.createElement("label");
+  label.htmlFor="shareUrlField";
+  label.textContent="Link";
+  const input=document.createElement("input");
+  input.id="shareUrlField";
+  input.readOnly=true;
+  input.value=url;
+  input.addEventListener("click",()=>input.select());
+  field.append(label,input);
+  fieldActions.append(field);
+
+  const copyBtn=document.createElement("button");
+  copyBtn.className="iconbtn";
+  copyBtn.type="button";
+  copyBtn.dataset.shareAction="copy";
+  copyBtn.setAttribute("aria-label","Copy link");
+  copyBtn.innerHTML=copyIcon();
+  fieldActions.append(copyBtn);
+
+  sheet.append(head,help,fieldActions);
+
+  if(isFile || !nativeShareAvailable){
+    const hint=document.createElement("p");
+    hint.className="h";
+    hint.id="shareHint";
+    hint.textContent=isFile
+      ? "You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link."
+      : "Native sharing isn’t available here, but you can still copy the link.";
+    if(isFile) hint.style.color="var(--accent)";
+    sheet.append(hint);
+  }
+
+  const row=document.createElement("div");
+  row.className="row";
+  if(nativeShareAvailable){
+    const nativeBtn=document.createElement("button");
+    nativeBtn.className="btn primary";
+    nativeBtn.type="button";
+    nativeBtn.dataset.shareAction="native";
+    nativeBtn.innerHTML=`${shareIcon()}<span>Share</span>`;
+    row.append(nativeBtn);
+  }
+  if(row.childElementCount) sheet.append(row);
+  showSheet("shareSheetTitle",input);
+}
+async function doShare(){
+  openShareSheet();
 }
 
 /* ---------- toast ---------- */
