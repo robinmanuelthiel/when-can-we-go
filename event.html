@@ -709,7 +709,26 @@ function closeSheet(){
   lastSheetFocus=null;
 }
 scrim.addEventListener("click",e=>{ if(e.target===scrim) closeSheet(); });
-document.addEventListener("keydown",e=>{ if(e.key==="Escape" && scrim.classList.contains("show")) closeSheet(); });
+document.addEventListener("keydown",e=>{
+  if(!scrim.classList.contains("show")) return;
+  if(e.key==="Escape"){ closeSheet(); return; }
+  if(e.key!=="Tab") return;
+  const focusables=[...sheet.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')];
+  if(!focusables.length) return;
+  const first=focusables[0], last=focusables[focusables.length-1];
+  if(!sheet.contains(document.activeElement)){
+    e.preventDefault();
+    first.focus();
+    return;
+  }
+  if(e.shiftKey && document.activeElement===first){
+    e.preventDefault();
+    last.focus();
+  }else if(!e.shiftKey && document.activeElement===last){
+    e.preventDefault();
+    first.focus();
+  }
+});
 sheet.addEventListener("click",e=>{
   const btn=e.target.closest("[data-share-action]");
   if(!btn) return;
@@ -894,7 +913,11 @@ async function copyShareUrl(){
     return true;
   }
   catch(e){
-    const input=document.getElementById("shareUrlField");
+    let input=document.getElementById("shareUrlField");
+    if(!input){
+      openShareSheet();
+      input=document.getElementById("shareUrlField");
+    }
     if(input){ input.focus(); input.select(); }
     toast("Copy the link manually");
     return false;
