@@ -877,7 +877,13 @@ async function copyShareUrl(){
 async function nativeShareUrl(){
   const url=shareUrl();
   if(location.protocol==="file:" || !navigator.share) return;
-  try{ await navigator.share({title:ev().title||"When Can We Go?", text:shareText(), url}); }catch(e){}
+  try{ await navigator.share({title:ev().title||"When Can We Go?", text:shareText(), url}); }
+  catch(e){
+    if(e && (e.name==="AbortError" || e.name==="NotAllowedError")) return;
+    const input=document.getElementById("shareUrlField");
+    if(input){ input.focus(); input.select(); }
+    toast("Couldn’t open the share menu. Copy the link instead.");
+  }
 }
 function openShareSheet(){
   const url=shareUrl();
