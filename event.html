@@ -704,6 +704,11 @@ function showSheet(titleId){
   prepareSheetDialog(titleId);
   scrim.classList.add("show");
 }
+function isSheetFocusable(el){
+  return !!el && !el.disabled && !el.hidden && !el.closest("[hidden],[inert]") &&
+    (el.tabIndex>=0 || /^(A|BUTTON|INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) &&
+    !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+}
 function openSheet(html){
   lastSheetFocus=document.activeElement instanceof HTMLElement ? document.activeElement : null;
   sheet.innerHTML=html; showSheet();
@@ -718,7 +723,7 @@ document.addEventListener("keydown",e=>{
   if(!scrim.classList.contains("show")) return;
   if(e.key==="Escape"){ closeSheet(); return; }
   if(e.key!=="Tab") return;
-  const focusables=[...sheet.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')];
+  const focusables=[...sheet.querySelectorAll('button,[href],input,select,textarea,[tabindex]')].filter(isSheetFocusable);
   if(!focusables.length){
     e.preventDefault();
     sheet.focus();
