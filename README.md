@@ -21,13 +21,17 @@ Static pages (`index.html`, `event.html`, `shared.js`), served via GitHub Pages.
 
 Every pull request is deployed to its own temporary Firebase Hosting preview
 channel `pr-<number>` (`.github/workflows/preview.yml`); a bot comments the
-preview URL on the PR and updates it on each push. Production is still served
-from GitHub Pages.
+preview URL on the PR and updates it on each push. Each deploy is also
+recorded as a GitHub deployment (environment `preview-pr-<number>`), so the PR
+shows a **View deployment** button. Production is still served from GitHub
+Pages.
 
 **Previews are deleted automatically by Google (Firebase Hosting) 7 days after
 the last push to the PR.** There is no cleanup step, so closing or merging a PR
 doesn't remove its preview early. Push again (or re-run the workflow) to bring
-an expired preview back.
+an expired preview back. GitHub keeps the `preview-pr-<number>` environments
+listed under Settings → Environments after that; they are harmless and can be
+deleted there at any time.
 
 One-time setup:
 

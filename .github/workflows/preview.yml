@@ -23,9 +23,16 @@ jobs:
     # secrets aren't available to PRs from forks, so only run for same-repo branches
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    # registers a GitHub deployment, so the PR shows "View deployment" with the
+    # preview link. One environment per PR, so deploying one PR doesn't mark
+    # another PR's preview as inactive.
+    environment:
+      name: preview-pr-${{ github.event.pull_request.number }}
+      url: ${{ steps.deploy.outputs.details_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - id: deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WHEN_CAN_WE_GO }}
