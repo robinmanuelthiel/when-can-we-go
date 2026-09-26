@@ -895,25 +895,58 @@ function openShareSheet(){
   const url=shareUrl();
   const nativeShareAvailable=canNativeShare(url);
   const isFile=location.protocol==="file:";
-  const shareFallback=isFile
-    ? `<p class="h" id="shareHint" style="color:var(--accent)">You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link.</p>`
-    : !nativeShareAvailable
-      ? `<p class="h" id="shareHint">Native sharing isn’t available here, but you can still copy the link.</p>`
-      : "";
-  const shareAction=nativeShareAvailable
-    ? `<button class="btn primary" type="button" data-share-action="native">Share</button>`
-    : "";
-  openSheet(`
-    <h3>Share link</h3>
-    <p class="h">Copy this and send it to your friends, or open the share menu when you’re ready.</p>
-    <div class="field"><label for="shareUrlField">Link</label><input id="shareUrlField" readonly onclick="this.select()"></div>
-    ${shareFallback}
-    <div class="row">
-      <button class="btn" type="button" data-share-action="copy">Copy link</button>
-      ${shareAction}
-    </div>
-  `);
-  document.getElementById("shareUrlField").value=url;
+  sheet.innerHTML="";
+
+  const title=document.createElement("h3");
+  title.textContent="Share link";
+
+  const help=document.createElement("p");
+  help.className="h";
+  help.textContent="Copy this and send it to your friends, or open the share menu when you’re ready.";
+
+  const field=document.createElement("div");
+  field.className="field";
+  const label=document.createElement("label");
+  label.htmlFor="shareUrlField";
+  label.textContent="Link";
+  const input=document.createElement("input");
+  input.id="shareUrlField";
+  input.readOnly=true;
+  input.value=url;
+  input.addEventListener("click",()=>input.select());
+  field.append(label,input);
+
+  sheet.append(title,help,field);
+
+  if(isFile || !nativeShareAvailable){
+    const hint=document.createElement("p");
+    hint.className="h";
+    hint.id="shareHint";
+    hint.textContent=isFile
+      ? "You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link."
+      : "Native sharing isn’t available here, but you can still copy the link.";
+    if(isFile) hint.style.color="var(--accent)";
+    sheet.append(hint);
+  }
+
+  const row=document.createElement("div");
+  row.className="row";
+  const copyBtn=document.createElement("button");
+  copyBtn.className="btn";
+  copyBtn.type="button";
+  copyBtn.dataset.shareAction="copy";
+  copyBtn.textContent="Copy link";
+  row.append(copyBtn);
+  if(nativeShareAvailable){
+    const nativeBtn=document.createElement("button");
+    nativeBtn.className="btn primary";
+    nativeBtn.type="button";
+    nativeBtn.dataset.shareAction="native";
+    nativeBtn.textContent="Share";
+    row.append(nativeBtn);
+  }
+  sheet.append(row);
+  scrim.classList.add("show");
 }
 async function doShare(){
   openShareSheet();
