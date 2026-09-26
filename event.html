@@ -183,6 +183,10 @@
   @media(min-width:560px){.scrim{align-items:center}.sheet{border-radius:22px}}
   .sheet h3{margin:0 0 4px;font-family:var(--serif);font-size:23px;font-weight:600}
   .sheet p.h{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+  .sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .field-actions{display:flex;gap:10px;align-items:flex-end;margin-bottom:13px}
+  .field-actions .field{flex:1;min-width:0;margin-bottom:0}
+  .field-actions .iconbtn{height:46px;display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
   .field{margin-bottom:13px}
   .field label{display:block;font-weight:650;font-size:13px;margin-bottom:5px;color:#4a514a}
   .field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6;font-family:inherit;font-size:16px;color:inherit}
@@ -928,6 +932,9 @@ function shareUrl(){ return location.origin+"/event?e="+state.roomId; }
 function shareText(){ return "When can you make it? Add your dates:"; }
 function shareUrlPayload(url){ return {url}; }
 function sharePayload(url){ return {title:ev().title||"When Can We Go?", text:shareText(), url}; }
+function copyIcon(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`; }
+function shareIcon(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>`; }
+function closeIcon(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>`; }
 function nativeSharePayload(url){
   if(location.protocol==="file:" || !navigator.share) return null;
   const full=sharePayload(url);
@@ -981,14 +988,27 @@ function openShareSheet(){
   lastSheetFocus=document.activeElement instanceof HTMLElement ? document.activeElement : null;
   sheet.innerHTML="";
 
+  const head=document.createElement("div");
+  head.className="sheet-head";
   const title=document.createElement("h3");
   title.id="shareSheetTitle";
   title.textContent="Share link";
+  head.append(title);
+
+  const closeBtn=document.createElement("button");
+  closeBtn.className="iconbtn";
+  closeBtn.type="button";
+  closeBtn.dataset.sheetClose="true";
+  closeBtn.setAttribute("aria-label","Close");
+  closeBtn.innerHTML=closeIcon();
+  head.append(closeBtn);
 
   const help=document.createElement("p");
   help.className="h";
   help.textContent="Copy this and send it to your friends, or open the share menu when you’re ready.";
 
+  const fieldActions=document.createElement("div");
+  fieldActions.className="field-actions";
   const field=document.createElement("div");
   field.className="field";
   const label=document.createElement("label");
@@ -1000,8 +1020,17 @@ function openShareSheet(){
   input.value=url;
   input.addEventListener("click",()=>input.select());
   field.append(label,input);
+  fieldActions.append(field);
 
-  sheet.append(title,help,field);
+  const copyBtn=document.createElement("button");
+  copyBtn.className="iconbtn";
+  copyBtn.type="button";
+  copyBtn.dataset.shareAction="copy";
+  copyBtn.setAttribute("aria-label","Copy link");
+  copyBtn.innerHTML=copyIcon();
+  fieldActions.append(copyBtn);
+
+  sheet.append(head,help,fieldActions);
 
   if(isFile || !nativeShareAvailable){
     const hint=document.createElement("p");
@@ -1016,27 +1045,15 @@ function openShareSheet(){
 
   const row=document.createElement("div");
   row.className="row";
-  const copyBtn=document.createElement("button");
-  copyBtn.className="btn";
-  copyBtn.type="button";
-  copyBtn.dataset.shareAction="copy";
-  copyBtn.textContent="Copy link";
-  row.append(copyBtn);
-  const closeBtn=document.createElement("button");
-  closeBtn.className="btn";
-  closeBtn.type="button";
-  closeBtn.dataset.sheetClose="true";
-  closeBtn.textContent="Close";
-  row.append(closeBtn);
   if(nativeShareAvailable){
     const nativeBtn=document.createElement("button");
     nativeBtn.className="btn primary";
     nativeBtn.type="button";
     nativeBtn.dataset.shareAction="native";
-    nativeBtn.textContent="Share";
+    nativeBtn.innerHTML=`${shareIcon()}<span>Share</span>`;
     row.append(nativeBtn);
   }
-  sheet.append(row);
+  if(row.childElementCount) sheet.append(row);
   showSheet("shareSheetTitle",input);
 }
 async function doShare(){
