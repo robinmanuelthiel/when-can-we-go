@@ -687,6 +687,7 @@ function setEditing(on){
 
 /* ---------- sheets / modals ---------- */
 const scrim=document.getElementById("scrim"), sheet=document.getElementById("sheet");
+let lastSheetFocus=null;
 function prepareSheetDialog(titleId){
   sheet.setAttribute("role","dialog");
   sheet.setAttribute("aria-modal","true");
@@ -698,9 +699,17 @@ function prepareSheetDialog(titleId){
     sheet.removeAttribute("aria-labelledby");
   }
 }
-function openSheet(html){ sheet.innerHTML=html; prepareSheetDialog(); scrim.classList.add("show"); }
-function closeSheet(){ scrim.classList.remove("show"); }
+function openSheet(html){
+  lastSheetFocus=document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  sheet.innerHTML=html; prepareSheetDialog(); scrim.classList.add("show");
+}
+function closeSheet(){
+  scrim.classList.remove("show");
+  if(lastSheetFocus && lastSheetFocus.isConnected) lastSheetFocus.focus();
+  lastSheetFocus=null;
+}
 scrim.addEventListener("click",e=>{ if(e.target===scrim) closeSheet(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && scrim.classList.contains("show")) closeSheet(); });
 sheet.addEventListener("click",e=>{
   const btn=e.target.closest("[data-share-action]");
   if(!btn) return;
@@ -906,6 +915,7 @@ function openShareSheet(){
   const url=shareUrl();
   const nativeShareAvailable=canNativeShare(url);
   const isFile=location.protocol==="file:";
+  lastSheetFocus=document.activeElement instanceof HTMLElement ? document.activeElement : null;
   sheet.innerHTML="";
 
   const title=document.createElement("h3");
