@@ -1,26 +1,27 @@
 # Deploys every pull request to its own temporary Firebase Hosting preview
-# channel and comments the URL on the PR. Production stays on GitHub Pages.
+# channel (pr-<number>) and comments the URL on the PR. When the PR is closed
+# or merged, the channel is deleted. Channels also expire on their own after
+# 7 days as a safety net. Production stays on GitHub Pages.
 # Setup (one-time): see "PR previews" in README.md.
 name: PR preview
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-
-permissions:
-  checks: write
-  contents: read
-  pull-requests: write
+    types: [opened, synchronize, reopened, closed]
 
 concurrency:
   group: preview-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  preview:
+  deploy:
     # secrets aren't available to PRs from forks, so only run for same-repo branches
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: FirebaseExtended/action-hosting-deploy@v0
@@ -28,4 +29,26 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WHEN_CAN_WE_GO }}
           projectId: when-can-we-go
+          channelId: pr-${{ github.event.pull_request.number }}
           expires: 7d
+
+  cleanup:
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WHEN_CAN_WE_GO }}
+      - name: Delete preview channel
+        env:
+          CHANNEL: pr-${{ github.event.pull_request.number }}
+        run: |
+          # the channel may already be gone (expired, or never deployed) — that's fine
+          channels=$(npx -y firebase-tools@latest hosting:channel:list --project when-can-we-go --json)
+          if echo "$channels" | jq -e --arg c "$CHANNEL" '.result.channels[]? | select(.name | endswith("/channels/" + $c))' > /dev/null; then
+            npx -y firebase-tools@latest hosting:channel:delete "$CHANNEL" --project when-can-we-go --force
+          else
+            echo "Preview channel $CHANNEL not found — nothing to delete."
+          fi
