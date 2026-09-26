@@ -248,7 +248,7 @@
       <div class="legend" id="viewLegend">
         <div class="it"><span class="sw" style="background:#F5FAF6"></span>Everyone free</div>
         <div class="it"><span class="sw" style="background:var(--maybe-bg)"></span>Only maybes</div>
-        <div class="scale"><span>1</span><span class="bar" id="scaleBar"></span><span>all out</span><span style="margin-left:4px">can’t make it</span></div>
+        <div class="scale"><span class="bar" id="scaleBar"></span><span>Someone can’t make it</span></div>
         <div style="flex:1"></div>
         <button class="toggle" id="onlyAllToggle"><span class="switch"></span>Only days that work</button>
       </div>
@@ -561,7 +561,7 @@ function myCellInner(key,d){
   return { cls: s?"s-"+s:"", html: `${d}${mk?`<span class="mk">${mk}</span>`:""}` };
 }
 function renderGroup(){
-  // red "can't make it" scale (1 … all out)
+  // red "can't make it" scale
   const sb=document.getElementById("scaleBar");
   const total=people().length||1;
   sb.innerHTML="";
