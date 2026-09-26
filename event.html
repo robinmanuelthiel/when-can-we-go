@@ -884,7 +884,7 @@ function openShareSheet(){
   openSheet(`
     <h3>Share link</h3>
     <p class="h">Copy this and send it to your friends, or open the share menu when you’re ready.</p>
-    <div class="field"><input id="shareUrlField" value="${escapeHtml(url)}" readonly onclick="this.select()"></div>
+    <div class="field"><label for="shareUrlField">Link</label><input id="shareUrlField" value="${escapeHtml(url)}" readonly onclick="this.select()"></div>
     ${shareFallback}
     <div class="row">
       <button class="btn" type="button" id="shareCopy">Copy link</button>
