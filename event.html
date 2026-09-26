@@ -877,9 +877,9 @@ function openShareSheet(){
   const url=shareUrl();
   const isFile=location.protocol==="file:";
   const shareFallback=isFile
-    ? `<p class="h" style="color:var(--accent)">You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link.</p>`
+    ? `<p class="h" id="shareHint" style="color:var(--accent)">You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link.</p>`
     : !navigator.share
-      ? `<p class="h">Native sharing isn’t available here, but you can still copy the link.</p>`
+      ? `<p class="h" id="shareHint">Native sharing isn’t available here, but you can still copy the link.</p>`
       : "";
   openSheet(`
     <h3>Share link</h3>
@@ -895,8 +895,8 @@ function openShareSheet(){
   const nativeBtn=document.getElementById("shareNative");
   nativeBtn.onclick=nativeShareUrl;
   if(isFile || !navigator.share){
-    nativeBtn.disabled=true;
-    nativeBtn.title="Native sharing isn’t available here";
+    nativeBtn.setAttribute("aria-disabled","true");
+    nativeBtn.setAttribute("aria-describedby","shareHint");
   }
 }
 async function doShare(){
