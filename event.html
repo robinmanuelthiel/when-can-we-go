@@ -700,9 +700,11 @@ function prepareSheetDialog(titleId){
     sheet.removeAttribute("aria-labelledby");
   }
 }
-function showSheet(titleId){
+function showSheet(titleId, focusEl){
   prepareSheetDialog(titleId);
   scrim.classList.add("show");
+  const firstFocusable=[...sheet.querySelectorAll('button,[href],input,select,textarea,[tabindex]')].filter(isSheetFocusable)[0];
+  (focusEl||firstFocusable||sheet).focus();
 }
 function isSheetFocusable(el){
   return !!el && !el.disabled && !el.hidden && !el.closest("[hidden],[inert]") &&
@@ -1022,8 +1024,7 @@ function openShareSheet(){
     row.append(nativeBtn);
   }
   sheet.append(row);
-  showSheet("shareSheetTitle");
-  input.focus();
+  showSheet("shareSheetTitle",input);
 }
 async function doShare(){
   openShareSheet();
