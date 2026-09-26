@@ -687,7 +687,18 @@ function setEditing(on){
 
 /* ---------- sheets / modals ---------- */
 const scrim=document.getElementById("scrim"), sheet=document.getElementById("sheet");
-function openSheet(html){ sheet.innerHTML=html; scrim.classList.add("show"); }
+function prepareSheetDialog(titleId){
+  sheet.setAttribute("role","dialog");
+  sheet.setAttribute("aria-modal","true");
+  const title=titleId ? document.getElementById(titleId) : sheet.querySelector("h3");
+  if(title){
+    if(!title.id) title.id="sheetTitle";
+    sheet.setAttribute("aria-labelledby",title.id);
+  }else{
+    sheet.removeAttribute("aria-labelledby");
+  }
+}
+function openSheet(html){ sheet.innerHTML=html; prepareSheetDialog(); scrim.classList.add("show"); }
 function closeSheet(){ scrim.classList.remove("show"); }
 scrim.addEventListener("click",e=>{ if(e.target===scrim) closeSheet(); });
 sheet.addEventListener("click",e=>{
@@ -861,9 +872,9 @@ function shareUrl(){ return location.origin+"/event?e="+state.roomId; }
 function shareText(){ return "When can you make it? Add your dates:"; }
 function sharePayload(url){ return {title:ev().title||"When Can We Go?", text:shareText(), url}; }
 function canNativeShare(url){
-  if(location.protocol==="file:" || !navigator.share || !navigator.canShare) return false;
+  if(location.protocol==="file:" || !navigator.share) return false;
   const payload=sharePayload(url);
-  return navigator.canShare(payload);
+  return !navigator.canShare || navigator.canShare(payload);
 }
 async function copyShareUrl(){
   const url=shareUrl();
@@ -898,6 +909,7 @@ function openShareSheet(){
   sheet.innerHTML="";
 
   const title=document.createElement("h3");
+  title.id="shareSheetTitle";
   title.textContent="Share link";
 
   const help=document.createElement("p");
@@ -946,6 +958,7 @@ function openShareSheet(){
     row.append(nativeBtn);
   }
   sheet.append(row);
+  prepareSheetDialog("shareSheetTitle");
   scrim.classList.add("show");
   setTimeout(()=>input.focus(),0);
 }
