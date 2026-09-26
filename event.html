@@ -727,7 +727,12 @@ function closeSheet(){
 scrim.addEventListener("click",e=>{ if(e.target===scrim) closeSheet(); });
 document.addEventListener("keydown",e=>{
   if(!scrim.classList.contains("show")) return;
-  if(e.key==="Escape"){ closeSheet(); return; }
+  if(e.key==="Escape"){
+    const active=document.activeElement;
+    if(active && sheet.contains(active) && (active.tagName==="INPUT" || active.tagName==="TEXTAREA" || active.tagName==="SELECT" || active.isContentEditable)) return;
+    closeSheet();
+    return;
+  }
   if(e.key!=="Tab") return;
   const focusables=[...sheet.querySelectorAll('button,[href],input,select,textarea,[tabindex]')].filter(isSheetFocusable);
   if(!focusables.length){
@@ -923,9 +928,16 @@ function shareUrl(){ return location.origin+"/event?e="+state.roomId; }
 function shareText(){ return "When can you make it? Add your dates:"; }
 function shareUrlPayload(url){ return {url}; }
 function sharePayload(url){ return {title:ev().title||"When Can We Go?", text:shareText(), url}; }
+function nativeSharePayload(url){
+  if(location.protocol==="file:" || !navigator.share) return null;
+  const full=sharePayload(url);
+  if(!navigator.canShare) return full;
+  if(navigator.canShare(full)) return full;
+  const urlOnly=shareUrlPayload(url);
+  return navigator.canShare(urlOnly) ? urlOnly : null;
+}
 function canNativeShare(url){
-  if(location.protocol==="file:" || !navigator.share) return false;
-  return !navigator.canShare || navigator.canShare(shareUrlPayload(url));
+  return !!nativeSharePayload(url);
 }
 async function copyShareUrl(){
   const url=shareUrl();
@@ -948,8 +960,9 @@ async function copyShareUrl(){
 }
 async function nativeShareUrl(){
   const url=shareUrl();
-  if(!canNativeShare(url)) return;
-  try{ await navigator.share(sharePayload(url)); }
+  const payload=nativeSharePayload(url);
+  if(!payload) return;
+  try{ await navigator.share(payload); }
   catch(e){
     if(e && e.name==="AbortError") return;
     let input=document.getElementById("shareUrlField");
