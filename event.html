@@ -153,6 +153,7 @@
   .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
   .legend .it{display:flex;align-items:center;gap:6px}
   .legend .sw{width:15px;height:15px;border-radius:5px;border:1px solid rgba(0,0,0,.06)}
+  .legend .sw.scale{width:28px}
 
   /* ---------- Best windows ---------- */
   .win{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;margin-bottom:9px;background:#f5faf6}
@@ -245,8 +246,7 @@
       <div class="legend" id="viewLegend">
         <div class="it"><span class="sw" style="background:#F5FAF6"></span>Everyone free</div>
         <div class="it"><span class="sw" style="background:var(--maybe-bg)"></span>Only maybes</div>
-        <div class="it"><span class="sw" id="scaleLow"></span>1 can’t make it</div>
-        <div class="it"><span class="sw" id="scaleHigh"></span>Everyone can’t make it</div>
+        <div class="it"><span class="sw scale" id="blockedLegend"></span>Someone can’t make it</div>
         <div style="flex:1"></div>
         <button class="toggle" id="onlyAllToggle"><span class="switch"></span>Only days that work</button>
       </div>
@@ -559,9 +559,9 @@ function myCellInner(key,d){
   return { cls: s?"s-"+s:"", html: `${d}${mk?`<span class="mk">${mk}</span>`:""}` };
 }
 function renderGroup(){
-  // red "can't make it" legend endpoints
-  document.getElementById("scaleLow").style.background=redShade(0);
-  document.getElementById("scaleHigh").style.background=redShade(1);
+  // red "can't make it" legend swatch
+  document.getElementById("blockedLegend").style.background=
+    `linear-gradient(90deg, ${redShade(0)} 0%, ${redShade(.33)} 33%, ${redShade(.66)} 66%, ${redShade(1)} 100%)`;
 
   renderBestWindows();
   renderModeBar();
