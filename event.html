@@ -153,9 +153,6 @@
   .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
   .legend .it{display:flex;align-items:center;gap:6px}
   .legend .sw{width:15px;height:15px;border-radius:5px;border:1px solid rgba(0,0,0,.06)}
-  .scale{display:flex;align-items:center;gap:6px}
-  .scale .bar{display:flex;border-radius:5px;overflow:hidden}
-  .scale .bar i{width:16px;height:14px;display:block}
 
   /* ---------- Best windows ---------- */
   .win{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;margin-bottom:9px;background:#f5faf6}
@@ -248,7 +245,8 @@
       <div class="legend" id="viewLegend">
         <div class="it"><span class="sw" style="background:#F5FAF6"></span>Everyone free</div>
         <div class="it"><span class="sw" style="background:var(--maybe-bg)"></span>Only maybes</div>
-        <div class="scale"><span>fewer people can’t make it</span><span class="bar" id="scaleBar"></span><span>more people can’t make it</span></div>
+        <div class="it"><span class="sw" id="scaleLow"></span>1 can’t make it</div>
+        <div class="it"><span class="sw" id="scaleHigh"></span>Everyone can’t make it</div>
         <div style="flex:1"></div>
         <button class="toggle" id="onlyAllToggle"><span class="switch"></span>Only days that work</button>
       </div>
@@ -561,11 +559,9 @@ function myCellInner(key,d){
   return { cls: s?"s-"+s:"", html: `${d}${mk?`<span class="mk">${mk}</span>`:""}` };
 }
 function renderGroup(){
-  // red "can't make it" legend scale (lighter … darker)
-  const sb=document.getElementById("scaleBar");
-  const steps=6;
-  sb.innerHTML="";
-  for(let i=0;i<steps;i++){ const el=document.createElement("i"); el.style.background=redShade(i/Math.max(1,steps-1)); sb.appendChild(el); }
+  // red "can't make it" legend endpoints
+  document.getElementById("scaleLow").style.background=redShade(0);
+  document.getElementById("scaleHigh").style.background=redShade(1);
 
   renderBestWindows();
   renderModeBar();
