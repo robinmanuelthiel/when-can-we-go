@@ -690,6 +690,12 @@ const scrim=document.getElementById("scrim"), sheet=document.getElementById("she
 function openSheet(html){ sheet.innerHTML=html; scrim.classList.add("show"); }
 function closeSheet(){ scrim.classList.remove("show"); }
 scrim.addEventListener("click",e=>{ if(e.target===scrim) closeSheet(); });
+sheet.addEventListener("click",e=>{
+  const btn=e.target.closest("[data-share-action]");
+  if(!btn) return;
+  if(btn.dataset.shareAction==="copy") copyShareUrl();
+  if(btn.dataset.shareAction==="native") nativeShareUrl();
+});
 
 /* "Who are you?" — ONLY used to pick your own identity (first visit, from
    Settings, or when you hit "Edit my availability" without one). */
@@ -882,7 +888,7 @@ function openShareSheet(){
       ? `<p class="h" id="shareHint">Native sharing isn’t available here, but you can still copy the link.</p>`
       : "";
   const shareAction=!isFile && navigator.share
-    ? `<button class="btn primary" type="button" id="shareNative">Share</button>`
+    ? `<button class="btn primary" type="button" data-share-action="native">Share</button>`
     : "";
   openSheet(`
     <h3>Share link</h3>
@@ -890,13 +896,10 @@ function openShareSheet(){
     <div class="field"><label for="shareUrlField">Link</label><input id="shareUrlField" value="${escapeHtml(url)}" readonly onclick="this.select()"></div>
     ${shareFallback}
     <div class="row">
-      <button class="btn" type="button" id="shareCopy">Copy link</button>
+      <button class="btn" type="button" data-share-action="copy">Copy link</button>
       ${shareAction}
     </div>
   `);
-  document.getElementById("shareCopy").addEventListener("click",copyShareUrl);
-  const nativeBtn=document.getElementById("shareNative");
-  if(nativeBtn) nativeBtn.addEventListener("click",nativeShareUrl);
 }
 async function doShare(){
   openShareSheet();
