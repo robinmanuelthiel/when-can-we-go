@@ -966,7 +966,7 @@ async function nativeShareUrl(){
   catch(e){
     if(e && e.name==="AbortError") return;
     let input=document.getElementById("shareUrlField");
-    if(!scrim.classList.contains("show") || !input){
+    if(!scrim.classList.contains("show")){
       openShareSheet();
       input=document.getElementById("shareUrlField");
     }
