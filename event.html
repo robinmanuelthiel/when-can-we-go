@@ -691,6 +691,7 @@ let lastSheetFocus=null;
 function prepareSheetDialog(titleId){
   sheet.setAttribute("role","dialog");
   sheet.setAttribute("aria-modal","true");
+  sheet.tabIndex=-1;
   const title=titleId ? document.getElementById(titleId) : sheet.querySelector("h3");
   if(title){
     if(!title.id) title.id="sheetTitle";
@@ -714,7 +715,11 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){ closeSheet(); return; }
   if(e.key!=="Tab") return;
   const focusables=[...sheet.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')];
-  if(!focusables.length) return;
+  if(!focusables.length){
+    e.preventDefault();
+    sheet.focus();
+    return;
+  }
   const first=focusables[0], last=focusables[focusables.length-1];
   if(!sheet.contains(document.activeElement)){
     e.preventDefault();
@@ -732,6 +737,7 @@ document.addEventListener("keydown",e=>{
 sheet.addEventListener("click",e=>{
   const btn=e.target.closest("[data-share-action]");
   if(!btn) return;
+  e.preventDefault();
   if(btn.dataset.shareAction==="copy") copyShareUrl();
   if(btn.dataset.shareAction==="native") nativeShareUrl();
 });
@@ -993,7 +999,7 @@ function openShareSheet(){
   sheet.append(row);
   prepareSheetDialog("shareSheetTitle");
   scrim.classList.add("show");
-  setTimeout(()=>input.focus(),0);
+  input.focus();
 }
 async function doShare(){
   openShareSheet();
