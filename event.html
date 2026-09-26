@@ -852,14 +852,50 @@ function openDayDetail(key){
 /* share the canonical /event?e=<id> form: a real 200 file (event.html served
    extensionless), so link previews render. It's also what stays in the bar. */
 function shareUrl(){ return location.origin+"/event?e="+state.roomId; }
-async function doShare(){
+function shareText(){ return "When can you make it? Add your dates:"; }
+async function copyShareUrl(){
   const url=shareUrl();
   const isFile=location.protocol==="file:";
-  if(!isFile && navigator.share){
-    try{ await navigator.share({title:ev().title||"When Can We Go?", text:"When can you make it? Add your dates:", url}); return; }catch(e){}
+  try{
+    await navigator.clipboard.writeText(url);
+    toast(isFile?"Link copied — but host the file online so friends can open it":"Link copied! Send it to your friends");
+    return true;
   }
-  try{ await navigator.clipboard.writeText(url); toast(isFile?"Link copied — but host the file online so friends can open it":"Link copied! Send it to your friends"); }
-  catch(e){ openSheet(`<h3>Share link</h3><p class="h">Copy this and send it to your friends.</p><div class="field"><input value="${url}" readonly onclick="this.select()"></div>${isFile?`<p class="h" style="color:var(--accent)">You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link.</p>`:""}<div class="row"><button class="btn primary" style="justify-content:center" onclick="document.getElementById('scrim').classList.remove('show')">Done</button></div>`); }
+  catch(e){
+    const input=document.getElementById("shareUrlField");
+    if(input){ input.focus(); input.select(); }
+    toast("Copy the link manually");
+    return false;
+  }
+}
+async function nativeShareUrl(){
+  const url=shareUrl();
+  if(location.protocol==="file:" || !navigator.share){ await copyShareUrl(); return; }
+  try{ await navigator.share({title:ev().title||"When Can We Go?", text:shareText(), url}); }catch(e){}
+}
+function openShareSheet(){
+  const url=shareUrl();
+  const isFile=location.protocol==="file:";
+  const shareFallback=isFile
+    ? `<p class="h" style="color:var(--accent)">You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link.</p>`
+    : !navigator.share
+      ? `<p class="h">Native sharing isn’t available here, but you can still copy the link.</p>`
+      : "";
+  openSheet(`
+    <h3>Share link</h3>
+    <p class="h">Copy this and send it to your friends, or open the share menu when you’re ready.</p>
+    <div class="field"><input id="shareUrlField" value="${url}" readonly onclick="this.select()"></div>
+    ${shareFallback}
+    <div class="row">
+      <button class="btn" id="shareCopy">Copy link</button>
+      <button class="btn primary" id="shareNative">Share</button>
+    </div>
+  `);
+  document.getElementById("shareCopy").onclick=copyShareUrl;
+  document.getElementById("shareNative").onclick=nativeShareUrl;
+}
+async function doShare(){
+  openShareSheet();
 }
 
 /* ---------- toast ---------- */
