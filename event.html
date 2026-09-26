@@ -894,10 +894,7 @@ function openShareSheet(){
   document.getElementById("shareCopy").onclick=copyShareUrl;
   const nativeBtn=document.getElementById("shareNative");
   nativeBtn.onclick=nativeShareUrl;
-  if(isFile || !navigator.share){
-    nativeBtn.disabled=true;
-    nativeBtn.setAttribute("aria-describedby","shareHint");
-  }
+  if(isFile || !navigator.share) nativeBtn.disabled=true;
 }
 async function doShare(){
   openShareSheet();
