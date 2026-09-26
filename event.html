@@ -891,9 +891,9 @@ function openShareSheet(){
       <button class="btn primary" type="button" id="shareNative">Share</button>
     </div>
   `);
-  document.getElementById("shareCopy").onclick=copyShareUrl;
+  document.getElementById("shareCopy").addEventListener("click",copyShareUrl);
   const nativeBtn=document.getElementById("shareNative");
-  nativeBtn.onclick=nativeShareUrl;
+  nativeBtn.addEventListener("click",nativeShareUrl);
   if(isFile || !navigator.share) nativeBtn.disabled=true;
 }
 async function doShare(){
