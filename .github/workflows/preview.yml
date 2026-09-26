@@ -1,0 +1,31 @@
+# Deploys every pull request to its own temporary Firebase Hosting preview
+# channel and comments the URL on the PR. Production stays on GitHub Pages.
+# Setup (one-time): see "PR previews" in README.md.
+name: PR preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    # secrets aren't available to PRs from forks, so only run for same-repo branches
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WHEN_CAN_WE_GO }}
+          projectId: when-can-we-go
+          expires: 7d
