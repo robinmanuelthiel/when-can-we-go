@@ -885,7 +885,7 @@ async function nativeShareUrl(){
   if(!canNativeShare(url)) return;
   try{ await navigator.share(sharePayload(url)); }
   catch(e){
-    if(e && (e.name==="AbortError" || e.name==="NotAllowedError")) return;
+    if(e && e.name==="AbortError") return;
     const input=document.getElementById("shareUrlField");
     if(input){ input.focus(); input.select(); }
     toast("Couldn’t open the share menu. Copy the link instead.");
