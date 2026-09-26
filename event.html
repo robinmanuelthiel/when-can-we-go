@@ -858,11 +858,12 @@ function openDayDetail(key){
 /* share the canonical /event?e=<id> form: a real 200 file (event.html served
    extensionless), so link previews render. It's also what stays in the bar. */
 function shareUrl(){ return location.origin+"/event?e="+state.roomId; }
-function sharePayload(url){ return {url}; }
+function shareText(){ return "When can you make it? Add your dates:"; }
+function sharePayload(url){ return {title:ev().title||"When Can We Go?", text:shareText(), url}; }
 function canNativeShare(url){
-  if(location.protocol==="file:" || !navigator.share) return false;
+  if(location.protocol==="file:" || !navigator.share || !navigator.canShare) return false;
   const payload=sharePayload(url);
-  return !navigator.canShare || navigator.canShare(payload);
+  return navigator.canShare(payload);
 }
 async function copyShareUrl(){
   const url=shareUrl();
