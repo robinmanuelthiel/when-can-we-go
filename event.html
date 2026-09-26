@@ -870,7 +870,7 @@ async function copyShareUrl(){
 }
 async function nativeShareUrl(){
   const url=shareUrl();
-  if(location.protocol==="file:" || !navigator.share){ await copyShareUrl(); return; }
+  if(location.protocol==="file:" || !navigator.share) return;
   try{ await navigator.share({title:ev().title||"When Can We Go?", text:shareText(), url}); }catch(e){}
 }
 function openShareSheet(){
@@ -884,15 +884,20 @@ function openShareSheet(){
   openSheet(`
     <h3>Share link</h3>
     <p class="h">Copy this and send it to your friends, or open the share menu when you’re ready.</p>
-    <div class="field"><input id="shareUrlField" value="${url}" readonly onclick="this.select()"></div>
+    <div class="field"><input id="shareUrlField" value="${escapeHtml(url)}" readonly onclick="this.select()"></div>
     ${shareFallback}
     <div class="row">
-      <button class="btn" id="shareCopy">Copy link</button>
-      <button class="btn primary" id="shareNative">Share</button>
+      <button class="btn" type="button" id="shareCopy">Copy link</button>
+      <button class="btn primary" type="button" id="shareNative">Share</button>
     </div>
   `);
   document.getElementById("shareCopy").onclick=copyShareUrl;
-  document.getElementById("shareNative").onclick=nativeShareUrl;
+  const nativeBtn=document.getElementById("shareNative");
+  nativeBtn.onclick=nativeShareUrl;
+  if(isFile || !navigator.share){
+    nativeBtn.disabled=true;
+    nativeBtn.title="Native sharing isn’t available here";
+  }
 }
 async function doShare(){
   openShareSheet();
