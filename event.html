@@ -858,8 +858,7 @@ function openDayDetail(key){
 /* share the canonical /event?e=<id> form: a real 200 file (event.html served
    extensionless), so link previews render. It's also what stays in the bar. */
 function shareUrl(){ return location.origin+"/event?e="+state.roomId; }
-function shareText(){ return "When can you make it? Add your dates:"; }
-function sharePayload(url){ return {title:ev().title||"When Can We Go?", text:shareText(), url}; }
+function sharePayload(url){ return {url}; }
 function canNativeShare(url){
   if(location.protocol==="file:" || !navigator.share) return false;
   const payload=sharePayload(url);
@@ -947,6 +946,7 @@ function openShareSheet(){
   }
   sheet.append(row);
   scrim.classList.add("show");
+  setTimeout(()=>input.focus(),0);
 }
 async function doShare(){
   openShareSheet();
