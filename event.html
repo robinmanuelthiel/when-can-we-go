@@ -915,10 +915,11 @@ function openDayDetail(key){
    extensionless), so link previews render. It's also what stays in the bar. */
 function shareUrl(){ return location.origin+"/event?e="+state.roomId; }
 function shareText(){ return "When can you make it? Add your dates:"; }
+function shareUrlPayload(url){ return {url}; }
 function sharePayload(url){ return {title:ev().title||"When Can We Go?", text:shareText(), url}; }
 function canNativeShare(url){
   if(location.protocol==="file:" || !navigator.share) return false;
-  const payload=sharePayload(url);
+  const payload=navigator.canShare ? sharePayload(url) : shareUrlPayload(url);
   return !navigator.canShare || navigator.canShare(payload);
 }
 async function copyShareUrl(){
@@ -943,7 +944,8 @@ async function copyShareUrl(){
 async function nativeShareUrl(){
   const url=shareUrl();
   if(!canNativeShare(url)) return;
-  try{ await navigator.share(sharePayload(url)); }
+  const payload=navigator.canShare ? sharePayload(url) : shareUrlPayload(url);
+  try{ await navigator.share(payload); }
   catch(e){
     if(e && e.name==="AbortError") return;
     let input=document.getElementById("shareUrlField");
