@@ -334,6 +334,7 @@ let state = {
   tab: "group",
   onlyAll: false,
   online: true,
+  hadCache: false,
 };
 let paintVal=null, dragged=false, firstSnap=true, identityPrompted=false;
 const _timers={};
@@ -363,8 +364,9 @@ function persistPersonDebounced(pid){ cacheSave(); if(!db){_local();return;} set
 function subscribeRoom(){
   FB.onValue(FB.ref(db,base()), snap=>{
     const remote=snap.val();
-    if(remote){ state.data=mergeData(state.data,remote); state.online=true; cacheSave(); setSync("ok","Synced"); render(); }
-    else { persistFullRoom(); }              // room doesn't exist yet → seed it
+    if(remote){ state.data=mergeData(state.data,remote); state.hadCache=true; state.online=true; cacheSave(); setSync("ok","Synced"); render(); }
+    else if(state.hadCache){ persistFullRoom(); }              // room doesn't exist yet → seed it from a known local room
+    else { state.online=false; setSync("off","Waiting for event data…"); render(); }
     if(firstSnap){ firstSnap=false; restoreMe(); render(); maybePromptIdentity(); }
   }, err=>{
     console.warn(err); state.online=false; setSync("off","Offline – saved locally");
@@ -392,7 +394,9 @@ function mergePeople(a={},b={}){
 }
 function mergeData(local,remote){
   if(!remote) return local; if(!local) return remote;
-  const trip=((local.trip&&local.trip.updatedAt)||0)>=((remote.trip&&remote.trip.updatedAt)||0)?local.trip:remote.trip;
+  const trip=!state.hadCache
+    ? (remote.trip||local.trip)
+    : (((local.trip&&local.trip.updatedAt)||0)>=((remote.trip&&remote.trip.updatedAt)||0)?local.trip:remote.trip);
   return { v:1, trip, people:mergePeople(local.people,remote.people) };
 }
 
@@ -1108,7 +1112,9 @@ async function init(){
   // landing page (site root) where you can create or join an event.
   if(!state.roomId){ location.replace("/"); return; }
 
-  state.data=cacheLoad()||defaultData();
+  const cached=cacheLoad();
+  state.hadCache=!!cached;
+  state.data=cached||defaultData();
   restoreMe();
   render();
 
