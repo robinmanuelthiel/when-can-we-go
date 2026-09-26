@@ -881,6 +881,9 @@ function openShareSheet(){
     : !navigator.share
       ? `<p class="h" id="shareHint">Native sharing isn’t available here, but you can still copy the link.</p>`
       : "";
+  const shareAction=!isFile && navigator.share
+    ? `<button class="btn primary" type="button" id="shareNative">Share</button>`
+    : "";
   openSheet(`
     <h3>Share link</h3>
     <p class="h">Copy this and send it to your friends, or open the share menu when you’re ready.</p>
@@ -888,13 +891,12 @@ function openShareSheet(){
     ${shareFallback}
     <div class="row">
       <button class="btn" type="button" id="shareCopy">Copy link</button>
-      <button class="btn primary" type="button" id="shareNative">Share</button>
+      ${shareAction}
     </div>
   `);
   document.getElementById("shareCopy").addEventListener("click",copyShareUrl);
   const nativeBtn=document.getElementById("shareNative");
-  nativeBtn.addEventListener("click",nativeShareUrl);
-  if(isFile || !navigator.share) nativeBtn.disabled=true;
+  if(nativeBtn) nativeBtn.addEventListener("click",nativeShareUrl);
 }
 async function doShare(){
   openShareSheet();
