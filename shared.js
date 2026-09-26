@@ -66,11 +66,11 @@ async function backendInit(){
 /* ---------- misc helpers ---------- */
 function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
-/* default event date range: this month through the end of +3 months (4-month span) */
+/* default event date range: today through the end of the month 4 months from now */
 function defaultData(){
   const now=Date.now();
-  const s=new Date(); s.setDate(1);
-  const e=new Date(s.getFullYear(), s.getMonth()+4, 0); // last day of +3 months → 4 month span
+  const s=new Date();
+  const e=new Date(s.getFullYear(), s.getMonth()+4, 0);
   // (event details live under the legacy `trip` key so existing rooms keep working)
   return { v:1, trip:{ title:"", start:ymd(s), end:ymd(e), updatedAt:now }, people:{} };
 }
