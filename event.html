@@ -739,6 +739,8 @@ document.addEventListener("keydown",e=>{
   }
 });
 sheet.addEventListener("click",e=>{
+  const closeBtn=e.target.closest("[data-sheet-close]");
+  if(closeBtn){ e.preventDefault(); closeSheet(); return; }
   const btn=e.target.closest("[data-share-action]");
   if(!btn) return;
   e.preventDefault();
@@ -996,6 +998,12 @@ function openShareSheet(){
   copyBtn.dataset.shareAction="copy";
   copyBtn.textContent="Copy link";
   row.append(copyBtn);
+  const closeBtn=document.createElement("button");
+  closeBtn.className="btn";
+  closeBtn.type="button";
+  closeBtn.dataset.sheetClose="true";
+  closeBtn.textContent="Close";
+  row.append(closeBtn);
   if(nativeShareAvailable){
     const nativeBtn=document.createElement("button");
     nativeBtn.className="btn primary";
