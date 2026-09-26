@@ -2,7 +2,7 @@
 /* ============================================================
    When Can We Go? — shared config + helpers
    Loaded by both the landing page (index.html) and the planner
-   page (trip.html) so the Firebase config and date helpers live
+   page (event.html) so the Firebase config and date helpers live
    in exactly one place and can never drift between the two.
    ============================================================ */
 
@@ -66,10 +66,11 @@ async function backendInit(){
 /* ---------- misc helpers ---------- */
 function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
-/* default trip window: this month through the end of +3 months (4-month span) */
+/* default event date range: this month through the end of +3 months (4-month span) */
 function defaultData(){
   const now=Date.now();
   const s=new Date(); s.setDate(1);
   const e=new Date(s.getFullYear(), s.getMonth()+4, 0); // last day of +3 months → 4 month span
-  return { v:1, trip:{ title:"Our Trip", start:ymd(s), end:ymd(e), updatedAt:now }, people:{} };
+  // (event details live under the legacy `trip` key so existing rooms keep working)
+  return { v:1, trip:{ title:"", start:ymd(s), end:ymd(e), updatedAt:now }, people:{} };
 }

@@ -8,17 +8,18 @@
 <title>When Can We Go?</title>
 <script>
   /* GitHub Pages serves this file (with a 404 status) for any path that isn't a
-     real file. The planner now lives at /trip (trip.html), so every OLD /trip/…
-     link lands here: /trip/<id>, /trip/?t=<id>, /trip/?r=<id>. Forward them all
-     to the canonical /trip?t=<id> — a real 200 file. Anything else → landing. */
+     real file. The planner lives at /event (event.html), so every OLD /trip/…
+     or /event/… link lands here: /trip/<id>, /trip/?t=<id>, /trip/?r=<id>,
+     /event/<id>, /event/?e=<id>. Forward them all to the canonical
+     /event?e=<id> — a real 200 file. Anything else → landing. */
   (function(){
     var p = new URLSearchParams(location.search);
-    var id = p.get("t") || p.get("r");
+    var id = p.get("e") || p.get("t") || p.get("r");
     if(!id){
-      var m = location.pathname.match(/^\/trip\/([A-Za-z0-9_-]+)\/?$/);
+      var m = location.pathname.match(/^\/(?:event|trip)\/([A-Za-z0-9_-]+)\/?$/);
       if(m) id = m[1];
     }
-    if(id && /^[A-Za-z0-9_-]+$/.test(id)) location.replace("/trip?t=" + id);
+    if(id && /^[A-Za-z0-9_-]+$/.test(id)) location.replace("/event?e=" + id);
     else location.replace("/");
   })();
 </script>
