@@ -859,6 +859,12 @@ function openDayDetail(key){
    extensionless), so link previews render. It's also what stays in the bar. */
 function shareUrl(){ return location.origin+"/event?e="+state.roomId; }
 function shareText(){ return "When can you make it? Add your dates:"; }
+function sharePayload(url){ return {title:ev().title||"When Can We Go?", text:shareText(), url}; }
+function canNativeShare(url){
+  if(location.protocol==="file:" || !navigator.share) return false;
+  const payload=sharePayload(url);
+  return !navigator.canShare || navigator.canShare(payload);
+}
 async function copyShareUrl(){
   const url=shareUrl();
   const isFile=location.protocol==="file:";
@@ -876,8 +882,8 @@ async function copyShareUrl(){
 }
 async function nativeShareUrl(){
   const url=shareUrl();
-  if(location.protocol==="file:" || !navigator.share) return;
-  try{ await navigator.share({title:ev().title||"When Can We Go?", text:shareText(), url}); }
+  if(!canNativeShare(url)) return;
+  try{ await navigator.share(sharePayload(url)); }
   catch(e){
     if(e && (e.name==="AbortError" || e.name==="NotAllowedError")) return;
     const input=document.getElementById("shareUrlField");
@@ -887,25 +893,27 @@ async function nativeShareUrl(){
 }
 function openShareSheet(){
   const url=shareUrl();
+  const nativeShareAvailable=canNativeShare(url);
   const isFile=location.protocol==="file:";
   const shareFallback=isFile
     ? `<p class="h" id="shareHint" style="color:var(--accent)">You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link.</p>`
-    : !navigator.share
+    : !nativeShareAvailable
       ? `<p class="h" id="shareHint">Native sharing isn’t available here, but you can still copy the link.</p>`
       : "";
-  const shareAction=!isFile && navigator.share
+  const shareAction=nativeShareAvailable
     ? `<button class="btn primary" type="button" data-share-action="native">Share</button>`
     : "";
   openSheet(`
     <h3>Share link</h3>
     <p class="h">Copy this and send it to your friends, or open the share menu when you’re ready.</p>
-    <div class="field"><label for="shareUrlField">Link</label><input id="shareUrlField" value="${escapeHtml(url)}" readonly onclick="this.select()"></div>
+    <div class="field"><label for="shareUrlField">Link</label><input id="shareUrlField" readonly onclick="this.select()"></div>
     ${shareFallback}
     <div class="row">
       <button class="btn" type="button" data-share-action="copy">Copy link</button>
       ${shareAction}
     </div>
   `);
+  document.getElementById("shareUrlField").value=url;
 }
 async function doShare(){
   openShareSheet();
