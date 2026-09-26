@@ -188,6 +188,9 @@
   .field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6;font-family:inherit;font-size:16px;color:inherit}
   .field .two{display:flex;gap:10px}.field .two > *{flex:1;min-width:0}
   .field .two .sublabel{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
+  .field input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;min-height:46px}
+  .field input[type=date]::-webkit-date-and-time-value{text-align:left}
+  @media (max-width:480px){.field .two{flex-direction:column}}
   .sheet .row{display:flex;gap:10px;margin-top:8px}
   .sheet .row .btn{flex:1;justify-content:center}
   .picklist{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:46vh;overflow:auto}
