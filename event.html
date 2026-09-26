@@ -895,7 +895,7 @@ function openShareSheet(){
   const nativeBtn=document.getElementById("shareNative");
   nativeBtn.onclick=nativeShareUrl;
   if(isFile || !navigator.share){
-    nativeBtn.setAttribute("aria-disabled","true");
+    nativeBtn.disabled=true;
     nativeBtn.setAttribute("aria-describedby","shareHint");
   }
 }
