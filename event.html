@@ -715,6 +715,10 @@ function openSheet(html){
 }
 function closeSheet(){
   scrim.classList.remove("show");
+  sheet.removeAttribute("role");
+  sheet.removeAttribute("aria-modal");
+  sheet.removeAttribute("aria-labelledby");
+  sheet.removeAttribute("tabindex");
   if(lastSheetFocus && lastSheetFocus.isConnected) lastSheetFocus.focus();
   lastSheetFocus=null;
 }
@@ -919,8 +923,7 @@ function shareUrlPayload(url){ return {url}; }
 function sharePayload(url){ return {title:ev().title||"When Can We Go?", text:shareText(), url}; }
 function canNativeShare(url){
   if(location.protocol==="file:" || !navigator.share) return false;
-  const payload=navigator.canShare ? sharePayload(url) : shareUrlPayload(url);
-  return !navigator.canShare || navigator.canShare(payload);
+  return !navigator.canShare || navigator.canShare(shareUrlPayload(url));
 }
 async function copyShareUrl(){
   const url=shareUrl();
@@ -944,8 +947,7 @@ async function copyShareUrl(){
 async function nativeShareUrl(){
   const url=shareUrl();
   if(!canNativeShare(url)) return;
-  const payload=navigator.canShare ? sharePayload(url) : shareUrlPayload(url);
-  try{ await navigator.share(payload); }
+  try{ await navigator.share(sharePayload(url)); }
   catch(e){
     if(e && e.name==="AbortError") return;
     let input=document.getElementById("shareUrlField");
