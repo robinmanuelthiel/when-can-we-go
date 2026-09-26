@@ -97,10 +97,10 @@
   <div class="card landing-card">
     <h2>Start a new event</h2>
     <p class="hint">Pick a name and the date range you’re considering. You can change all of this later.</p>
-    <div class="field"><label>Event name</label><input id="lName" placeholder="e.g. Summer in Portugal, Team dinner, Game night" value="Our Event" autocomplete="off"></div>
-    <div class="field"><label>Find a slot between these dates</label><div class="two">
-      <div><label class="sublabel" for="lStart">From</label><input id="lStart" type="date"></div>
-      <div><label class="sublabel" for="lEnd">To</label><input id="lEnd" type="date"></div></div></div>
+    <div class="field"><label>Event name</label><input id="lName" placeholder="e.g. Summer in Portugal, Team dinner, Game night" autocomplete="off"></div>
+    <div class="field"><label>Find a date</label><div class="two">
+      <div><label class="sublabel" for="lStart">between</label><input id="lStart" type="date"></div>
+      <div><label class="sublabel" for="lEnd">and</label><input id="lEnd" type="date"></div></div></div>
     <div class="field"><label>Your name</label><input id="lYou" placeholder="So your answers are saved under your name" autocomplete="off"></div>
     <div class="field">
       <label>Invite friends <span class="opt">(optional — you can add more anytime)</span></label>
@@ -191,7 +191,8 @@ async function joinEvent(){
 }
 
 async function createEvent(){
-  const title=document.getElementById("lName").value.trim()||"Our Event";
+  const nameEl=document.getElementById("lName"), title=nameEl.value.trim();
+  if(!title){ toast("Give your event a name"); nameEl.focus(); return; }
   let s=document.getElementById("lStart").value, e=document.getElementById("lEnd").value;
   if(!s||!e){ toast("Pick both dates"); return; }
   if(e<s){ [s,e]=[e,s]; }

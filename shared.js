@@ -72,5 +72,5 @@ function defaultData(){
   const s=new Date(); s.setDate(1);
   const e=new Date(s.getFullYear(), s.getMonth()+4, 0); // last day of +3 months → 4 month span
   // (event details live under the legacy `trip` key so existing rooms keep working)
-  return { v:1, trip:{ title:"Our Event", start:ymd(s), end:ymd(e), updatedAt:now }, people:{} };
+  return { v:1, trip:{ title:"", start:ymd(s), end:ymd(e), updatedAt:now }, people:{} };
 }

@@ -95,10 +95,32 @@
 
   /* ---------- Edit-mode bar ---------- */
   .modebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px}
-  .modebar .mtxt{flex:1 1 220px;min-width:0;font-size:14px;color:var(--muted)}
+  .modebar .mtxt{flex:1 1 220px;min-width:0;font-size:14px;line-height:1.45;color:var(--muted)}
   .modebar .mtxt strong{color:var(--ink)}
   .modebar .btn{padding:12px 18px;font-size:15px}
   .modebar.editing{position:sticky;top:68px;z-index:25;border-color:#f1c2bd;background:#fffaf8}
+  /* narrow screens: button on its own row + fixed 2-line text, so both modes are the same height */
+  @media(max-width:559px){
+    .modebar .mtxt{flex-basis:100%;min-height:calc(2 * 1.45em)}
+    .modebar .btn{flex:1 0 100%;justify-content:center}
+  }
+  /* view legend and edit toolbar share ONE grid cell, so the card keeps the
+     same height in both modes and the calendar never jumps when you toggle */
+  .slot{display:grid}
+  .slot > *{grid-area:1/1;min-width:0}
+  .slot > .off{visibility:hidden;pointer-events:none}
+
+  /* ---------- Brush bar (edit mode) ---------- */
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .brushes{display:flex;gap:6px;flex-wrap:wrap;background:#f3eee3;padding:4px;border-radius:13px}
+  .brush{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:10px;font-weight:700;font-size:14px;color:var(--muted)}
+  .brush .sw{width:14px;height:14px;border-radius:5px;border:1px solid rgba(0,0,0,.08)}
+  .brush.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .brush:disabled{opacity:.4;cursor:default}
+  .brush[data-b="cycle"] .sw{background:linear-gradient(135deg,#fff 0 33%,var(--block) 33% 66%,var(--maybe) 66%)}
+  .brush[data-b="block"] .sw{background:var(--block)}
+  .brush[data-b="maybe"] .sw{background:var(--maybe)}
+  .brush[data-b="none"] .sw{background:#fff;border-style:dashed;border-color:#c9cfc9}
   .toggle{display:inline-flex;align-items:center;gap:8px;font-weight:650;font-size:14px;color:var(--muted)}
   .switch{width:42px;height:25px;border-radius:999px;background:#d7dcd5;position:relative;transition:.15s;flex:none}
   .switch::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
@@ -122,6 +144,7 @@
   .months.editing .day.s-block{background:var(--block-bg);border-color:#f1c2bd;color:#a32d23}
   .months.editing .day.s-maybe{background:var(--maybe-bg);border-color:#f0d79b;color:#8a6113}
   .day .mk{position:absolute;top:5px;right:6px;font-size:10px}
+  .day.anchor{outline:3px solid var(--accent);outline-offset:-1px}
   /* group cell */
   .day .cnt{font-size:11px;font-weight:700;opacity:.85}
   .day.full{border-color:#D3E2D8}
@@ -192,7 +215,7 @@
   <header class="app">
     <div class="title-row">
       <div class="brand"><a href="/"><span class="dot"></span> When Can We Go?</a></div>
-      <h1 id="eventTitle">Our Event</h1>
+      <h1 id="eventTitle"></h1>
       <div class="sub">
         <span id="eventRange">—</span>
         <span class="pill" id="answeredPill">0 answered</span>
@@ -218,20 +241,23 @@
 
   <!-- GROUP (the one and only calendar: view mode ⇄ edit mode) -->
   <section id="tab-group">
-    <div class="card" id="viewLegend">
-      <div class="legend">
+    <div class="card slot">
+      <div class="legend" id="viewLegend">
         <div class="it"><span class="sw" style="background:#F5FAF6"></span>Everyone free</div>
         <div class="it"><span class="sw" style="background:var(--maybe-bg)"></span>Only maybes</div>
         <div class="scale"><span>1</span><span class="bar" id="scaleBar"></span><span>all out</span><span style="margin-left:4px">can’t make it</span></div>
         <div style="flex:1"></div>
         <button class="toggle" id="onlyAllToggle"><span class="switch"></span>Only days that work</button>
       </div>
-    </div>
-    <div class="card hide" id="editLegend">
-      <div class="legend">
-        <div class="it"><span class="sw" style="background:#fff;border-color:#c9cfc9"></span>Free</div>
-        <div class="it"><span class="sw" style="background:var(--block-bg);border-color:#f1c2bd"></span>✕ Can’t make it</div>
-        <div class="it"><span class="sw" style="background:var(--maybe-bg);border-color:#f0d79b"></span>~ Maybe not</div>
+      <div class="toolbar off" id="editToolbar">
+        <div class="brushes" id="brushes">
+          <button class="brush active" data-b="cycle" title="Each tap cycles Free → Can’t make it → Maybe not"><span class="sw"></span>Cycle</button>
+          <button class="brush" data-b="block"><span class="sw"></span>Can’t make it</button>
+          <button class="brush" data-b="maybe"><span class="sw"></span>Maybe not</button>
+          <button class="brush" data-b="none"><span class="sw"></span>Clear</button>
+        </div>
+        <div style="flex:1"></div>
+        <button class="toggle" id="rangeToggle"><span class="switch"></span>Range fill</button>
       </div>
     </div>
     <div class="card">
@@ -295,11 +321,14 @@ let state = {
   data: null,            // {v, trip:{title,start,end,updatedAt}, people:{pid:{name,color,days,updatedAt,deleted}}}
   me: null,              // pid of "you" on this device — the ONLY calendar you can edit
   editing: false,        // group calendar in edit mode (tapping a day changes MY availability)
+  brush: "cycle",        // edit brush: cycle | block | maybe | none
+  rangeMode: false,      // range fill: tap a first and a last day, fill everything between
+  anchor: null,          // range fill: first day picked
   tab: "group",
   onlyAll: false,
   online: true,
 };
-let paintVal=null, suppressClick=false, firstSnap=true, identityPrompted=false;
+let paintVal=null, dragged=false, firstSnap=true, identityPrompted=false;
 const _timers={};
 
 /* event details accessors (stored under the legacy `trip` key, see above) */
@@ -429,8 +458,8 @@ function render(){
   if(state.me && !isLive(state.me)) setMe(null, true);     // "you" were removed (maybe on another device)
   if(state.editing && !state.me) state.editing=false;
   const t=ev();
-  document.getElementById("eventTitle").textContent=t.title;
-  document.title=t.title+" — When Can We Go?";
+  document.getElementById("eventTitle").textContent=t.title||"Untitled event";
+  document.title=(t.title||"Untitled event")+" — When Can We Go?";
   document.getElementById("eventRange").textContent=`${fmtShort(parseYmd(t.start))} – ${fmtFull(parseYmd(t.end))} · multi-day`;
   const n=people().length;
   document.getElementById("answeredPill").textContent=`${n} answered`;
@@ -489,21 +518,39 @@ function renderBestWindows(){
       <div><div class="wt">${span}</div><div class="wd">${sub}</div></div></div>`;
   }).join("");
 }
+const BRUSH_LABEL = { block:"Can’t make it", maybe:"Maybe not", none:"Clear" };
 function renderModeBar(){
   const bar=document.getElementById("modeBar"), txt=document.getElementById("modeText"), btn=document.getElementById("editToggleBtn");
   const me=state.me && personById(state.me);
   bar.classList.toggle("editing",state.editing);
-  document.getElementById("viewLegend").classList.toggle("hide",state.editing);
-  document.getElementById("editLegend").classList.toggle("hide",!state.editing);
+  document.getElementById("viewLegend").classList.toggle("off",state.editing);
+  document.getElementById("editToolbar").classList.toggle("off",!state.editing);
+  updateBrushUI();
   if(state.editing){
-    txt.innerHTML=`Editing <strong>${escapeHtml(me.name)}</strong>’s availability — tap a day to cycle <strong>Free → Can’t make it → Maybe not</strong>.`;
+    const who=`<strong>${escapeHtml(me.name)}</strong>`;
+    if(state.rangeMode){
+      txt.innerHTML = state.anchor
+        ? `Range from <strong>${fmtShort(parseYmd(state.anchor))}</strong> — now tap the last day.`
+        : `Editing ${who} · Range fill: tap the first day, then the last day.`;
+    } else {
+      txt.innerHTML = state.brush==="cycle"
+        ? `Editing ${who} · tap a day to cycle Free → Can’t make it → Maybe not.`
+        : `Editing ${who} · tap a day to mark it <strong>${BRUSH_LABEL[state.brush]}</strong>.`;
+    }
     btn.textContent="✓ Done";
   } else {
     txt.innerHTML= me
-      ? `Viewing the whole group as <strong>${escapeHtml(me.name)}</strong>. Tap a day to see who’s free.`
+      ? `Viewing as <strong>${escapeHtml(me.name)}</strong>. Tap a day to see who’s free.`
       : `Viewing the whole group. Tap a day to see who’s free.`;
     btn.textContent="✎ Edit my availability";
   }
+}
+function updateBrushUI(){
+  document.querySelectorAll("#brushes .brush").forEach(b=>{
+    b.classList.toggle("active",b.dataset.b===state.brush);
+    if(b.dataset.b==="cycle") b.disabled=state.rangeMode;   // a range needs one fixed state to fill with
+  });
+  document.querySelector("#rangeToggle .switch").classList.toggle("on",state.rangeMode);
 }
 function myCellInner(key,d){
   const s=(personById(state.me).days||{})[key];
@@ -523,14 +570,7 @@ function renderGroup(){
   // the single calendar: group heatmap (view) or MY availability (edit)
   const cont=document.getElementById("groupMonths");
   cont.classList.toggle("editing",state.editing);
-  if(state.editing){
-    cont.innerHTML=eachMonth((y,m)=>monthCells(y,m,(key,d)=>{
-      const c=myCellInner(key,d);
-      const cls=["day","has"]; if(!inRange(key))cls.push("out"); if(c.cls)cls.push(c.cls);
-      return `<button class="${cls.join(" ")}" data-ymd="${key}">${c.html}</button>`;
-    }));
-    return;
-  }
+  if(state.editing){ renderEditMonths(); return; }
   cont.innerHTML=eachMonth((y,m)=>monthCells(y,m,(key,d)=>{
     const out=!inRange(key);
     const st=dayStats(key);
@@ -542,6 +582,14 @@ function renderGroup(){
     if(st.total && st.block>0) cnt=`<span class="cnt">${st.block}</span>`;
     else if(st.total && st.maybe>0) cnt=`<span class="cnt">${st.maybe}~</span>`;
     return `<button class="${cls.join(" ")}" ${bg} data-detail="${key}">${d}${cnt}</button>`;
+  }));
+}
+
+function renderEditMonths(){
+  document.getElementById("groupMonths").innerHTML=eachMonth((y,m)=>monthCells(y,m,(key,d)=>{
+    const c=myCellInner(key,d);
+    const cls=["day","has"]; if(!inRange(key))cls.push("out"); if(c.cls)cls.push(c.cls); if(state.anchor===key)cls.push("anchor");
+    return `<button class="${cls.join(" ")}" data-ymd="${key}">${c.html}</button>`;
   }));
 }
 
@@ -580,40 +628,58 @@ function paintDay(cell,val){
   // best windows refresh on "Done" — re-rendering them now would shift the calendar under your finger
 }
 
+/* the state a tap/drag on `key` applies: the next state when cycling, else the picked brush */
+function brushValue(key){ return state.brush==="cycle" ? nextState(state.me,key) : state.brush; }
+function tapDay(cell){
+  const key=cell.dataset.ymd;
+  if(!inRange(key)) return;
+  if(!state.rangeMode){ paintDay(cell,brushValue(key)); return; }
+  if(!state.anchor){ state.anchor=key; cell.classList.add("anchor"); renderModeBar(); return; }
+  const [a,b]=[state.anchor,key].sort();
+  for(let d=parseYmd(a); d<=parseYmd(b); d=addDays(d,1)){ const k=ymd(d); if(inRange(k)) setDay(state.me,k,state.brush); }
+  state.anchor=null;
+  renderEditMonths(); renderModeBar();
+}
+
 function bindCalendarEvents(){
   const cal=document.getElementById("groupMonths");
   cal.addEventListener("click",e=>{
     if(state.editing){
       const c=e.target.closest(".day[data-ymd]"); if(!c) return;
-      if(suppressClick){ suppressClick=false; return; }     // already handled on mouse pointerdown
-      paintDay(c,nextState(state.me,c.dataset.ymd));
+      if(dragged){ dragged=false; return; }                 // a mouse drag already painted this
+      tapDay(c);
     } else {
       const c=e.target.closest(".day[data-detail]"); if(c) openDayDetail(c.dataset.detail);
     }
   });
-  // desktop: press on a day cycles it, then drag to paint that same state across more days
+  // desktop: press and drag across days to paint them all with the same state.
+  // A plain click is left to the click handler above, so taps behave identically everywhere.
   cal.addEventListener("pointerdown",e=>{
-    if(!state.editing || e.pointerType!=="mouse" || e.button!==0) return;
+    dragged=false; paintVal=null;
+    if(!state.editing || state.rangeMode || e.pointerType!=="mouse" || e.button!==0) return;
     const c=e.target.closest(".day[data-ymd]"); if(!c||!inRange(c.dataset.ymd)) return;
-    e.preventDefault();
-    paintVal=nextState(state.me,c.dataset.ymd);
-    suppressClick=true;
-    paintDay(c,paintVal);
+    paintVal={ val:brushValue(c.dataset.ymd), start:c };
   });
   cal.addEventListener("pointerover",e=>{
-    if(paintVal===null) return;
-    const c=e.target.closest(".day[data-ymd]"); if(c) paintDay(c,paintVal);
+    if(!paintVal) return;
+    // button no longer held (released outside the window, focus lost, …) → stop painting
+    if(!(e.buttons&1)){ paintVal=null; return; }
+    const c=e.target.closest(".day[data-ymd]"); if(!c) return;
+    if(!dragged){ if(c===paintVal.start) return; dragged=true; paintDay(paintVal.start,paintVal.val); }
+    paintDay(c,paintVal.val);
   });
-  window.addEventListener("pointerup",()=>{ paintVal=null; setTimeout(()=>{ suppressClick=false; },0); });
+  const stop=()=>{ paintVal=null; };
+  window.addEventListener("pointerup",stop);
+  window.addEventListener("pointercancel",stop);
+  window.addEventListener("blur",stop);
 }
 
 function setEditing(on){
   if(on && !state.me){ openIdentity({ onPicked:()=>setEditing(true) }); return; }
   state.editing=!!on;
-  paintVal=null;
+  paintVal=null; dragged=false; state.anchor=null;
   if(state.tab!=="group") showTab("group");
   render();
-  if(on) toast("Tap a day to cycle Free → Can’t make it → Maybe not");
 }
 
 /* ---------- sheets / modals ---------- */
@@ -716,10 +782,10 @@ function openEventEdit(){
   openSheet(`
     <h3>Edit event</h3>
     <p class="h">Set the name and the date range to look at. Everyone sees the same.</p>
-    <div class="field"><label>Event name</label><input id="tName" value="${escapeHtml(t.title)}"></div>
-    <div class="field"><label>Find a slot between these dates</label><div class="two">
-      <div><span class="sublabel">From</span><input id="tStart" type="date" value="${t.start}"></div>
-      <div><span class="sublabel">To</span><input id="tEnd" type="date" value="${t.end}"></div></div></div>
+    <div class="field"><label>Event name</label><input id="tName" value="${escapeHtml(t.title||"")}" placeholder="e.g. Summer in Portugal, Team dinner, Game night" autocomplete="off"></div>
+    <div class="field"><label>Find a date</label><div class="two">
+      <div><label class="sublabel" for="tStart">between</label><input id="tStart" type="date" value="${t.start}"></div>
+      <div><label class="sublabel" for="tEnd">and</label><input id="tEnd" type="date" value="${t.end}"></div></div></div>
     <div class="row">
       <button class="btn" id="tCancel">Cancel</button>
       <button class="btn primary" id="tSave">Save</button>
@@ -727,7 +793,8 @@ function openEventEdit(){
   `);
   document.getElementById("tCancel").onclick=closeSheet;
   document.getElementById("tSave").onclick=()=>{
-    const name=document.getElementById("tName").value.trim()||"Our Event";
+    const ni=document.getElementById("tName"), name=ni.value.trim();
+    if(!name){ toast("Give your event a name"); ni.focus(); return; }
     let s=document.getElementById("tStart").value, e=document.getElementById("tEnd").value;
     if(!s||!e){ toast("Pick both dates"); return; }
     if(e<s){ [s,e]=[e,s]; }
@@ -786,7 +853,7 @@ async function doShare(){
   const url=shareUrl();
   const isFile=location.protocol==="file:";
   if(!isFile && navigator.share){
-    try{ await navigator.share({title:ev().title, text:"When can you make it? Add your dates:", url}); return; }catch(e){}
+    try{ await navigator.share({title:ev().title||"When Can We Go?", text:"When can you make it? Add your dates:", url}); return; }catch(e){}
   }
   try{ await navigator.clipboard.writeText(url); toast(isFile?"Link copied — but host the file online so friends can open it":"Link copied! Send it to your friends"); }
   catch(e){ openSheet(`<h3>Share link</h3><p class="h">Copy this and send it to your friends.</p><div class="field"><input value="${url}" readonly onclick="this.select()"></div>${isFile?`<p class="h" style="color:var(--accent)">You're opening this as a local file. Host it (e.g. GitHub Pages / Netlify) so friends can open the same link.</p>`:""}<div class="row"><button class="btn primary" style="justify-content:center" onclick="document.getElementById('scrim').classList.remove('show')">Done</button></div>`); }
@@ -803,6 +870,12 @@ function bindUI(){
   document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{ showTab(t.dataset.tab); render(); });
   document.getElementById("onlyAllToggle").onclick=()=>{ state.onlyAll=!state.onlyAll; document.querySelector("#onlyAllToggle .switch").classList.toggle("on",state.onlyAll); renderGroup(); };
   document.getElementById("editToggleBtn").onclick=()=>setEditing(!state.editing);
+  document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; renderEditMonths(); renderModeBar(); });
+  document.getElementById("rangeToggle").onclick=()=>{
+    state.rangeMode=!state.rangeMode; state.anchor=null;
+    if(state.rangeMode && state.brush==="cycle") state.brush="block";   // range needs a fixed state
+    renderEditMonths(); renderModeBar();
+  };
   document.getElementById("shareBtn").onclick=doShare;
   document.getElementById("settingsBtn").onclick=openSettings;
   document.getElementById("editEventBtn").onclick=openEventEdit;
