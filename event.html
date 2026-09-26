@@ -700,9 +700,13 @@ function prepareSheetDialog(titleId){
     sheet.removeAttribute("aria-labelledby");
   }
 }
+function showSheet(titleId){
+  prepareSheetDialog(titleId);
+  scrim.classList.add("show");
+}
 function openSheet(html){
   lastSheetFocus=document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  sheet.innerHTML=html; prepareSheetDialog(); scrim.classList.add("show");
+  sheet.innerHTML=html; showSheet();
 }
 function closeSheet(){
   scrim.classList.remove("show");
@@ -935,7 +939,11 @@ async function nativeShareUrl(){
   try{ await navigator.share(sharePayload(url)); }
   catch(e){
     if(e && e.name==="AbortError") return;
-    const input=document.getElementById("shareUrlField");
+    let input=document.getElementById("shareUrlField");
+    if(!scrim.classList.contains("show") || !input){
+      openShareSheet();
+      input=document.getElementById("shareUrlField");
+    }
     if(input){ input.focus(); input.select(); }
     toast("Couldn’t open the share menu. Copy the link instead.");
   }
@@ -997,8 +1005,7 @@ function openShareSheet(){
     row.append(nativeBtn);
   }
   sheet.append(row);
-  prepareSheetDialog("shareSheetTitle");
-  scrim.classList.add("show");
+  showSheet("shareSheetTitle");
   input.focus();
 }
 async function doShare(){
