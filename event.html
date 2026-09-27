@@ -38,7 +38,7 @@
 <meta property="og:image" content="https://whencanwego.net/assets/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="When Can We Go? — a group event date planner">
+<meta property="og:image:alt" content="When Can We Go? A group event date planner">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="When Can We Go?">
 <meta name="twitter:description" content="Mark the days you can't make it and see the best windows for everyone.">
@@ -254,7 +254,7 @@
       <div class="brand"><a href="/"><span class="dot"></span> When Can We Go?</a></div>
       <h1 id="eventTitle"></h1>
       <div class="sub">
-        <span id="eventRange">—</span>
+        <span id="eventRange"></span>
         <span class="pill" id="answeredPill">0 answered</span>
         <button class="btn ghost" id="editEventBtn" style="padding:3px 8px;font-size:13px">✎ Edit event</button>
       </div>
@@ -318,7 +318,7 @@
   <section id="tab-people" class="hide">
     <div class="card">
       <h2>Who’s answered</h2>
-      <p class="hint">Everyone on this event. You can only change <strong>your own</strong> availability — use “Edit my availability” in the Group overview.</p>
+      <p class="hint">Everyone on this event. You can only change <strong>your own</strong> availability. Use “Edit my availability” in the Group overview.</p>
       <div id="peopleList"></div>
       <button class="btn primary" id="addPersonBtn" style="margin-top:14px;width:100%;justify-content:center">+ Add a person</button>
     </div>
@@ -327,7 +327,7 @@
   <footer class="site-footer">
     <p class="foot-note">
       Everything syncs automatically to everyone with the link. No account needed.<br>
-      Share the link above so friends can mark the days they can’t make it — from any phone or laptop.
+      Share the link above so friends can mark the days they can’t make it, from any phone or laptop.
     </p>
     <a href="/">Home</a><span class="sep">•</span>
     <a href="/imprint.html">Imprint</a><span class="sep">•</span>
@@ -513,7 +513,7 @@ function render(){
   if(state.editing && !state.me) state.editing=false;
   const t=ev();
   document.getElementById("eventTitle").textContent=t.title||"Untitled event";
-  document.title=(t.title||"Untitled event")+" — When Can We Go?";
+  document.title=(t.title||"Untitled event")+" | When Can We Go?";
   document.getElementById("eventRange").textContent=`${fmtShort(parseYmd(t.start))} – ${fmtFull(parseYmd(t.end))} · multi-day`;
   const n=people().length;
   document.getElementById("answeredPill").textContent=`${n} answered`;
@@ -567,8 +567,8 @@ function renderBestWindows(){
     : `Longest stretches where nobody has a blocker.`);
   if(!people().length){ bw.innerHTML=`<div class="emptystate">Best windows appear once people mark the days they can’t make it.</div>`; }
   else if(!wins.length){ bw.innerHTML = n>1
-    ? `<div class="emptystate">No stretch of ${n}+ days works for everyone right now — the heatmap below shows where the fewest people are out.</div>`
-    : `<div class="emptystate">Every day has at least one blocker right now — the heatmap below shows where the fewest people are out.</div>`; }
+    ? `<div class="emptystate">No stretch of ${n}+ days works for everyone right now. The heatmap below shows where the fewest people are out.</div>`
+    : `<div class="emptystate">Every day has at least one blocker right now. The heatmap below shows where the fewest people are out.</div>`; }
   else bw.innerHTML=wins.map((w,i)=>{
     const partial=w.clear<w.len;
     const span=fmtRange(parseYmd(w.start),parseYmd(w.end));
@@ -651,7 +651,7 @@ function renderModeBar(){
   if(state.editing){
     const who=`<strong>${escapeHtml(me.name)}</strong>`;
     if(!state.rangeMode) txt.innerHTML=`Editing ${who} · tap a day: Can’t make it → Maybe not → Clear.`;
-    else if(state.anchor) txt.innerHTML=`Range from <strong>${fmtShort(parseYmd(state.anchor))}</strong> — now tap the last day.`;
+    else if(state.anchor) txt.innerHTML=`Range from <strong>${fmtShort(parseYmd(state.anchor))}</strong>. Now tap the last day.`;
     else txt.innerHTML=`Fill with <strong>${BRUSH_LABEL[state.brush]}</strong>: tap the first day, then the last day.`;
     btn.textContent="✓ Done";
   } else {
@@ -730,7 +730,7 @@ function renderEditMonths(){
 function renderPeople(){
   const list=document.getElementById("peopleList");
   const ppl=people();
-  if(!ppl.length){ list.innerHTML=`<div class="emptystate">Nobody yet — be the first to add your dates.</div>`; return; }
+  if(!ppl.length){ list.innerHTML=`<div class="emptystate">Nobody yet. Be the first to add your dates.</div>`; return; }
   list.innerHTML=ppl.map(([pid,p])=>{
     const vals=Object.values(p.days||{});
     const block=vals.filter(v=>v==="block").length;
@@ -900,8 +900,8 @@ function openIdentity(opts={}){
   const picks=ppl.map(([pid,p])=>`<button class="pick" data-pickme="${pid}">${avatar(p,28)}${escapeHtml(p.name)}</button>`).join("");
   openSheet(`
     <h3>Who are you?</h3>
-    <p class="h">So your dates get saved under your name. Stored on this device only — you can change it later in ⚙ Settings.</p>
-    ${ppl.length?`<div class="picklist">${picks}</div><div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:10px">— or —</div>`:""}
+    <p class="h">So your dates get saved under your name. Stored on this device only. You can change it later in ⚙ Settings.</p>
+    ${ppl.length?`<div class="picklist">${picks}</div><div style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:10px">or</div>`:""}
     <div class="field"><label>Add yourself</label><input id="newName" placeholder="Your name" autocomplete="off"></div>
     <div class="row">
       <button class="btn primary" id="newGo" style="flex:1;justify-content:center">Add me</button>
@@ -950,7 +950,7 @@ function openAddPerson(){
 /* ⚙ Settings — the one deliberate place to change who you are */
 function openSettings(){
   const ppl=people();
-  const opts=[`<option value="">Nobody — just viewing</option>`]
+  const opts=[`<option value="">Nobody, just viewing</option>`]
     .concat(ppl.map(([pid,p])=>`<option value="${pid}"${pid===state.me?" selected":""}>${escapeHtml(p.name)}</option>`)).join("");
   openSheet(`
     <h3>Settings</h3>
@@ -1078,7 +1078,7 @@ async function copyShareUrl(){
   const isFile=location.protocol==="file:";
   try{
     await navigator.clipboard.writeText(url);
-    toast(isFile?"Link copied — but host the file online so friends can open it":"Link copied! Send it to your friends");
+    toast(isFile?"Link copied, but host the file online so friends can open it":"Link copied! Send it to your friends");
     return true;
   }
   catch(e){

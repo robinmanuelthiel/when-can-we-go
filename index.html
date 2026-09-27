@@ -9,21 +9,21 @@
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 <title>When Can We Go? | Group Event Planner</title>
-<meta name="description" content="Find a date that works for everyone. Everyone marks the days they can't make it, and the best windows rise to the top — no accounts, just a link to share.">
+<meta name="description" content="Find a date that works for everyone. Everyone marks the days they can't make it, and the best windows rise to the top. No accounts, just a link to share.">
 <link rel="canonical" href="https://whencanwego.net/">
 <!-- Open Graph / social share -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="When Can We Go?">
 <meta property="og:title" content="When Can We Go?">
-<meta property="og:description" content="Find a date that works for everyone. Everyone marks the days they can't make it, and the best windows rise to the top — no accounts, just a link to share.">
+<meta property="og:description" content="Find a date that works for everyone. Everyone marks the days they can't make it, and the best windows rise to the top. No accounts, just a link to share.">
 <meta property="og:url" content="https://whencanwego.net/">
 <meta property="og:image" content="https://whencanwego.net/assets/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="When Can We Go? — a group event date planner">
+<meta property="og:image:alt" content="When Can We Go? A group event date planner">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="When Can We Go?">
-<meta name="twitter:description" content="Find a date that works for everyone. Everyone marks the days they can't make it, and the best windows rise to the top — no accounts, just a link to share.">
+<meta name="twitter:description" content="Find a date that works for everyone. Everyone marks the days they can't make it, and the best windows rise to the top. No accounts, just a link to share.">
 <meta name="twitter:image" content="https://whencanwego.net/assets/og-image.png">
 <style>
   :root{
@@ -68,10 +68,148 @@
 
   /* ---------- Landing ---------- */
   .landing-hero{padding:14px 2px 22px;max-width:640px}
-  .landing-hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,7vw,46px);line-height:1.06;margin:10px 0 12px;letter-spacing:-.01em}
+  .landing-hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,7vw,46px);line-height:1.16;margin:10px 0 12px;letter-spacing:-.01em}
+  .scribble{position:relative;white-space:nowrap;display:inline-block}
+  .scribble svg{position:absolute;left:-2%;bottom:-.3em;width:104%;height:.5em;overflow:visible;pointer-events:none}
+  .scribble path{fill:none;stroke:var(--accent);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:1;stroke-dashoffset:1;animation:scribble 1.1s cubic-bezier(.6,.05,.3,1) .35s forwards}
+  @keyframes scribble{to{stroke-dashoffset:0}}
+  @media (prefers-reduced-motion:reduce){.scribble path{animation:none;stroke-dashoffset:0}}
   .landing-hero .lead{color:var(--muted);font-size:16px;line-height:1.5;margin:0}
   .landing-hero .lead em{color:var(--ink);font-style:normal;font-weight:650}
   .landing-card{max-width:520px}
+  .landing-hero .hero-uses{margin-top:20px}
+  .top{display:grid;gap:0 32px;align-items:start}
+  .top .landing-card{width:100%;max-width:none}
+  .top .forms{min-width:0}
+  .top .join{margin-bottom:0}
+  @media (min-width:900px){
+    .top{grid-template-columns:minmax(0,1fr) 460px;grid-template-areas:"hero forms"}
+    .top .landing-hero{grid-area:hero;align-self:center;padding:0}
+    .top .forms{grid-area:forms;margin-top:16px}
+  }
+
+
+  /* ---------- Hand-drawn doodles ---------- */
+  @media (max-width:1239px){html,body{overflow-x:clip}}
+  .section,.cta,.landing-hero{position:relative;isolation:isolate}
+  .doodle{position:absolute;z-index:-1;pointer-events:none;color:#b3a28c;line-height:0;
+    animation:doodle-float 7s ease-in-out infinite alternate}
+  .doodle svg{overflow:visible;filter:url(#rough)}
+  .doodle path{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:1;stroke-dashoffset:1;opacity:0}
+  .doodle.in path{animation:doodle-draw .9s cubic-bezier(.6,.05,.3,1) forwards;animation-delay:calc(var(--d,0s) + var(--dd,0s))}
+  .doodle.qm path{stroke-width:3}
+  .doodle.qm path:last-child{stroke-width:5}
+  .doodle.inline{position:relative;display:inline-block;vertical-align:baseline;margin-left:8px;z-index:auto}
+  @keyframes doodle-draw{from{opacity:1;stroke-dashoffset:1}to{opacity:1;stroke-dashoffset:0}}
+  @keyframes doodle-float{from{transform:translateY(0) rotate(var(--r,0deg))}to{transform:translateY(-5px) rotate(calc(var(--r,0deg) + 3deg))}}
+  .d-cal{display:none}
+  .d-cal .cal-arrow{display:none;position:absolute;left:318px;top:-34px}
+  @media (min-width:1080px){.d-cal{margin-left:90px}.d-cal .cal-arrow{display:block}}
+  .doodle.in .cal-arrow path{animation-duration:1s;animation-timing-function:cubic-bezier(.45,.05,.35,1)}
+  .doodle.in .cal-arrow .head{animation-duration:.3s}
+  .d-cal .sm{stroke-width:1.6;opacity:.7}
+  .doodle.in .x{animation-duration:.2s}
+  .d-cal .win{stroke:var(--accent);stroke-width:3.4}
+  .doodle.in .win{animation-duration:1.1s}
+  @media (min-width:900px){.d-cal{display:block;position:relative;z-index:auto;margin-top:36px;animation:none;opacity:.95}.d-cal .cal-svg{width:300px;height:auto}}
+  .compare .us{position:relative}
+  .d-us-rays{inset:-30px;animation:none}
+  .d-us-rays svg{width:100%;height:100%}
+  .d-us-rays path{stroke-width:2.6}
+  .section .compare{gap:44px;margin-top:28px}
+  .section .calendar-note{margin-top:48px}
+  @media (min-width:760px){.section .compare{gap:56px}}
+  .d-clock{top:30px;right:4px;--r:6deg}
+  .d-loop{display:none}
+  @media (min-width:900px){.d-loop{display:block;top:26px;left:300px;--dd:.2s;--r:-6deg}}
+  .d-heart{top:34px;left:clamp(186px,26vw,250px);--r:-8deg}
+  .d-star2{top:18px;left:calc(clamp(186px,26vw,250px) + 44px);--dd:.4s}
+  .d-star3{top:50px;left:calc(clamp(186px,26vw,250px) + 76px);--dd:.7s}
+  .d-star3 svg{width:17px;height:17px}
+  .d-qm1{top:14px;right:10px;--r:12deg}
+  .d-qm2{top:38px;right:68px;--r:-14deg;--dd:.3s}
+  .d-qm3{display:none}
+  .d-left{display:none}
+  @media (min-width:1240px){
+    .d-qm3{display:block;left:-92px;top:200px;--r:-10deg;--dd:.6s}
+    .d-left{display:block}
+    .d-spiral{left:-104px;top:56%;--r:8deg;--dd:.3s}
+    .d-bang{left:-78px;top:44%;--r:-6deg}
+  }
+  .cta-btn{position:relative;display:inline-block}
+  .d-cta-l{left:-82px;top:-18px}
+  .d-cta-r{right:-82px;top:-18px;--dd:.2s}
+  @media (prefers-reduced-motion:reduce){.doodle{animation:none}.doodle path,.doodle.in path{animation:none;stroke-dashoffset:0;opacity:1}}
+
+  /* ---------- Marketing sections ---------- */
+  .section{padding:40px 2px 8px}
+  .section > h2{font-family:var(--serif);font-weight:600;font-size:clamp(24px,4.6vw,32px);line-height:1.12;margin:0 0 8px;letter-spacing:-.01em}
+  .section > h2:not(:has(+ .sub)){margin-bottom:20px}
+  .section > .sub{color:var(--muted);margin:0 0 20px;max-width:640px}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .grid .card{margin:0}
+  .grid .card h3{margin:0 0 6px;font-size:16px;letter-spacing:-.01em}
+  .grid .card p{margin:0;color:#4a514a;font-size:14.5px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;
+       background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:14px;margin-bottom:10px}
+  .steps{display:grid;gap:14px;grid-template-columns:1fr}
+  .steps .card{margin:0;position:relative}
+  @media (min-width:900px){
+    .steps{grid-template-columns:repeat(4,1fr)}
+  }
+  .steps h3{margin:0 0 6px;font-size:16px;letter-spacing:-.01em}
+  .steps p{margin:0;color:#4a514a;font-size:14.5px}
+
+  .compare{display:grid;gap:14px;grid-template-columns:1fr}
+  @media (min-width:760px){.compare{grid-template-columns:1fr 1fr}}
+  .compare .card{margin:0;display:flex;flex-direction:column;min-width:0}
+  .compare h3{margin:0 0 4px;font-size:16px}
+  .compare .card > p{margin:0 0 14px;color:#4a514a;font-size:14.5px}
+  .compare .strip{margin-top:auto;max-width:420px}
+  .compare .us{border:2px solid var(--accent);background:linear-gradient(160deg,#fff 0%,var(--accent-soft) 100%);
+               box-shadow:0 2px 4px rgba(224,82,74,.08),0 16px 40px rgba(224,82,74,.16)}
+  .compare .us h3{font-size:18px}
+  @media (max-width:1139px){.compare .card.us{margin-right:16px}}
+  @media (max-width:759px){.compare .card.us{margin-left:16px;box-shadow:0 2px 4px rgba(224,82,74,.08),0 12px 26px rgba(224,82,74,.14)}}
+  .compare .card:not(.us){background:#fbfaf6;box-shadow:none}
+  .us-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .us-head img{width:60px;height:60px;margin:-6px -4px -6px -8px;flex:none;object-fit:contain}
+  .us-head .tag-label{margin:0 0 2px}
+  .us-head h3{margin:0}
+  .tag-label{display:inline-block;font-size:11.5px;font-weight:750;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .us .tag-label{color:var(--accent)}
+
+  /* tiny illustrative calendar strips */
+  .strip{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px;width:100%}
+  .strip span{aspect-ratio:1;border-radius:6px;background:#f4f1ea;border:1px solid var(--line)}
+  .strip .opt{background:#fff;border:2px dashed #c9c1b1}
+  .strip .no{background:#f6d4d0;border-color:#efbcb6}
+  .strip .mb{background:#fbeed3;border-color:#f0d79b}
+  .strip .fr{background:#fff}
+  .strip .win{background:#dff3e6;border-color:#9fd6b2}
+  .strip-cap{color:var(--muted);font-size:12.5px;margin-top:8px}
+
+  .calendar-note{margin-top:28px}
+  .quote{padding:0;margin:0;max-width:700px;font-family:var(--serif);font-size:clamp(18px,3.4vw,22px);line-height:1.4}
+
+  .uses{display:flex;flex-wrap:wrap;gap:10px;padding:0;margin:0;list-style:none}
+  .uses li{display:inline-flex;gap:7px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:600;font-size:14.5px;box-shadow:var(--shadow)}
+
+  .faq{max-width:none}
+  .faq details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+  .faq summary{font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+";color:var(--accent);font-weight:800}
+  .faq details[open] summary::after{content:"–"}
+  .faq details p{margin:10px 0 0;color:#4a514a;font-size:14.5px}
+  .faq a{color:var(--accent)}
+
+  .cta{text-align:center;padding:44px 16px 12px}
+  .cta h2{font-family:var(--serif);font-weight:600;font-size:clamp(24px,4.6vw,32px);margin:0 0 14px}
+  .cta .btn{font-size:16px;padding:13px 20px;text-decoration:none}
+
   .invitee{display:flex;gap:8px;margin-bottom:8px}
   .invitee input{flex:1;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6}
 
@@ -86,18 +224,26 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="2.2"/></filter></svg>
 <div class="wrap">
 
   <header style="padding:6px 0">
     <div class="brand"><span class="dot"></span> When Can We Go?</div>
   </header>
 
+  <div class="top">
   <div class="landing-hero">
-    <h1>Find a date that works for everyone.</h1>
-    <p class="lead">Set up an event — a trip, a dinner, a game night — invite your friends, and let everyone mark the days they <em>can’t</em> make it. The best windows rise to the top. No accounts, just a link to share.</p>
+    <h1>Find <span class="scribble">a date that works<svg viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M6 13 C 70 6, 170 3, 296 7 C 220 11, 120 16, 60 22"/></svg></span> for everyone.<span class="doodle inline in" aria-hidden="true"><svg viewBox="0 0 32 32" width="22" height="22" focusable="false"><path pathLength="1" style="--d:0.00s" d="M16 2 C 16 12, 19 15, 30 16 C 19 17, 16 20, 16 30 C 16 20, 13 17, 2 16 C 13 15, 16 12, 16 2"/></svg></span></h1>
+    <p class="lead">Set up an event (a trip, a dinner, a game night), invite your friends, and let everyone mark the days they <em>can’t</em> make it. The best windows rise to the top. No accounts, just a link to share.</p>
+    <ul class="uses hero-uses" aria-label="Made for plans like">
+      <li><span aria-hidden="true">🏖️</span>Group vacations</li><li><span aria-hidden="true">🍻</span>Weekend trips</li><li><span aria-hidden="true">🏢</span>Team offsites</li><li><span aria-hidden="true">👨‍👩‍👧</span>Family reunions</li>
+      <li><span aria-hidden="true">🎲</span>Game nights</li><li><span aria-hidden="true">🍝</span>Dinners</li><li><span aria-hidden="true">🎂</span>Birthdays</li><li><span aria-hidden="true">⛷️</span>Ski weeks</li>
+    </ul>
+    <span class="doodle d-cal" aria-hidden="true"><svg class="cal-svg" viewBox="-4 0 248 176" width="248" height="176" focusable="false"><path pathLength="1" style="--d:0.00s" d="M12 20 C 70 17.15535388715979, 170 19.73013130953829, 230 21 C 231 70, 229 120, 229 160 C 170 162, 70 159, 10 160 C 9 110, 11 60, 12 20"/><path pathLength="1" style="--d:0.35s" d="M10 46 C 80 44, 160 48, 230 46"/><path pathLength="1" class="sm" style="--d:0.50s" d="M60 8 L 60 30"/><path pathLength="1" class="sm" style="--d:0.55s" d="M180 8 L 180 30"/><path pathLength="1" class="sm" style="--d:0.60s" d="M41.1 46 Q 39.8 103.0 40.0 160"/><path pathLength="1" class="sm" style="--d:0.65s" d="M72.5 46 Q 74.9 103.0 73.8 160"/><path pathLength="1" class="sm" style="--d:0.70s" d="M105.1 46 Q 103.0 103.0 104.4 160"/><path pathLength="1" class="sm" style="--d:0.75s" d="M135.0 46 Q 134.1 103.0 134.5 160"/><path pathLength="1" class="sm" style="--d:0.80s" d="M166.2 46 Q 169.2 103.0 168.2 160"/><path pathLength="1" class="sm" style="--d:0.85s" d="M199.6 46 Q 200.0 103.0 197.6 160"/><path pathLength="1" class="sm" style="--d:0.90s" d="M10 73.9 Q 120.0 75.1 230 75.2"/><path pathLength="1" class="sm" style="--d:0.95s" d="M10 104.1 Q 120.0 104.8 230 101.7"/><path pathLength="1" class="sm" style="--d:1.00s" d="M10 131.8 Q 120.0 132.3 230 131.5"/><path pathLength="1" class="x" style="--d:1.00s" d="M47.9 52.2 L 63.5 68.1"/><path pathLength="1" class="x" style="--d:1.07s" d="M64.3 52.2 L 47.9 69.0"/><path pathLength="1" class="x" style="--d:1.13s" d="M144.4 80.9 L 160.4 96.9"/><path pathLength="1" class="x" style="--d:1.20s" d="M160.8 80.9 L 144.4 97.7"/><path pathLength="1" class="x" style="--d:1.26s" d="M174.9 53.5 L 191.9 69.5"/><path pathLength="1" class="x" style="--d:1.33s" d="M191.3 53.5 L 174.9 69.5"/><path pathLength="1" class="x" style="--d:1.39s" d="M80.1 138.1 L 96.3 154.0"/><path pathLength="1" class="x" style="--d:1.46s" d="M96.5 138.1 L 80.1 153.4"/><path pathLength="1" class="x" style="--d:1.52s" d="M16.9 81.8 L 32.4 97.7"/><path pathLength="1" class="x" style="--d:1.59s" d="M33.3 81.8 L 16.9 96.9"/><path pathLength="1" class="x" style="--d:1.65s" d="M17.9 108.6 L 34.4 124.5"/><path pathLength="1" class="x" style="--d:1.72s" d="M34.3 108.6 L 17.9 124.5"/><path pathLength="1" class="x" style="--d:1.78s" d="M174.2 139.4 L 189.9 155.3"/><path pathLength="1" class="x" style="--d:1.85s" d="M190.5 139.4 L 174.2 155.2"/><path pathLength="1" class="x" style="--d:1.91s" d="M110.9 52.7 L 126.8 68.7"/><path pathLength="1" class="x" style="--d:1.98s" d="M127.2 52.7 L 110.9 68.4"/><path pathLength="1" class="x" style="--d:2.04s" d="M206.9 80.2 L 223.4 96.2"/><path pathLength="1" class="x" style="--d:2.11s" d="M223.2 80.2 L 206.9 96.9"/><path pathLength="1" class="x" style="--d:2.17s" d="M204.8 107.9 L 220.7 123.8"/><path pathLength="1" class="x" style="--d:2.24s" d="M221.2 107.9 L 204.8 124.3"/><path pathLength="1" class="x" style="--d:2.30s" d="M17.9 136.9 L 33.9 152.9"/><path pathLength="1" class="x" style="--d:2.37s" d="M34.3 136.9 L 17.9 152.3"/><path pathLength="1" class="x" style="--d:2.43s" d="M80.3 79.3 L 97.0 95.3"/><path pathLength="1" class="x" style="--d:2.50s" d="M96.6 79.3 L 80.3 96.0"/><path pathLength="1" class="x" style="--d:2.56s" d="M207.6 138.5 L 224.8 154.5"/><path pathLength="1" class="x" style="--d:2.63s" d="M223.9 138.5 L 207.6 153.6"/><path pathLength="1" class="x" style="--d:2.69s" d="M16.9 53.8 L 33.7 69.7"/><path pathLength="1" class="x" style="--d:2.76s" d="M33.2 53.8 L 16.9 69.5"/><path pathLength="1" class="win" style="--d:3.00s" d="M55.4 101.0 C 174.6 97.0, 204.6 109.2, 194.6 123.2 C 184.6 135.5, 65.4 137.5, 43.4 121.2 C 37.4 109.2, 59.4 99.0, 85.4 100.0"/></svg><svg class="cal-arrow" viewBox="0 0 170 130" width="170" height="130" focusable="false"><path pathLength="1" style="--d:4.10s" d="M6 112 C 34 126, 70 118, 80 96 C 88 78, 70 64, 60 78 C 50 94, 84 106, 112 94 C 128 87, 140 82, 162 78"/><path class="head" pathLength="1" style="--d:5.05s" d="M148.8 73.4 L 162 78 L 151.4 87.1"/></svg></span>
   </div>
 
-  <div class="card landing-card">
+  <div class="forms">
+  <div class="card landing-card create" id="create">
     <h2>Start a new event</h2>
     <p class="hint">Pick a name and the date range you’re considering. You can change all of this later.</p>
     <div class="field"><label>Event name</label><input id="lName" placeholder="e.g. Summer in Portugal, Team dinner, Game night" autocomplete="off"></div>
@@ -106,25 +252,97 @@
       <div><label class="sublabel" for="lEnd">and</label><input id="lEnd" type="date"></div></div></div>
     <div class="field"><label>Your name</label><input id="lYou" placeholder="So your answers are saved under your name" autocomplete="off"></div>
     <div class="field">
-      <label>Invite friends <span class="opt">(optional — you can add more anytime)</span></label>
+      <label>Invite friends <span class="opt">(optional, you can add more anytime)</span></label>
       <div id="lInvitees"></div>
       <button class="btn ghost" type="button" id="lAddInvitee" style="color:var(--accent)">+ Add another person</button>
     </div>
     <button class="btn primary" type="button" id="lCreate" style="width:100%;justify-content:center;margin-top:6px">Create event &amp; get link</button>
   </div>
 
-  <div class="card landing-card">
+  <div class="card landing-card join">
     <h2>Join an existing event</h2>
     <p class="hint">Got a link from a friend? Paste the whole link or just the event ID.</p>
-    <div class="field"><input id="lJoin" placeholder="https://…/event?e=abc123  —or—  abc123" autocomplete="off" spellcheck="false"></div>
+    <div class="field"><input id="lJoin" placeholder="https://…/event?e=abc123  or  abc123" autocomplete="off" spellcheck="false"></div>
     <button class="btn" type="button" id="lJoinGo" style="width:100%;justify-content:center">Open event →</button>
   </div>
+  </div>
+
+  </div>
+
+  <main>
+    <section class="section" aria-labelledby="why">
+      <span class="doodle d-left qm d-bang" aria-hidden="true"><svg viewBox="0 0 32 60" width="30" height="56" focusable="false"><path pathLength="1" style="--d:0.00s" d="M16 6 C 15 18, 17 28, 16 38"/><path pathLength="1" style="--d:0.30s" d="M16 50 L 16.5 51"/></svg></span>
+      <h2 id="why">Why this exists</h2>
+      <p class="sub">Most scheduling tools make someone guess a list of dates first, then ask everyone to vote on them. That works for a one-hour meeting. It falls apart when you want “a long weekend sometime in the next three months”.</p>
+      <div class="compare">
+        <div class="card">
+          <span class="tag-label">Typical date polls</span>
+          <h3>Propose options, then vote</h3>
+          <p>The organizer adds every possible date by hand. Everyone checks each one. If the perfect weekend wasn’t on the list, nobody ever finds out.</p>
+          <div class="strip" aria-hidden="true"><span></span><span></span><span></span><span></span><span class="opt"></span><span class="opt"></span><span></span><span></span><span></span><span></span><span></span><span class="opt"></span><span class="opt"></span><span></span></div>
+          <div class="strip-cap">Only the dashed days were ever asked about.</div>
+        </div>
+        <div class="card us">
+          <span class="doodle d-us-rays" aria-hidden="true"><svg focusable="false"></svg></span>          
+          <div class="us-head">
+            <img src="assets/icon-transparent.png" alt="" width="60" height="60">
+            <div><span class="tag-label">When Can We Go?</span>
+            <h3>Mark when you can’t go, and that’s it</h3></div>
+          </div>
+          <p>Pick a broad range. Everyone taps the few days they really can’t make it (or “maybe not”). The app checks every day and finds the free stretches for you.</p>
+          <div class="strip" aria-hidden="true"><span class="fr"></span><span class="no"></span><span class="mb"></span><span class="win"></span><span class="win"></span><span class="win"></span><span class="win"></span><span class="win"></span><span class="no"></span><span class="fr"></span><span class="mb"></span><span class="fr"></span><span class="fr"></span><span class="no"></span></div>
+          <div class="strip-cap">Every day is covered. Green is a window where nobody is blocked.</div>
+        </div>
+      </div>
+      <div class="calendar-note">
+        <blockquote class="quote">Your calendar says you’re busy every single day. We ask which days you <em>really</em> can’t do.</blockquote>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="how">
+      <span class="doodle d-clock" aria-hidden="true"><svg viewBox="0 0 60 60" width="48" height="48" focusable="false"><path pathLength="1" style="--d:0.00s" d="M31 6 C 47 7, 55 21, 53 33 C 51 47, 37 55, 25 53 C 11 51, 4 39, 6 27 C 8 15, 18 7, 34 8"/><path pathLength="1" style="--d:0.35s" d="M29 30 L 29 16"/><path pathLength="1" style="--d:0.70s" d="M29 30 L 40 35"/></svg></span><span class="doodle d-loop" aria-hidden="true"><svg viewBox="0 0 64 60" width="58" height="54" focusable="false"><path pathLength="1" style="--d:0.00s" d="M8 12 C 22 11, 44 11, 58 12 C 59 26, 59 42, 57 54 C 42 55, 22 55, 7 54 C 6 40, 7 26, 8 12"/><path pathLength="1" style="--d:0.25s" d="M8 22 C 26 21, 42 23, 58 22"/><path pathLength="1" style="--d:0.50s" d="M20 6 L 20 16"/><path pathLength="1" style="--d:0.75s" d="M46 6 L 46 16"/><path pathLength="1" style="--d:1.00s" d="M16 30 L 25 39"/><path pathLength="1" style="--d:1.25s" d="M25 30 L 16 39"/><path pathLength="1" style="--d:1.50s" d="M40 34 C 42 30, 52 30, 51 37 C 50 43, 41 43, 40 37 C 39 33, 44 30, 49 31"/></svg></span>
+      <span class="doodle d-left d-spiral" aria-hidden="true"><svg viewBox="0 0 60 60" width="60" height="60" focusable="false"><path pathLength="1" style="--d:0.00s" d="M30 30 C 30 26, 36 26, 36 31 C 36 38, 25 39, 23 31 C 21 21, 38 18, 43 29 C 48 41, 34 50, 22 46 C 8 41, 8 20, 22 13 C 36 6, 52 14, 54 28"/></svg></span>
+      <h2 id="how">How it works</h2>
+      <p class="sub">About a minute of work for each person.</p>
+      <div class="steps">
+        <div class="card"><span class="num">1</span><h3>Create an event</h3><p>Give it a name and a date range, like “any time between June and August”. No account needed.</p></div>
+        <div class="card"><span class="num">2</span><h3>Share the link</h3><p>Drop it into your group chat. Anyone with the link can open it on their phone or laptop and add their name.</p></div>
+        <div class="card"><span class="num">3</span><h3>Mark your blockers</h3><p>Tap a day to switch between <em>free</em>, <em>can’t make it</em> and <em>maybe not</em>. Everything else counts as free.</p></div>
+        <div class="card"><span class="num">4</span><h3>See the best windows</h3><p>A live heatmap shows the whole group at once, and the longest stretches where nobody is blocked are listed first.</p></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="features">
+      <span class="doodle d-heart" aria-hidden="true"><svg viewBox="0 0 60 60" width="34" height="34" focusable="false"><path pathLength="1" style="--d:0.00s" d="M30 50 C 10 36, 4 22, 14 14 C 22 8, 30 16, 30 22 C 30 16, 38 8, 46 14 C 56 22, 50 36, 30 50"/></svg></span><span class="doodle d-star2" aria-hidden="true"><svg viewBox="0 0 32 32" width="26" height="26" focusable="false"><path pathLength="1" style="--d:0.00s" d="M16 2 C 16 12, 19 15, 30 16 C 19 17, 16 20, 16 30 C 16 20, 13 17, 2 16 C 13 15, 16 12, 16 2"/></svg></span><span class="doodle d-star3" aria-hidden="true"><svg viewBox="0 0 32 32" width="26" height="26" focusable="false"><path pathLength="1" style="--d:0.00s" d="M16 2 C 16 12, 19 15, 30 16 C 19 17, 16 20, 16 30 C 16 20, 13 17, 2 16 C 13 15, 16 12, 16 2"/></svg></span>
+      <h2 id="features">What you get</h2>
+      <ul class="uses">
+        <li><span aria-hidden="true">🔗</span>Just a link, no sign-up</li><li><span aria-hidden="true">🗓️</span>Plan months ahead</li><li><span aria-hidden="true">🟠</span>“Maybe not” for soft blockers</li><li><span aria-hidden="true">🔥</span>Live group heatmap</li>
+        <li><span aria-hidden="true">🏆</span>Best windows, ranked</li><li><span aria-hidden="true">⚡</span>Real-time sync</li><li><span aria-hidden="true">🙋</span>Only you edit your days</li><li><span aria-hidden="true">🔒</span>No ads, no tracking, EU-hosted</li>
+      </ul>
+    </section>
+
+    <section class="section faq" aria-labelledby="faq">
+      <span class="doodle qm d-qm1" aria-hidden="true"><svg viewBox="0 0 40 60" width="44" height="66" focusable="false"><path pathLength="1" style="--d:0.00s" d="M10 18 C 8 4, 34 2, 33 17 C 32 28, 20 27, 21 40"/><path pathLength="1" style="--d:0.35s" d="M21 52 L 21.5 53"/></svg></span><span class="doodle qm d-qm2" aria-hidden="true"><svg viewBox="0 0 40 60" width="26" height="40" focusable="false"><path pathLength="1" style="--d:0.00s" d="M10 18 C 8 4, 34 2, 33 17 C 32 28, 20 27, 21 40"/><path pathLength="1" style="--d:0.35s" d="M21 52 L 21.5 53"/></svg></span><span class="doodle qm d-qm3" aria-hidden="true"><svg viewBox="0 0 40 60" width="48" height="72" focusable="false"><path pathLength="1" style="--d:0.00s" d="M10 18 C 8 4, 34 2, 33 17 C 32 28, 20 27, 21 40"/><path pathLength="1" style="--d:0.35s" d="M21 52 L 21.5 53"/></svg></span>
+      <h2 id="faq">Questions</h2>
+      <details><summary>Is it really free?</summary><p>Yes. There is no paid tier, no ads, and nothing to unlock.</p></details>
+      <details><summary>Does anyone need an account?</summary><p>No, not even the organizer. You create an event, get a link and share it. People open the link and add their name.</p></details>
+      <details><summary>How is this different from Doodle or When2meet?</summary><p>Those tools ask you to vote on dates someone proposed, or to paint every hour you’re free. Here you only mark the days you can’t make it across a whole range, and the app finds the free stretches. It’s built for days and multi-day windows, not one-hour slots.</p></details>
+      <details><summary>Why can’t I import my calendar?</summary><p>Because a busy calendar has something on almost every day. Whether that stand-up or appointment actually stops you from going is something only you can decide, so you mark the days that really matter.</p></details>
+      <details><summary>Who can see my answers?</summary><p>Everyone who has the event link can see and edit the event, so only share it with the people you’re planning with. A first name or nickname is enough. See the <a href="privacy.html">privacy policy</a> for details.</p></details>
+      <details><summary>Can I delete an event or a person?</summary><p>You can remove a person and their markings directly in the event. To delete a whole event, get in touch via the <a href="imprint.html">imprint</a> and include the link.</p></details>
+    </section>
+
+    <section class="cta">
+      <h2>Ready to find a date?</h2>
+      <span class="cta-btn"><span class="doodle d-cta-l" aria-hidden="true"><svg viewBox="0 0 70 40" width="64" height="38" focusable="false"><path pathLength="1" style="--d:0.00s" d="M4 30 C 20 6, 44 44, 62 20"/><path pathLength="1" style="--d:0.35s" d="M50 16 L 64 18 L 60 32"/></svg></span><a class="btn primary" href="#create" id="ctaCreate">Start a new event →</a><span class="doodle d-cta-r" aria-hidden="true"><svg viewBox="0 0 70 40" width="64" height="38" focusable="false"><path pathLength="1" style="--d:0.00s" d="M66 30 C 50 6, 26 44, 8 20"/><path pathLength="1" style="--d:0.35s" d="M20 16 L 6 18 L 10 32"/></svg></span></span>
+    </section>
+  </main>
 
   <footer class="site-footer">
     <p class="foot-note">Everything syncs to everyone with the link. No account needed.</p>
     <a href="/">Home</a><span class="sep">•</span>
-    <a href="imprint.html">Imprint</a><span class="sep">•</span>
-    <a href="privacy.html">Privacy</a>
+    <a href="imprint.html">Imprint (Impressum)</a><span class="sep">•</span>
+    <a href="privacy.html">Privacy Policy</a>
     <br>© 2026 Robin-Manuel Thiel
   </footer>
 </div>
@@ -239,6 +457,43 @@ function init(){
   document.getElementById("lCreate").onclick=createEvent;
   document.getElementById("lJoinGo").onclick=joinEvent;
   document.getElementById("lJoin").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); joinEvent(); } });
+
+
+  const rays=document.querySelector(".d-us-rays");
+  function drawRays(){
+    const svg=rays.querySelector("svg"), W=svg.clientWidth, H=svg.clientHeight, pad=30;
+    const cw=W-2*pad, ch=H-2*pad, cx=W/2, cy=H/2, small=W<520;
+    const gap=small?5:8, per=2*(cw+ch), n=Math.round(per/(small?30:36));
+    let seed=7; const rnd=()=>((seed=(seed*9301+49297)%233280)/233280);
+    let html="";
+    for(let i=0;i<n;i++){
+      let d=((i+.5+(rnd()-.5)*.5)/n)*per, px, py, nx, ny;
+      if(d<cw){px=pad+d;py=pad;nx=0;ny=-1;}
+      else if((d-=cw)<ch){px=pad+cw;py=pad+d;nx=1;ny=0;}
+      else if((d-=ch)<cw){px=pad+cw-d;py=pad+ch;nx=0;ny=1;}
+      else{d-=cw;px=pad;py=pad+ch-d;nx=-1;ny=0;}
+      let rx=px-cx, ry=py-cy; const rl=Math.hypot(rx,ry)||1; rx/=rl; ry/=rl;
+      let dx=nx*.6+rx*.4, dy=ny*.6+ry*.4; const dl=Math.hypot(dx,dy); dx/=dl; dy/=dl;
+      const len=(small?7:10)+rnd()*(small?6:9), g=gap+rnd()*4;
+      const x1=px+dx*g, y1=py+dy*g, x2=x1+dx*len, y2=y1+dy*len;
+      const bx=(x1+x2)/2+dy*1.5, by=(y1+y2)/2-dx*1.5;
+      html+=`<path pathLength="1" style="--d:${(i/n*.9).toFixed(2)}s" d="M${x1.toFixed(1)} ${y1.toFixed(1)} Q ${bx.toFixed(1)} ${by.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}"/>`;
+    }
+    svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+    svg.innerHTML=html;
+  }
+  drawRays();
+  let raysT; addEventListener("resize",()=>{clearTimeout(raysT);raysT=setTimeout(drawRays,150);});
+  const doodles=document.querySelectorAll(".doodle");
+  if("IntersectionObserver" in window){
+    const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}}),{rootMargin:"0px 0px -10% 0px"});
+    doodles.forEach(d=>io.observe(d));
+  } else doodles.forEach(d=>d.classList.add("in"));
+  document.getElementById("ctaCreate").onclick=e=>{
+    e.preventDefault();
+    document.getElementById("create").scrollIntoView({behavior:"smooth",block:"center"});
+    setTimeout(()=>document.getElementById("lName").focus({preventScroll:true}),400);
+  };
 }
 init();
 </script>
