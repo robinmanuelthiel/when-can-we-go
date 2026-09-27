@@ -116,9 +116,10 @@
   .d-clock{top:30px;right:4px;--r:6deg}
   .d-loop{display:none}
   @media (min-width:900px){.d-loop{display:block;top:26px;left:300px;--dd:.2s;--r:-6deg}}
-  .d-heart{top:28px;right:60px;--r:-8deg}
-  .d-star2{top:22px;right:8px;--dd:.4s}
-  .d-star3{top:70px;right:30px;--dd:.7s;transform:scale(.6)}
+  .d-heart{top:34px;left:clamp(186px,26vw,250px);--r:-8deg}
+  .d-star2{top:18px;left:calc(clamp(186px,26vw,250px) + 44px);--dd:.4s}
+  .d-star3{top:50px;left:calc(clamp(186px,26vw,250px) + 76px);--dd:.7s}
+  .d-star3 svg{width:17px;height:17px}
   .d-qm1{top:14px;right:10px;--r:12deg}
   .d-qm2{top:38px;right:68px;--r:-14deg;--dd:.3s}
   .d-qm3{display:none}
