@@ -165,7 +165,8 @@
   .scale .bar i{width:16px;height:14px;display:block}
 
   /* ---------- Best windows ---------- */
-  .filters{display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+  .filters-wrap{container-type:inline-size;margin:0 0 12px}
+  .filters{display:flex;gap:10px 14px;align-items:center}
   .wdays{display:flex;gap:4px;flex-wrap:wrap}
   .wday{min-width:40px;padding:7px 8px;border-radius:10px;border:1px solid var(--line);background:#fbfaf6;font-weight:700;font-size:13px;color:var(--muted)}
   .wday.on{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -174,7 +175,13 @@
   .stepper .sbox button{width:32px;height:32px;font-size:17px;font-weight:700;color:var(--ink)}
   .stepper .sbox button:disabled{opacity:.3;cursor:default}
   .stepper .sval{min-width:58px;text-align:center;color:var(--ink);font-weight:750}
-  .filters .fnote{flex-basis:100%;color:var(--muted);font-size:12px;margin-top:-4px}
+  /* too narrow for one row: stack both controls, each full width */
+  @container (max-width:540px){
+    .filters{flex-direction:column;align-items:stretch}
+    .stepper .sbox{flex:1;justify-content:space-between}
+    .wdays{flex-wrap:nowrap}
+    .wday{flex:1 1 0;min-width:0;padding:7px 0}
+  }
   .win{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;margin-bottom:9px;background:#f5faf6}
   .win .rk{width:26px;height:26px;border-radius:50%;background:var(--yes);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
   .win.partial{background:#fbf7ef}.win.partial .rk{background:#c8ad6a}
@@ -287,12 +294,11 @@
     <div class="card">
       <h2>Best windows</h2>
       <p class="hint" id="bestHint">Longest stretches where nobody has a blocker (✓ = fully free, no maybes either).</p>
-      <div class="filters">
-        <div class="wdays" id="wdFilter" role="group" aria-label="Days to consider"></div>
+      <div class="filters-wrap"><div class="filters">
         <div class="stepper"><span id="lenLabel">At least</span>
           <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><span class="sval" id="lenVal" aria-live="polite">1 day</span><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
-        <div class="fnote">Filters apply for everyone on this event.</div>
-      </div>
+        <div class="wdays" id="wdFilter" role="group" aria-label="Days to consider"></div>
+      </div></div>
       <div id="bestWindows"></div>
     </div>
     <div class="card modebar" id="modeBar">
