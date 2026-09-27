@@ -175,7 +175,9 @@
   .stepper .sbox button{width:32px;height:32px;font-size:17px;font-weight:700;color:var(--ink)}
   .stepper .sbox button:disabled{opacity:.3;cursor:default}
   .stepper .sval{min-width:88px;padding:0 4px;text-align:center;color:var(--muted);font-weight:500;white-space:nowrap}
-  .stepper .sval b{color:var(--ink);font-weight:750}
+  .stepper .sval b{color:var(--ink);font-weight:750;margin-left:.3em}
+  .stepper .sval input{width:2ch;padding:2px 0;margin:0 1px 0 2px;border:none;border-radius:6px;background:transparent;font:inherit;font-weight:750;color:var(--ink);text-align:right;cursor:text}
+  .stepper .sval input:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff;text-align:center}
   /* too narrow for one row: stack both controls, each full width */
   @container (max-width:540px){
     .filters{flex-direction:column;align-items:stretch}
@@ -298,7 +300,7 @@
       <div class="filters-wrap"><div class="filters">
         <div class="wdays" id="wdFilter" role="group" aria-label="Days to consider"></div>
         <div class="stepper">
-          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><span class="sval" id="lenVal" aria-live="polite">min <b>1 day</b></span><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
+          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><label class="sval" for="lenInput">min.<input id="lenInput" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Minimum consecutive days" value="1"><b id="lenUnit">day</b></label><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
       </div></div>
       <div id="bestWindows"></div>
     </div>
@@ -578,7 +580,10 @@ function maxLength(){ return rangeLength(ev().start, ev().end); }
 function renderFilters(){
   const wd=evWeekdays(), n=evLength();
   document.getElementById("wdFilter").innerHTML=DOW.map((d,i)=>`<button type="button" class="wday${wd.includes(i)?" on":""}" data-wd="${i}" aria-pressed="${wd.includes(i)}">${d}</button>`).join("");
-  document.getElementById("lenVal").innerHTML = `min <b>${n} day${n>1?"s":""}</b>`;
+  const li=document.getElementById("lenInput");
+  if(document.activeElement!==li){ li.value=n; sizeLenInput(); }     // don't clobber typing on a live sync
+  li.setAttribute("aria-valuemax",maxLength());
+  document.getElementById("lenUnit").textContent = n>1 ? "days" : "day";
   document.getElementById("lenDec").disabled = n<=1;
   document.getElementById("lenInc").disabled = n>=maxLength();
 }
@@ -594,6 +599,16 @@ function toggleWeekday(i){
   const wd=evWeekdays();
   if(wd.includes(i) && wd.length===1){ toast("Keep at least one day"); return; }
   setFilters(wd.includes(i) ? wd.filter(x=>x!==i) : wd.concat(i), evLength());
+}
+function sizeLenInput(){ const li=document.getElementById("lenInput"); li.style.width=Math.max(1,li.value.length)+0.6+"ch"; }
+/* typed value: clamp to 1…range length; anything unparseable falls back to the current value */
+function commitLengthInput(){
+  const li=document.getElementById("lenInput");
+  const v=parseInt(li.value,10);
+  if(!Number.isFinite(v)){ li.value=evLength(); sizeLenInput(); return; }
+  const n=Math.max(1, Math.min(maxLength(), v));
+  li.value=n; sizeLenInput();
+  if(n!==evLength()) setFilters(evWeekdays(), n); else renderFilters();
 }
 function stepLength(dir){
   setFilters(evWeekdays(), Math.max(1, Math.min(maxLength(), evLength()+dir)));
@@ -1150,6 +1165,15 @@ function bindUI(){
   document.getElementById("wdFilter").onclick=e=>{ const b=e.target.closest("[data-wd]"); if(b) toggleWeekday(Number(b.dataset.wd)); };
   document.getElementById("lenDec").onclick=()=>stepLength(-1);
   document.getElementById("lenInc").onclick=()=>stepLength(1);
+  const li=document.getElementById("lenInput");
+  li.addEventListener("focus",()=>li.select());
+  li.addEventListener("input",()=>{ li.value=li.value.replace(/\D/g,"").slice(0,4); sizeLenInput(); });
+  li.addEventListener("change",commitLengthInput);
+  li.addEventListener("keydown",e=>{
+    if(e.key==="Enter"){ e.preventDefault(); li.blur(); }
+    else if(e.key==="Escape"){ li.value=evLength(); li.blur(); }
+    else if(e.key==="ArrowUp"||e.key==="ArrowDown"){ e.preventDefault(); stepLength(e.key==="ArrowUp"?1:-1); li.value=evLength(); sizeLenInput(); li.select(); }
+  });
   document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; renderEditMonths(); renderModeBar(); });
   document.getElementById("rangeToggle").onclick=()=>{
     state.rangeMode=!state.rangeMode; state.anchor=null;
