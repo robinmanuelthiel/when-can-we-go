@@ -138,7 +138,9 @@
   .day.has{color:var(--ink)}
   .day:active{transform:scale(.94)}
   .day.empty{visibility:hidden}
-  .day.out{opacity:.32;pointer-events:none}
+  /* outside the date range: just the number, no tile — clearly not tappable */
+  .day.out,.months.editing .day.out{background:transparent!important;border-color:transparent!important;color:#b9beb6!important;opacity:.7;pointer-events:none}
+  .day.out .mk,.day.out .cnt{display:none}
   /* edit mode: my own states (what I CAN'T make) */
   .months.editing .day.has{background:#fff;user-select:none;-webkit-user-select:none}
   .months.editing .day.s-block{background:var(--block-bg);border-color:#f1c2bd;color:#a32d23}
@@ -152,6 +154,7 @@
   /* weekday not considered for best windows: still editable, just faded */
   .day.skip{opacity:.45}
   .day.skip.dim{opacity:.2}
+  .day.skip.out{opacity:.7}
   .dow span.skip{opacity:.4}
 
   .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
