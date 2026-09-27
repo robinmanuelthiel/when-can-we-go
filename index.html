@@ -93,6 +93,17 @@
   .grid .card p{margin:0;color:#4a514a;font-size:14.5px}
   .num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;
        background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:14px;margin-bottom:10px}
+  .steps{display:grid;gap:26px;grid-template-columns:1fr}
+  .steps .card{margin:0;position:relative}
+  .steps .card:not(:last-child)::after{content:"↓";position:absolute;left:50%;bottom:-24px;transform:translateX(-50%);
+       width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;font-size:13px;
+       display:flex;align-items:center;justify-content:center;z-index:1;box-shadow:0 0 0 3px var(--bg)}
+  @media (min-width:900px){
+    .steps{grid-template-columns:repeat(4,1fr)}
+    .steps .card:not(:last-child)::after{content:"→";left:auto;right:-24px;bottom:auto;top:50%;transform:translateY(-50%)}
+  }
+  .steps h3{margin:0 0 6px;font-size:16px;letter-spacing:-.01em}
+  .steps p{margin:0;color:#4a514a;font-size:14.5px}
   .ico{font-size:22px;line-height:1;margin-bottom:10px;display:block}
 
   .compare{display:grid;gap:14px;grid-template-columns:1fr}
@@ -101,7 +112,14 @@
   .compare h3{margin:0 0 4px;font-size:16px}
   .compare .card > p{margin:0 0 14px;color:#4a514a;font-size:14.5px}
   .compare .strip{margin-top:auto;max-width:420px}
-  .compare .us{border-color:#f1c2bd;background:linear-gradient(#fff,#fffaf9)}
+  .compare .us{border:2px solid var(--accent);background:linear-gradient(160deg,#fff 0%,var(--accent-soft) 100%);
+               box-shadow:0 2px 4px rgba(224,82,74,.08),0 16px 40px rgba(224,82,74,.16)}
+  .compare .us h3{font-size:18px}
+  .compare .card:not(.us){background:#fbfaf6;box-shadow:none}
+  .us-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .us-head img{width:60px;height:60px;margin:-6px -4px -6px -8px;flex:none;object-fit:contain}
+  .us-head .tag-label{margin:0 0 2px}
+  .us-head h3{margin:0}
   .tag-label{display:inline-block;font-size:11.5px;font-weight:750;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
   .us .tag-label{color:var(--accent)}
 
@@ -200,8 +218,11 @@
           <div class="strip-cap">Only the dashed days were ever asked about.</div>
         </div>
         <div class="card us">
-          <span class="tag-label">When Can We Go?</span>
-          <h3>Mark what you can’t do, and that’s it</h3>
+          <div class="us-head">
+            <img src="assets/icon-transparent.png" alt="" width="60" height="60">
+            <div><span class="tag-label">When Can We Go?</span>
+            <h3>Mark what you can’t do, and that’s it</h3></div>
+          </div>
           <p>Pick a broad range. Everyone taps the few days they really can’t make it (or “maybe not”). The app checks every day and finds the free stretches for you.</p>
           <div class="strip" aria-hidden="true"><span class="fr"></span><span class="no"></span><span class="mb"></span><span class="win"></span><span class="win"></span><span class="win"></span><span class="win"></span><span class="win"></span><span class="no"></span><span class="fr"></span><span class="mb"></span><span class="fr"></span><span class="fr"></span><span class="no"></span></div>
           <div class="strip-cap">Every day is covered. Green is a window where nobody is blocked.</div>
@@ -212,7 +233,7 @@
     <section class="section" aria-labelledby="how">
       <h2 id="how">How it works</h2>
       <p class="sub">About a minute of work for each person.</p>
-      <div class="grid">
+      <div class="steps">
         <div class="card"><span class="num">1</span><h3>Create an event</h3><p>Give it a name and a date range, like “any time between June and August”. No account needed.</p></div>
         <div class="card"><span class="num">2</span><h3>Share the link</h3><p>Drop it into your group chat. Anyone with the link can open it on their phone or laptop and add their name.</p></div>
         <div class="card"><span class="num">3</span><h3>Mark your blockers</h3><p>Tap a day to switch between <em>free</em>, <em>can’t make it</em> and <em>maybe not</em>. Everything else counts as free.</p></div>
