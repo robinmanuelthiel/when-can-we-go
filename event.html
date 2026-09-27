@@ -294,7 +294,7 @@
     </div>
     <div class="card">
       <h2>Best windows</h2>
-      <p class="hint" id="bestHint">Longest stretches where nobody has a blocker (✓ = fully free, no maybes either).</p>
+      <p class="hint" id="bestHint">Longest stretches where nobody has a blocker.</p>
       <div class="filters-wrap"><div class="filters">
         <div class="wdays" id="wdFilter" role="group" aria-label="Days to consider"></div>
         <div class="stepper">
@@ -555,12 +555,11 @@ function cellColor(st){
 }
 function renderBestWindows(){
   const bw=document.getElementById("bestWindows");
-  const wins=bestWindows(), n=evLength(), wd=evWeekdays();
+  const wins=bestWindows(), n=evLength();
   renderFilters();
-  const onlyDays = wd.length<7 ? ` Only ${wd.map(i=>DOW[i]).join(", ")} count.` : "";
   document.getElementById("bestHint").textContent = (n>1
-    ? `Longest stretches of ${n}+ days where nobody has a blocker (✓ = fully free, no maybes either).`
-    : `Longest stretches where nobody has a blocker (✓ = fully free, no maybes either).`) + onlyDays;
+    ? `Longest stretches of ${n}+ days where nobody has a blocker.`
+    : `Longest stretches where nobody has a blocker.`);
   if(!people().length){ bw.innerHTML=`<div class="emptystate">Best windows appear once people mark the days they can’t make it.</div>`; }
   else if(!wins.length){ bw.innerHTML = n>1
     ? `<div class="emptystate">No stretch of ${n}+ days works for everyone right now — the heatmap below shows where the fewest people are out.</div>`
