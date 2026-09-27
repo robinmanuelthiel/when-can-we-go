@@ -149,6 +149,10 @@
   .day .cnt{font-size:11px;font-weight:700;opacity:.85}
   .day.full{border-color:#D3E2D8}
   .day.dim{opacity:.25}
+  /* weekday not considered for best windows: still editable, just faded */
+  .day.skip{opacity:.45}
+  .day.skip.dim{opacity:.2}
+  .dow span.skip{opacity:.4}
 
   .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
   .legend .it{display:flex;align-items:center;gap:6px}
@@ -191,6 +195,10 @@
   .field label{display:block;font-weight:650;font-size:13px;margin-bottom:5px;color:#4a514a}
   .field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6;font-family:inherit;font-size:16px;color:inherit}
   .field .two{display:flex;gap:10px}.field .two > *{flex:1;min-width:0}
+  .wdays{display:flex;gap:5px;flex-wrap:wrap}
+  .wday{flex:1 1 0;min-width:40px;padding:10px 0;border-radius:11px;border:1px solid var(--line);background:#fbfaf6;font-weight:700;font-size:13.5px;color:var(--muted)}
+  .wday.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .field .fhint{color:var(--muted);font-size:12.5px;margin:5px 0 0}
   .field .two .sublabel{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
   .field input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;min-height:46px;color:var(--ink);-webkit-text-fill-color:var(--ink)}
   .field input[type=date]::-webkit-date-and-time-value{text-align:left;color:var(--ink)}
@@ -269,7 +277,7 @@
     </div>
     <div class="card">
       <h2>Best windows</h2>
-      <p class="hint">Longest stretches where nobody has a blocker (✓ = fully free, no maybes either).</p>
+      <p class="hint" id="bestHint">Longest stretches where nobody has a blocker (✓ = fully free, no maybes either).</p>
       <div id="bestWindows"></div>
     </div>
     <div class="card modebar" id="modeBar">
@@ -450,15 +458,41 @@ function eventDays(){
   for(let d=new Date(s); d<=e; d=addDays(d,1)) out.push(ymd(d));
   return out;
 }
+/* optional search filters on the event (set in "Edit event" only):
+   weekdays = Mon=0…Sun=6 to consider (missing = all), days = exact window length (missing = longest) */
+const ALL_WEEKDAYS=[0,1,2,3,4,5,6];
+function evWeekdays(){ const w=ev().weekdays; return Array.isArray(w)&&w.length ? w.map(Number) : ALL_WEEKDAYS; }
+function evLength(){ const n=Number(ev().days); return Number.isInteger(n)&&n>=1 ? n : null; }
+function rangeLength(s,e){ return Math.round((parseYmd(e)-parseYmd(s))/864e5)+1; }
+function considered(key){ return evWeekdays().includes(mondayIdx(parseYmd(key))); }
 function bestWindows(){
+  const n=evLength();
+  if(n) return fixedWindows(n);
   const days=eventDays(); const runs=[]; let cur=null;
   days.forEach(k=>{ const st=dayStats(k);
-    if(st.works){ if(!cur) cur={start:k,end:k,len:1,clear:st.clear?1:0}; else {cur.end=k;cur.len++; if(st.clear)cur.clear++;} }
+    if(st.works && considered(k)){ if(!cur) cur={start:k,end:k,len:1,clear:st.clear?1:0}; else {cur.end=k;cur.len++; if(st.clear)cur.clear++;} }
     else { if(cur){runs.push(cur);cur=null;} }
   });
   if(cur) runs.push(cur);
   runs.sort((a,b)=> b.len-a.len || b.clear-a.clear);
   return runs.slice(0,4);
+}
+/* every n-day stretch of considered days nobody is blocked on; best (most fully-free, then earliest) non-overlapping ones first */
+function fixedWindows(n){
+  const days=eventDays(); const cands=[];
+  const ok=days.map(k=>{ const st=dayStats(k); return { works:st.works&&considered(k), clear:st.clear?1:0 }; });
+  for(let i=0;i+n<=days.length;i++){
+    let good=true, clear=0;
+    for(let j=i;j<i+n;j++){ if(!ok[j].works){ good=false; break; } clear+=ok[j].clear; }
+    if(good) cands.push({ i, start:days[i], end:days[i+n-1], len:n, clear });
+  }
+  cands.sort((a,b)=> b.clear-a.clear || a.i-b.i);
+  const picked=[];
+  for(const c of cands){
+    if(picked.every(p=> c.i+n<=p.i || p.i+n<=c.i)) picked.push(c);
+    if(picked.length===4) break;
+  }
+  return picked.sort((a,b)=> b.clear-a.clear || a.i-b.i);
 }
 
 /* ============================================================
@@ -484,7 +518,8 @@ function monthCells(year,month,renderCell){
   const first=new Date(year,month,1);
   const lead=mondayIdx(first);
   const dim=new Date(year,month+1,0).getDate();
-  let html=`<div class="dow">${DOW.map(d=>`<span>${d}</span>`).join("")}</div><div class="grid">`;
+  const wd=evWeekdays();
+  let html=`<div class="dow">${DOW.map((d,i)=>`<span${wd.includes(i)?"":` class="skip"`}>${d}</span>`).join("")}</div><div class="grid">`;
   for(let i=0;i<lead;i++) html+=`<div class="day empty"></div>`;
   for(let d=1;d<=dim;d++){ const key=ymd(new Date(year,month,d)); html+=renderCell(key,d); }
   html+=`</div>`;
@@ -516,9 +551,15 @@ function cellColor(st){
 }
 function renderBestWindows(){
   const bw=document.getElementById("bestWindows");
-  const wins=bestWindows();
+  const wins=bestWindows(), n=evLength(), wd=evWeekdays();
+  const onlyDays = wd.length<7 ? ` Only ${wd.map(i=>DOW[i]).join(", ")} count.` : "";
+  document.getElementById("bestHint").textContent = (n
+    ? `The best ${n}-day stretch${n>1?"es":""} where nobody has a blocker (✓ = fully free, no maybes either).`
+    : `Longest stretches where nobody has a blocker (✓ = fully free, no maybes either).`) + onlyDays;
   if(!people().length){ bw.innerHTML=`<div class="emptystate">Best windows appear once people mark the days they can’t make it.</div>`; }
-  else if(!wins.length){ bw.innerHTML=`<div class="emptystate">Every day has at least one blocker right now — the heatmap below shows where the fewest people are out.</div>`; }
+  else if(!wins.length){ bw.innerHTML = n
+    ? `<div class="emptystate">No ${n}-day stretch works for everyone right now — the heatmap below shows where the fewest people are out.</div>`
+    : `<div class="emptystate">Every day has at least one blocker right now — the heatmap below shows where the fewest people are out.</div>`; }
   else bw.innerHTML=wins.map((w,i)=>{
     const partial=w.clear<w.len;
     const span=fmtRange(parseYmd(w.start),parseYmd(w.end));
@@ -586,6 +627,7 @@ function renderGroup(){
     const out=!inRange(key);
     const st=dayStats(key);
     const cls=["day","has"]; if(out)cls.push("out");
+    if(!considered(key))cls.push("skip");
     if(st.clear)cls.push("full");
     if(state.onlyAll && !st.works)cls.push("dim");
     const bg=out?"":`style="background:${cellColor(st)}"`;
@@ -599,7 +641,7 @@ function renderGroup(){
 function renderEditMonths(){
   document.getElementById("groupMonths").innerHTML=eachMonth((y,m)=>monthCells(y,m,(key,d)=>{
     const c=myCellInner(key,d);
-    const cls=["day","has"]; if(!inRange(key))cls.push("out"); if(c.cls)cls.push(c.cls); if(state.anchor===key)cls.push("anchor");
+    const cls=["day","has"]; if(!inRange(key))cls.push("out"); if(!considered(key))cls.push("skip"); if(c.cls)cls.push(c.cls); if(state.anchor===key)cls.push("anchor");
     return `<button class="${cls.join(" ")}" data-ymd="${key}">${c.html}</button>`;
   }));
 }
@@ -862,7 +904,7 @@ function showTab(name){
 }
 
 function openEventEdit(){
-  const t=ev();
+  const t=ev(), wd=evWeekdays();
   openSheet(`
     <h3>Edit event</h3>
     <p class="h">Set the name and the date range to look at. Everyone sees the same.</p>
@@ -870,11 +912,30 @@ function openEventEdit(){
     <div class="field"><label>Find a date</label><div class="two">
       <div><label class="sublabel" for="tStart">between</label><input id="tStart" type="date" value="${t.start}"></div>
       <div><label class="sublabel" for="tEnd">and</label><input id="tEnd" type="date" value="${t.end}"></div></div></div>
+    <div class="field"><label id="tWdLabel">Days to consider</label>
+      <div class="wdays" id="tWdays" role="group" aria-labelledby="tWdLabel">${DOW.map((d,i)=>`<button type="button" class="wday${wd.includes(i)?" on":""}" data-wd="${i}" aria-pressed="${wd.includes(i)}">${d}</button>`).join("")}</div>
+      <p class="fhint">Other days can still be marked, they just don’t count for best windows.</p></div>
+    <div class="field"><label for="tLen">Consecutive days</label>
+      <input id="tLen" type="number" inputmode="numeric" min="1" step="1" value="${evLength()||""}" placeholder="Any — find the longest stretch">
+      <p class="fhint">Leave empty to find the longest stretch that works.</p></div>
     <div class="row">
       <button class="btn" id="tCancel">Cancel</button>
       <button class="btn primary" id="tSave">Save</button>
     </div>
   `);
+  const lenIn=document.getElementById("tLen");
+  const syncMax=()=>{
+    const s=document.getElementById("tStart").value, e=document.getElementById("tEnd").value;
+    if(s&&e) lenIn.max=rangeLength(s<e?s:e, s<e?e:s); else lenIn.removeAttribute("max");
+  };
+  syncMax();
+  document.getElementById("tStart").addEventListener("change",syncMax);
+  document.getElementById("tEnd").addEventListener("change",syncMax);
+  document.getElementById("tWdays").onclick=e=>{
+    const b=e.target.closest("[data-wd]"); if(!b) return;
+    if(b.classList.contains("on") && document.querySelectorAll("#tWdays .wday.on").length===1){ toast("Keep at least one day"); return; }
+    b.classList.toggle("on"); b.setAttribute("aria-pressed",b.classList.contains("on"));
+  };
   document.getElementById("tCancel").onclick=closeSheet;
   document.getElementById("tSave").onclick=()=>{
     const ni=document.getElementById("tName"), name=ni.value.trim();
@@ -882,7 +943,16 @@ function openEventEdit(){
     let s=document.getElementById("tStart").value, e=document.getElementById("tEnd").value;
     if(!s||!e){ toast("Pick both dates"); return; }
     if(e<s){ [s,e]=[e,s]; }
-    setEv({ title:name, start:s, end:e, updatedAt:Date.now() });
+    const next={ title:name, start:s, end:e, updatedAt:Date.now() };
+    const days=[...document.querySelectorAll("#tWdays .wday.on")].map(b=>Number(b.dataset.wd));
+    if(days.length && days.length<7) next.weekdays=days;          // omitted = every weekday
+    const lv=lenIn.value.trim();
+    if(lv){
+      const n=Math.floor(Number(lv));
+      if(!(n>=1)){ toast("Consecutive days must be at least 1"); lenIn.focus(); return; }
+      next.days=Math.min(n, rangeLength(s,e));                    // omitted = longest stretch
+    }
+    setEv(next);
     persistEvent(); closeSheet(); render();
   };
 }
@@ -916,9 +986,10 @@ function openDayDetail(key){
   const head = st.block>0 ? `${st.block} of ${st.total} can’t make it`
              : st.maybe>0 ? `Nobody’s blocked · ${st.maybe} maybe`
              : `🎉 everyone’s free!`;
+  const skipNote = considered(key) ? "" : ` · ${DOW[mondayIdx(d)]}s aren’t considered for best windows`;
   openSheet(`
     <h3>${DOW[mondayIdx(d)]}, ${fmtFull(d)}</h3>
-    <p class="h">${head}</p>
+    <p class="h">${head}${skipNote}</p>
     ${body}
     <div class="row">
       <button class="btn" id="closeDet">Close</button>
