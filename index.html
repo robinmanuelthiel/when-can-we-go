@@ -95,16 +95,18 @@
        background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:14px;margin-bottom:10px}
   .ico{font-size:22px;line-height:1;margin-bottom:10px;display:block}
 
-  .compare{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
-  .compare .card{margin:0}
+  .compare{display:grid;gap:14px;grid-template-columns:1fr}
+  @media (min-width:760px){.compare{grid-template-columns:1fr 1fr}}
+  .compare .card{margin:0;display:flex;flex-direction:column;min-width:0}
   .compare h3{margin:0 0 4px;font-size:16px}
   .compare .card > p{margin:0 0 14px;color:#4a514a;font-size:14.5px}
+  .compare .strip{margin-top:auto;max-width:420px}
   .compare .us{border-color:#f1c2bd;background:linear-gradient(#fff,#fffaf9)}
   .tag-label{display:inline-block;font-size:11.5px;font-weight:750;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
   .us .tag-label{color:var(--accent)}
 
   /* tiny illustrative calendar strips */
-  .strip{display:grid;grid-template-columns:repeat(14,1fr);gap:4px}
+  .strip{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px;width:100%}
   .strip span{aspect-ratio:1;border-radius:6px;background:#f4f1ea;border:1px solid var(--line)}
   .strip .opt{background:#fff;border:2px dashed #c9c1b1}
   .strip .no{background:#f6d4d0;border-color:#efbcb6}
