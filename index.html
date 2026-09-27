@@ -76,11 +76,15 @@
   .landing-hero .pills li{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;color:#4a514a}
   .top{display:grid;gap:0 32px;align-items:start}
   .top .landing-card{width:100%;max-width:none}
+  .top .forms{min-width:0}
+  .top .join{margin-bottom:0}
+  .top-uses{padding-top:32px}
+  @media (max-width:599px){.landing-hero .pills{display:none}.landing-hero{padding-bottom:16px}}
   @media (min-width:900px){
-    .top{grid-template-columns:minmax(0,1fr) 460px;grid-template-areas:"hero create" "join create"}
+    .top{grid-template-columns:minmax(0,1fr) 460px;grid-template-areas:"hero forms" "uses forms"}
     .top .landing-hero{grid-area:hero;padding-top:40px}
-    .top .create{grid-area:create;margin-top:16px}
-    .top .join{grid-area:join;max-width:560px;align-self:end}
+    .top .forms{grid-area:forms;margin-top:16px}
+    .top-uses{grid-area:uses;align-self:end;padding:0 0 2px}
   }
 
   /* ---------- Marketing sections ---------- */
@@ -177,6 +181,7 @@
     </ul>
   </div>
 
+  <div class="forms">
   <div class="card landing-card create" id="create">
     <h2>Start a new event</h2>
     <p class="hint">Pick a name and the date range you’re considering. You can change all of this later.</p>
@@ -199,6 +204,16 @@
     <div class="field"><input id="lJoin" placeholder="https://…/event?e=abc123  or  abc123" autocomplete="off" spellcheck="false"></div>
     <button class="btn" type="button" id="lJoinGo" style="width:100%;justify-content:center">Open event →</button>
   </div>
+  </div>
+
+  <section class="section top-uses" aria-labelledby="uses">
+    <h2 id="uses">Made for plans like</h2>
+    <p class="sub">Anything where a group needs to find a day, or a few days in a row, somewhere in a longer stretch of time.</p>
+    <ul class="uses">
+      <li><span aria-hidden="true">🏖️</span>Group vacations</li><li><span aria-hidden="true">🍻</span>Weekend trips with friends</li><li><span aria-hidden="true">🏢</span>Team offsites &amp; company trips</li>
+      <li><span aria-hidden="true">👨‍👩‍👧</span>Family reunions</li><li><span aria-hidden="true">🎲</span>Game nights</li><li><span aria-hidden="true">🍝</span>Dinners &amp; get-togethers</li><li><span aria-hidden="true">🎂</span>Birthday plans</li><li><span aria-hidden="true">⛷️</span>Ski weeks</li>
+    </ul>
+  </section>
   </div>
 
   <main>
@@ -246,15 +261,6 @@
       <ul class="uses">
         <li><span aria-hidden="true">🔗</span>Just a link, no sign-up</li><li><span aria-hidden="true">🗓️</span>Plan months ahead</li><li><span aria-hidden="true">🟠</span>“Maybe not” for soft blockers</li><li><span aria-hidden="true">🔥</span>Live group heatmap</li>
         <li><span aria-hidden="true">🏆</span>Best windows, ranked</li><li><span aria-hidden="true">⚡</span>Real-time sync</li><li><span aria-hidden="true">🙋</span>Only you edit your days</li><li><span aria-hidden="true">🔒</span>No ads, no tracking, EU-hosted</li>
-      </ul>
-    </section>
-
-    <section class="section" aria-labelledby="uses">
-      <h2 id="uses">Made for plans like</h2>
-      <p class="sub">Anything where a group needs to find a day, or a few days in a row, somewhere in a longer stretch of time.</p>
-      <ul class="uses">
-        <li><span aria-hidden="true">🏖️</span>Group vacations</li><li><span aria-hidden="true">🍻</span>Weekend trips with friends</li><li><span aria-hidden="true">🏢</span>Team offsites &amp; company trips</li>
-        <li><span aria-hidden="true">👨‍👩‍👧</span>Family reunions</li><li><span aria-hidden="true">🎲</span>Game nights</li><li><span aria-hidden="true">🍝</span>Dinners &amp; get-togethers</li><li><span aria-hidden="true">🎂</span>Birthday plans</li><li><span aria-hidden="true">⛷️</span>Ski weeks</li>
       </ul>
     </section>
 
