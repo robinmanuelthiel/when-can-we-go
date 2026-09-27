@@ -174,7 +174,7 @@
   .stepper .sbox{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fbfaf6}
   .stepper .sbox button{width:32px;height:32px;font-size:17px;font-weight:700;color:var(--ink)}
   .stepper .sbox button:disabled{opacity:.3;cursor:default}
-  .stepper .sval{min-width:58px;text-align:center;color:var(--ink);font-weight:750}
+  .stepper .sval{min-width:112px;padding:0 4px;text-align:center;color:var(--ink);font-weight:750;white-space:nowrap}
   /* too narrow for one row: stack both controls, each full width */
   @container (max-width:540px){
     .filters{flex-direction:column;align-items:stretch}
@@ -295,8 +295,8 @@
       <h2>Best windows</h2>
       <p class="hint" id="bestHint">Longest stretches where nobody has a blocker (✓ = fully free, no maybes either).</p>
       <div class="filters-wrap"><div class="filters">
-        <div class="stepper"><span id="lenLabel">At least</span>
-          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><span class="sval" id="lenVal" aria-live="polite">1 day</span><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
+        <div class="stepper">
+          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><span class="sval" id="lenVal" aria-live="polite">At least 1 day</span><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
         <div class="wdays" id="wdFilter" role="group" aria-label="Days to consider"></div>
       </div></div>
       <div id="bestWindows"></div>
@@ -578,7 +578,7 @@ function maxLength(){ return rangeLength(ev().start, ev().end); }
 function renderFilters(){
   const wd=evWeekdays(), n=evLength();
   document.getElementById("wdFilter").innerHTML=DOW.map((d,i)=>`<button type="button" class="wday${wd.includes(i)?" on":""}" data-wd="${i}" aria-pressed="${wd.includes(i)}">${d}</button>`).join("");
-  document.getElementById("lenVal").textContent = `${n} day${n>1?"s":""}`;
+  document.getElementById("lenVal").textContent = `At least ${n} day${n>1?"s":""}`;
   document.getElementById("lenDec").disabled = n<=1;
   document.getElementById("lenInc").disabled = n>=maxLength();
 }
