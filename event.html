@@ -138,7 +138,9 @@
   .day.has{color:var(--ink)}
   .day:active{transform:scale(.94)}
   .day.empty{visibility:hidden}
-  .day.out{opacity:.32;pointer-events:none}
+  /* outside the date range: just the number, no tile — clearly not tappable */
+  .day.out,.months.editing .day.out{background:transparent!important;border-color:transparent!important;color:#b9beb6!important;opacity:.7;pointer-events:none}
+  .day.out .mk,.day.out .cnt{display:none}
   /* edit mode: my own states (what I CAN'T make) */
   .months.editing .day.has{background:#fff;user-select:none;-webkit-user-select:none}
   .months.editing .day.s-block{background:var(--block-bg);border-color:#f1c2bd;color:#a32d23}
@@ -149,6 +151,11 @@
   .day .cnt{font-size:11px;font-weight:700;opacity:.85}
   .day.full{border-color:#D3E2D8}
   .day.dim{opacity:.25}
+  /* weekday not considered for best windows: still editable, just faded */
+  .day.skip{opacity:.45}
+  .day.skip.dim{opacity:.2}
+  .day.skip.out{opacity:.7}
+  .dow span.skip{opacity:.4}
 
   .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
   .legend .it{display:flex;align-items:center;gap:6px}
@@ -158,6 +165,26 @@
   .scale .bar i{width:16px;height:14px;display:block}
 
   /* ---------- Best windows ---------- */
+  .filters-wrap{container-type:inline-size;margin:0 0 12px}
+  .filters{display:flex;gap:10px 14px;align-items:center}
+  .wdays{display:flex;gap:4px;flex-wrap:wrap}
+  .wday{min-width:40px;padding:7px 8px;border-radius:10px;border:1px solid var(--line);background:#fbfaf6;font-weight:700;font-size:13px;color:var(--muted)}
+  .wday.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .stepper{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:650;color:var(--muted)}
+  .stepper .sbox{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fbfaf6}
+  .stepper .sbox button{width:32px;height:32px;font-size:17px;font-weight:700;color:var(--ink)}
+  .stepper .sbox button:disabled{opacity:.3;cursor:default}
+  .stepper .sval{min-width:88px;padding:0 4px;text-align:center;color:var(--muted);font-weight:500;white-space:nowrap}
+  .stepper .sval b{color:var(--ink);font-weight:750;margin-left:.3em}
+  .stepper .sval input{width:2ch;padding:2px 0;margin:0 1px 0 2px;border:none;border-radius:6px;background:transparent;font:inherit;font-weight:750;color:var(--ink);text-align:right;cursor:text}
+  .stepper .sval input:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff;text-align:center}
+  /* too narrow for one row: stack both controls, each full width */
+  @container (max-width:540px){
+    .filters{flex-direction:column;align-items:stretch}
+    .stepper .sbox{flex:1;justify-content:space-between}
+    .wdays{flex-wrap:nowrap}
+    .wday{flex:1 1 0;min-width:0;padding:7px 0}
+  }
   .win{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;margin-bottom:9px;background:#f5faf6}
   .win .rk{width:26px;height:26px;border-radius:50%;background:var(--yes);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
   .win.partial{background:#fbf7ef}.win.partial .rk{background:#c8ad6a}
@@ -269,7 +296,12 @@
     </div>
     <div class="card">
       <h2>Best windows</h2>
-      <p class="hint">Longest stretches where nobody has a blocker (✓ = fully free, no maybes either).</p>
+      <p class="hint" id="bestHint">Longest stretches where nobody has a blocker.</p>
+      <div class="filters-wrap"><div class="filters">
+        <div class="wdays" id="wdFilter" role="group" aria-label="Days to consider"></div>
+        <div class="stepper">
+          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><label class="sval" for="lenInput">min.<input id="lenInput" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Minimum consecutive days" value="1"><b id="lenUnit">day</b></label><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
+      </div></div>
       <div id="bestWindows"></div>
     </div>
     <div class="card modebar" id="modeBar">
@@ -450,17 +482,25 @@ function eventDays(){
   for(let d=new Date(s); d<=e; d=addDays(d,1)) out.push(ymd(d));
   return out;
 }
+/* optional best-windows filters, shared on the event (set in the Best windows card):
+   weekdays = Mon=0…Sun=6 to consider (missing = all), days = minimum window length (missing = 1) */
+const ALL_WEEKDAYS=[0,1,2,3,4,5,6];
+function evWeekdays(){ const w=ev().weekdays; return Array.isArray(w)&&w.length ? w.map(Number) : ALL_WEEKDAYS; }
+function evLength(){ const n=Number(ev().days); return Number.isInteger(n)&&n>=1 ? Math.min(n, maxLength()) : 1; }
+function rangeLength(s,e){ return Math.round((parseYmd(e)-parseYmd(s))/864e5)+1; }
+function considered(key){ return evWeekdays().includes(mondayIdx(parseYmd(key))); }
 function bestWindows(){
+  const n=evLength();
   const days=eventDays(); const runs=[]; let cur=null;
   days.forEach(k=>{ const st=dayStats(k);
-    if(st.works){ if(!cur) cur={start:k,end:k,len:1,clear:st.clear?1:0}; else {cur.end=k;cur.len++; if(st.clear)cur.clear++;} }
+    if(st.works && considered(k)){ if(!cur) cur={start:k,end:k,len:1,clear:st.clear?1:0}; else {cur.end=k;cur.len++; if(st.clear)cur.clear++;} }
     else { if(cur){runs.push(cur);cur=null;} }
   });
   if(cur) runs.push(cur);
+  runs.splice(0, runs.length, ...runs.filter(r=>r.len>=n));
   runs.sort((a,b)=> b.len-a.len || b.clear-a.clear);
   return runs.slice(0,4);
 }
-
 /* ============================================================
    RENDER
    ============================================================ */
@@ -484,7 +524,8 @@ function monthCells(year,month,renderCell){
   const first=new Date(year,month,1);
   const lead=mondayIdx(first);
   const dim=new Date(year,month+1,0).getDate();
-  let html=`<div class="dow">${DOW.map(d=>`<span>${d}</span>`).join("")}</div><div class="grid">`;
+  const wd=evWeekdays();
+  let html=`<div class="dow">${DOW.map((d,i)=>`<span${wd.includes(i)?"":` class="skip"`}>${d}</span>`).join("")}</div><div class="grid">`;
   for(let i=0;i<lead;i++) html+=`<div class="day empty"></div>`;
   for(let d=1;d<=dim;d++){ const key=ymd(new Date(year,month,d)); html+=renderCell(key,d); }
   html+=`</div>`;
@@ -516,9 +557,15 @@ function cellColor(st){
 }
 function renderBestWindows(){
   const bw=document.getElementById("bestWindows");
-  const wins=bestWindows();
+  const wins=bestWindows(), n=evLength();
+  renderFilters();
+  document.getElementById("bestHint").textContent = (n>1
+    ? `Longest stretches of ${n}+ days where nobody has a blocker.`
+    : `Longest stretches where nobody has a blocker.`);
   if(!people().length){ bw.innerHTML=`<div class="emptystate">Best windows appear once people mark the days they can’t make it.</div>`; }
-  else if(!wins.length){ bw.innerHTML=`<div class="emptystate">Every day has at least one blocker right now — the heatmap below shows where the fewest people are out.</div>`; }
+  else if(!wins.length){ bw.innerHTML = n>1
+    ? `<div class="emptystate">No stretch of ${n}+ days works for everyone right now — the heatmap below shows where the fewest people are out.</div>`
+    : `<div class="emptystate">Every day has at least one blocker right now — the heatmap below shows where the fewest people are out.</div>`; }
   else bw.innerHTML=wins.map((w,i)=>{
     const partial=w.clear<w.len;
     const span=fmtRange(parseYmd(w.start),parseYmd(w.end));
@@ -528,6 +575,43 @@ function renderBestWindows(){
     return `<div class="win ${partial?"partial":""}"><div class="rk">${i+1}</div>
       <div><div class="wt">${span}</div><div class="wd">${sub}</div></div></div>`;
   }).join("");
+}
+function maxLength(){ return rangeLength(ev().start, ev().end); }
+function renderFilters(){
+  const wd=evWeekdays(), n=evLength();
+  document.getElementById("wdFilter").innerHTML=DOW.map((d,i)=>`<button type="button" class="wday${wd.includes(i)?" on":""}" data-wd="${i}" aria-pressed="${wd.includes(i)}">${d}</button>`).join("");
+  const li=document.getElementById("lenInput");
+  if(document.activeElement!==li){ li.value=n; sizeLenInput(); }     // don't clobber typing on a live sync
+  li.setAttribute("aria-valuemax",maxLength());
+  document.getElementById("lenUnit").textContent = n>1 ? "days" : "day";
+  document.getElementById("lenDec").disabled = n<=1;
+  document.getElementById("lenInc").disabled = n>=maxLength();
+}
+/* filters are shared: write them onto the event (omit = default) */
+function setFilters(weekdays, days){
+  const next={ ...ev(), updatedAt:Date.now() };
+  delete next.weekdays; delete next.days;
+  if(weekdays.length && weekdays.length<7) next.weekdays=[...weekdays].sort((a,b)=>a-b);
+  if(days>1) next.days=Math.min(days, maxLength());
+  setEv(next); persistEvent(); renderGroup();
+}
+function toggleWeekday(i){
+  const wd=evWeekdays();
+  if(wd.includes(i) && wd.length===1){ toast("Keep at least one day"); return; }
+  setFilters(wd.includes(i) ? wd.filter(x=>x!==i) : wd.concat(i), evLength());
+}
+function sizeLenInput(){ const li=document.getElementById("lenInput"); li.style.width=Math.max(1,li.value.length)+0.6+"ch"; }
+/* typed value: clamp to 1…range length; anything unparseable falls back to the current value */
+function commitLengthInput(){
+  const li=document.getElementById("lenInput");
+  const v=parseInt(li.value,10);
+  if(!Number.isFinite(v)){ li.value=evLength(); sizeLenInput(); return; }
+  const n=Math.max(1, Math.min(maxLength(), v));
+  li.value=n; sizeLenInput();
+  if(n!==evLength()) setFilters(evWeekdays(), n); else renderFilters();
+}
+function stepLength(dir){
+  setFilters(evWeekdays(), Math.max(1, Math.min(maxLength(), evLength()+dir)));
 }
 const BRUSH_LABEL = { block:"Can’t make it", maybe:"Maybe not", none:"Clear" };
 function renderModeBar(){
@@ -586,6 +670,7 @@ function renderGroup(){
     const out=!inRange(key);
     const st=dayStats(key);
     const cls=["day","has"]; if(out)cls.push("out");
+    if(!considered(key))cls.push("skip");
     if(st.clear)cls.push("full");
     if(state.onlyAll && !st.works)cls.push("dim");
     const bg=out?"":`style="background:${cellColor(st)}"`;
@@ -599,7 +684,7 @@ function renderGroup(){
 function renderEditMonths(){
   document.getElementById("groupMonths").innerHTML=eachMonth((y,m)=>monthCells(y,m,(key,d)=>{
     const c=myCellInner(key,d);
-    const cls=["day","has"]; if(!inRange(key))cls.push("out"); if(c.cls)cls.push(c.cls); if(state.anchor===key)cls.push("anchor");
+    const cls=["day","has"]; if(!inRange(key))cls.push("out"); if(!considered(key))cls.push("skip"); if(c.cls)cls.push(c.cls); if(state.anchor===key)cls.push("anchor");
     return `<button class="${cls.join(" ")}" data-ymd="${key}">${c.html}</button>`;
   }));
 }
@@ -882,7 +967,8 @@ function openEventEdit(){
     let s=document.getElementById("tStart").value, e=document.getElementById("tEnd").value;
     if(!s||!e){ toast("Pick both dates"); return; }
     if(e<s){ [s,e]=[e,s]; }
-    setEv({ title:name, start:s, end:e, updatedAt:Date.now() });
+    const next={ ...t, title:name, start:s, end:e, updatedAt:Date.now() };   // keep the best-windows filters
+    setEv(next);
     persistEvent(); closeSheet(); render();
   };
 }
@@ -916,9 +1002,10 @@ function openDayDetail(key){
   const head = st.block>0 ? `${st.block} of ${st.total} can’t make it`
              : st.maybe>0 ? `Nobody’s blocked · ${st.maybe} maybe`
              : `🎉 everyone’s free!`;
+  const skipNote = considered(key) ? "" : ` · ${DOW[mondayIdx(d)]}s aren’t considered for best windows`;
   openSheet(`
     <h3>${DOW[mondayIdx(d)]}, ${fmtFull(d)}</h3>
-    <p class="h">${head}</p>
+    <p class="h">${head}${skipNote}</p>
     ${body}
     <div class="row">
       <button class="btn" id="closeDet">Close</button>
@@ -1075,6 +1162,18 @@ function bindUI(){
   document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{ showTab(t.dataset.tab); render(); });
   document.getElementById("onlyAllToggle").onclick=()=>{ state.onlyAll=!state.onlyAll; document.querySelector("#onlyAllToggle .switch").classList.toggle("on",state.onlyAll); renderGroup(); };
   document.getElementById("editToggleBtn").onclick=()=>setEditing(!state.editing);
+  document.getElementById("wdFilter").onclick=e=>{ const b=e.target.closest("[data-wd]"); if(b) toggleWeekday(Number(b.dataset.wd)); };
+  document.getElementById("lenDec").onclick=()=>stepLength(-1);
+  document.getElementById("lenInc").onclick=()=>stepLength(1);
+  const li=document.getElementById("lenInput");
+  li.addEventListener("focus",()=>li.select());
+  li.addEventListener("input",()=>{ li.value=li.value.replace(/\D/g,"").slice(0,4); sizeLenInput(); });
+  li.addEventListener("change",commitLengthInput);
+  li.addEventListener("keydown",e=>{
+    if(e.key==="Enter"){ e.preventDefault(); li.blur(); }
+    else if(e.key==="Escape"){ li.value=evLength(); li.blur(); }
+    else if(e.key==="ArrowUp"||e.key==="ArrowDown"){ e.preventDefault(); stepLength(e.key==="ArrowUp"?1:-1); li.value=evLength(); sizeLenInput(); li.select(); }
+  });
   document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; renderEditMonths(); renderModeBar(); });
   document.getElementById("rangeToggle").onclick=()=>{
     state.rangeMode=!state.rangeMode; state.anchor=null;
