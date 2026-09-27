@@ -98,8 +98,8 @@
   .modebar .mtxt{flex:1 1 220px;min-width:0;font-size:14px;line-height:1.45;color:var(--muted)}
   .modebar .mtxt strong{color:var(--ink)}
   .modebar .mctl{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap;margin-left:auto}
-  /* desktop: brushes appear to the LEFT of the range switch, so the switch never moves */
-  .modebar .brushes{order:-1}
+  /* range-fill picker: always its own line below, so nothing above it moves */
+  .modebar .mrow{flex:1 0 100%;display:flex}
   .modebar .btn{padding:12px 18px;font-size:15px}
   .modebar.editing{position:sticky;top:68px;z-index:25;border-color:#f1c2bd;background:#fffaf8}
   /* narrow screens: controls get their own row(s), text keeps a fixed 2-line height */
@@ -108,7 +108,7 @@
     .modebar .mctl{flex:1 0 100%}
     .modebar .mctl .btn{flex:1 0 auto;justify-content:center}
     .modebar.editing .mctl .btn{flex:0 0 auto;margin-left:auto}
-    .modebar .brushes{order:3;flex:1 0 100%}
+    .modebar .brushes{flex:1 1 auto}
     .modebar .brush{flex:1 1 auto;justify-content:center;padding:8px 6px;gap:5px;font-size:13px;white-space:nowrap}
   }
 
@@ -298,12 +298,14 @@
       <div class="mtxt" id="modeText"></div>
       <div class="mctl">
         <button class="toggle hide" id="rangeToggle" aria-pressed="false"><span class="switch"></span>Range fill</button>
-        <div class="brushes hide" id="brushes" role="group" aria-label="Fill range with">
+        <button class="btn primary" id="editToggleBtn">✎ Edit my availability</button>
+      </div>
+      <div class="mrow hide" id="brushRow">
+        <div class="brushes" id="brushes" role="group" aria-label="Fill range with">
           <button class="brush active" data-b="block"><span class="sw"></span>Can’t make it</button>
           <button class="brush" data-b="maybe"><span class="sw"></span>Maybe not</button>
           <button class="brush" data-b="none"><span class="sw"></span>Clear</button>
         </div>
-        <button class="btn primary" id="editToggleBtn">✎ Edit my availability</button>
       </div>
     </div>
     <div class="months" id="groupMonths"></div>
@@ -633,7 +635,7 @@ function renderModeBar(){
 }
 function updateBrushUI(){
   document.querySelectorAll("#brushes .brush").forEach(b=>b.classList.toggle("active",b.dataset.b===state.brush));
-  document.getElementById("brushes").classList.toggle("hide",!state.editing || !state.rangeMode);
+  document.getElementById("brushRow").classList.toggle("hide",!state.editing || !state.rangeMode);
   const rt=document.getElementById("rangeToggle");
   rt.querySelector(".switch").classList.toggle("on",state.rangeMode);
   rt.setAttribute("aria-pressed",String(state.rangeMode));
