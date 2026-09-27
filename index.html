@@ -91,7 +91,7 @@
 
 
   /* ---------- Hand-drawn doodles ---------- */
-  .wrap{overflow-x:clip}
+  @media (max-width:1239px){.wrap{overflow-x:clip}}
   .section,.cta,.landing-hero{position:relative;isolation:isolate}
   .doodle{position:absolute;z-index:-1;pointer-events:none;color:#b3a28c;line-height:0;
     animation:doodle-float 7s ease-in-out infinite alternate}
@@ -131,7 +131,14 @@
   .d-qm1{top:14px;right:10px;--r:12deg}
   .d-qm2{top:38px;right:68px;--r:-14deg;--dd:.3s}
   .d-qm3{display:none}
-  @media (min-width:1240px){.d-qm3{display:block;left:-84px;top:46%;--r:-8deg;--dd:.6s}}
+  .d-left{display:none}
+  @media (min-width:1240px){
+    .d-qm3{display:block;left:-92px;top:44%;--r:-10deg;--dd:.6s}
+    .d-left{display:block}
+    .d-spiral{left:-104px;top:56%;--r:8deg;--dd:.3s}
+    .d-bang{left:-78px;top:44%;--r:-6deg}
+    .d-dots{left:-96px;top:-10px;--dd:.5s}
+  }
   .cta-btn{position:relative;display:inline-block}
   .d-cta-l{left:-82px;top:-18px}
   .d-cta-r{right:-82px;top:-18px;--dd:.2s}
@@ -263,6 +270,7 @@
 
   <main>
     <section class="section" aria-labelledby="why">
+      <span class="doodle d-left qm d-bang" aria-hidden="true"><svg viewBox="0 0 32 60" width="30" height="56" focusable="false"><path pathLength="1" style="--d:0.00s" d="M16 6 C 15 18, 17 28, 16 38"/><path pathLength="1" style="--d:0.30s" d="M16 50 L 16.5 51"/></svg></span>
       <h2 id="why">Why this exists</h2>
       <p class="sub">Most scheduling tools make someone guess a list of dates first, then ask everyone to vote on them. That works for a one-hour meeting. It falls apart when you want “a long weekend sometime in the next three months”.</p>
       <div class="compare">
@@ -292,6 +300,7 @@
 
     <section class="section" aria-labelledby="how">
       <span class="doodle d-clock" aria-hidden="true"><svg viewBox="0 0 60 60" width="48" height="48" focusable="false"><path pathLength="1" style="--d:0.00s" d="M31 6 C 47 7, 55 21, 53 33 C 51 47, 37 55, 25 53 C 11 51, 4 39, 6 27 C 8 15, 18 7, 34 8"/><path pathLength="1" style="--d:0.35s" d="M29 30 L 29 16"/><path pathLength="1" style="--d:0.70s" d="M29 30 L 40 35"/></svg></span><span class="doodle d-loop" aria-hidden="true"><svg viewBox="0 0 64 60" width="58" height="54" focusable="false"><path pathLength="1" style="--d:0.00s" d="M8 12 C 22 11, 44 11, 58 12 C 59 26, 59 42, 57 54 C 42 55, 22 55, 7 54 C 6 40, 7 26, 8 12"/><path pathLength="1" style="--d:0.25s" d="M8 22 C 26 21, 42 23, 58 22"/><path pathLength="1" style="--d:0.50s" d="M20 6 L 20 16"/><path pathLength="1" style="--d:0.75s" d="M46 6 L 46 16"/><path pathLength="1" style="--d:1.00s" d="M16 30 L 25 39"/><path pathLength="1" style="--d:1.25s" d="M25 30 L 16 39"/><path pathLength="1" style="--d:1.50s" d="M40 34 C 42 30, 52 30, 51 37 C 50 43, 41 43, 40 37 C 39 33, 44 30, 49 31"/></svg></span>
+      <span class="doodle d-left d-spiral" aria-hidden="true"><svg viewBox="0 0 60 60" width="60" height="60" focusable="false"><path pathLength="1" style="--d:0.00s" d="M30 30 C 30 26, 36 26, 36 31 C 36 38, 25 39, 23 31 C 21 21, 38 18, 43 29 C 48 41, 34 50, 22 46 C 8 41, 8 20, 22 13 C 36 6, 52 14, 54 28"/></svg></span>
       <h2 id="how">How it works</h2>
       <p class="sub">About a minute of work for each person.</p>
       <div class="steps">
@@ -323,6 +332,7 @@
     </section>
 
     <section class="cta">
+      <span class="doodle d-left d-dots" aria-hidden="true"><svg viewBox="0 0 60 70" width="60" height="70" focusable="false"><path pathLength="1" style="--d:0.00s" d="M10 40 L 11 41"/><path pathLength="1" style="--d:0.30s" d="M28 18 L 29 19"/><path pathLength="1" style="--d:0.60s" d="M46 36 L 47 37"/><path pathLength="1" style="--d:0.90s" d="M22 58 L 23 59"/></svg></span>
       <h2>Ready to find a date?</h2>
       <span class="cta-btn"><span class="doodle d-cta-l" aria-hidden="true"><svg viewBox="0 0 70 40" width="64" height="38" focusable="false"><path pathLength="1" style="--d:0.00s" d="M4 30 C 20 6, 44 44, 62 20"/><path pathLength="1" style="--d:0.35s" d="M50 16 L 64 18 L 60 32"/></svg></span><a class="btn primary" href="#create" id="ctaCreate">Start a new event →</a><span class="doodle d-cta-r" aria-hidden="true"><svg viewBox="0 0 70 40" width="64" height="38" focusable="false"><path pathLength="1" style="--d:0.00s" d="M66 30 C 50 6, 26 44, 8 20"/><path pathLength="1" style="--d:0.35s" d="M20 16 L 6 18 L 10 32"/></svg></span></span>
     </section>
