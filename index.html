@@ -73,23 +73,21 @@
   .landing-hero .lead em{color:var(--ink);font-style:normal;font-weight:650}
   .landing-card{max-width:520px}
   .landing-hero .pills{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
-  .landing-hero .pills li{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;color:#4a514a}
+  .landing-hero .pills li{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;color:#4a514a}
   .top{display:grid;gap:0 32px;align-items:start}
   .top .landing-card{width:100%;max-width:none}
   .top .forms{min-width:0}
   .top .join{margin-bottom:0}
-  .top-uses{padding-top:32px}
-  @media (max-width:599px){.landing-hero .pills{display:none}.landing-hero{padding-bottom:16px}}
   @media (min-width:900px){
-    .top{grid-template-columns:minmax(0,1fr) 460px;grid-template-areas:"hero forms" "uses forms"}
-    .top .landing-hero{grid-area:hero;padding-top:40px}
+    .top{grid-template-columns:minmax(0,1fr) 460px;grid-template-areas:"hero forms"}
+    .top .landing-hero{grid-area:hero;align-self:center;padding:0}
     .top .forms{grid-area:forms;margin-top:16px}
-    .top-uses{grid-area:uses;align-self:end;padding:0 0 2px}
   }
 
   /* ---------- Marketing sections ---------- */
   .section{padding:40px 2px 8px}
   .section > h2{font-family:var(--serif);font-weight:600;font-size:clamp(24px,4.6vw,32px);line-height:1.12;margin:0 0 8px;letter-spacing:-.01em}
+  .section > h2:not(:has(+ .sub)){margin-bottom:20px}
   .section > .sub{color:var(--muted);margin:0 0 20px;max-width:640px}
   .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
   .grid .card{margin:0}
@@ -134,7 +132,6 @@
 
   .calendar-note{margin-top:28px}
   .quote{padding:0;margin:0;max-width:700px;font-family:var(--serif);font-size:clamp(18px,3.4vw,22px);line-height:1.4}
-  .quote + p{color:#4a514a;max-width:700px;margin:14px 0 0}
 
   .uses{display:flex;flex-wrap:wrap;gap:10px;padding:0;margin:0;list-style:none}
   .uses li{display:inline-flex;gap:7px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:600;font-size:14.5px;box-shadow:var(--shadow)}
@@ -176,8 +173,9 @@
   <div class="landing-hero">
     <h1>Find a date that works for everyone.</h1>
     <p class="lead">Set up an event (a trip, a dinner, a game night), invite your friends, and let everyone mark the days they <em>can’t</em> make it. The best windows rise to the top. No accounts, just a link to share.</p>
-    <ul class="pills" aria-label="Highlights">
-      <li>✓ Free</li><li>✓ No sign-up, no email</li><li>✓ No ads, no tracking</li><li>✓ Works on any phone</li>
+    <ul class="pills" aria-label="Made for plans like">
+      <li><span aria-hidden="true">🏖️</span>Group vacations</li><li><span aria-hidden="true">🍻</span>Weekend trips</li><li><span aria-hidden="true">🏢</span>Team offsites</li><li><span aria-hidden="true">👨‍👩‍👧</span>Family reunions</li>
+      <li><span aria-hidden="true">🎲</span>Game nights</li><li><span aria-hidden="true">🍝</span>Dinners</li><li><span aria-hidden="true">🎂</span>Birthdays</li><li><span aria-hidden="true">⛷️</span>Ski weeks</li>
     </ul>
   </div>
 
@@ -206,14 +204,6 @@
   </div>
   </div>
 
-  <section class="section top-uses" aria-labelledby="uses">
-    <h2 id="uses">Made for plans like</h2>
-    <p class="sub">Anything where a group needs to find a day, or a few days in a row, somewhere in a longer stretch of time.</p>
-    <ul class="uses">
-      <li><span aria-hidden="true">🏖️</span>Group vacations</li><li><span aria-hidden="true">🍻</span>Weekend trips with friends</li><li><span aria-hidden="true">🏢</span>Team offsites &amp; company trips</li>
-      <li><span aria-hidden="true">👨‍👩‍👧</span>Family reunions</li><li><span aria-hidden="true">🎲</span>Game nights</li><li><span aria-hidden="true">🍝</span>Dinners &amp; get-togethers</li><li><span aria-hidden="true">🎂</span>Birthday plans</li><li><span aria-hidden="true">⛷️</span>Ski weeks</li>
-    </ul>
-  </section>
   </div>
 
   <main>
@@ -241,7 +231,6 @@
       </div>
       <div class="calendar-note">
         <blockquote class="quote">Your calendar says you’re busy every single day. We ask which days you <em>really</em> can’t do.</blockquote>
-        <p>That’s why there’s deliberately no calendar import. A recurring stand-up or a dentist appointment you can move shouldn’t kill the team offsite. Only you know which blockers are real, so you mark those, and the “maybe not” option covers the ones you’d rather avoid but could shift.</p>
       </div>
     </section>
 
