@@ -162,6 +162,16 @@
   .scale .bar i{width:16px;height:14px;display:block}
 
   /* ---------- Best windows ---------- */
+  .filters{display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+  .wdays{display:flex;gap:4px;flex-wrap:wrap}
+  .wday{min-width:40px;padding:7px 8px;border-radius:10px;border:1px solid var(--line);background:#fbfaf6;font-weight:700;font-size:13px;color:var(--muted)}
+  .wday.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .stepper{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:650;color:var(--muted)}
+  .stepper .sbox{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fbfaf6}
+  .stepper .sbox button{width:32px;height:32px;font-size:17px;font-weight:700;color:var(--ink)}
+  .stepper .sbox button:disabled{opacity:.3;cursor:default}
+  .stepper .sval{min-width:58px;text-align:center;color:var(--ink);font-weight:750}
+  .filters .fnote{flex-basis:100%;color:var(--muted);font-size:12px;margin-top:-4px}
   .win{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;margin-bottom:9px;background:#f5faf6}
   .win .rk{width:26px;height:26px;border-radius:50%;background:var(--yes);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
   .win.partial{background:#fbf7ef}.win.partial .rk{background:#c8ad6a}
@@ -195,10 +205,6 @@
   .field label{display:block;font-weight:650;font-size:13px;margin-bottom:5px;color:#4a514a}
   .field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6;font-family:inherit;font-size:16px;color:inherit}
   .field .two{display:flex;gap:10px}.field .two > *{flex:1;min-width:0}
-  .wdays{display:flex;gap:5px;flex-wrap:wrap}
-  .wday{flex:1 1 0;min-width:40px;padding:10px 0;border-radius:11px;border:1px solid var(--line);background:#fbfaf6;font-weight:700;font-size:13.5px;color:var(--muted)}
-  .wday.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .field .fhint{color:var(--muted);font-size:12.5px;margin:5px 0 0}
   .field .two .sublabel{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
   .field input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;min-height:46px;color:var(--ink);-webkit-text-fill-color:var(--ink)}
   .field input[type=date]::-webkit-date-and-time-value{text-align:left;color:var(--ink)}
@@ -278,6 +284,12 @@
     <div class="card">
       <h2>Best windows</h2>
       <p class="hint" id="bestHint">Longest stretches where nobody has a blocker (✓ = fully free, no maybes either).</p>
+      <div class="filters">
+        <div class="wdays" id="wdFilter" role="group" aria-label="Days to consider"></div>
+        <div class="stepper"><span id="lenLabel">At least</span>
+          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><span class="sval" id="lenVal" aria-live="polite">1 day</span><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
+        <div class="fnote">Filters apply for everyone on this event.</div>
+      </div>
       <div id="bestWindows"></div>
     </div>
     <div class="card modebar" id="modeBar">
@@ -458,43 +470,25 @@ function eventDays(){
   for(let d=new Date(s); d<=e; d=addDays(d,1)) out.push(ymd(d));
   return out;
 }
-/* optional search filters on the event (set in "Edit event" only):
-   weekdays = Mon=0…Sun=6 to consider (missing = all), days = exact window length (missing = longest) */
+/* optional best-windows filters, shared on the event (set in the Best windows card):
+   weekdays = Mon=0…Sun=6 to consider (missing = all), days = minimum window length (missing = 1) */
 const ALL_WEEKDAYS=[0,1,2,3,4,5,6];
 function evWeekdays(){ const w=ev().weekdays; return Array.isArray(w)&&w.length ? w.map(Number) : ALL_WEEKDAYS; }
-function evLength(){ const n=Number(ev().days); return Number.isInteger(n)&&n>=1 ? n : null; }
+function evLength(){ const n=Number(ev().days); return Number.isInteger(n)&&n>=1 ? Math.min(n, maxLength()) : 1; }
 function rangeLength(s,e){ return Math.round((parseYmd(e)-parseYmd(s))/864e5)+1; }
 function considered(key){ return evWeekdays().includes(mondayIdx(parseYmd(key))); }
 function bestWindows(){
   const n=evLength();
-  if(n) return fixedWindows(n);
   const days=eventDays(); const runs=[]; let cur=null;
   days.forEach(k=>{ const st=dayStats(k);
     if(st.works && considered(k)){ if(!cur) cur={start:k,end:k,len:1,clear:st.clear?1:0}; else {cur.end=k;cur.len++; if(st.clear)cur.clear++;} }
     else { if(cur){runs.push(cur);cur=null;} }
   });
   if(cur) runs.push(cur);
+  runs.splice(0, runs.length, ...runs.filter(r=>r.len>=n));
   runs.sort((a,b)=> b.len-a.len || b.clear-a.clear);
   return runs.slice(0,4);
 }
-/* every n-day stretch of considered days nobody is blocked on; best (most fully-free, then earliest) non-overlapping ones first */
-function fixedWindows(n){
-  const days=eventDays(); const cands=[];
-  const ok=days.map(k=>{ const st=dayStats(k); return { works:st.works&&considered(k), clear:st.clear?1:0 }; });
-  for(let i=0;i+n<=days.length;i++){
-    let good=true, clear=0;
-    for(let j=i;j<i+n;j++){ if(!ok[j].works){ good=false; break; } clear+=ok[j].clear; }
-    if(good) cands.push({ i, start:days[i], end:days[i+n-1], len:n, clear });
-  }
-  cands.sort((a,b)=> b.clear-a.clear || a.i-b.i);
-  const picked=[];
-  for(const c of cands){
-    if(picked.every(p=> c.i+n<=p.i || p.i+n<=c.i)) picked.push(c);
-    if(picked.length===4) break;
-  }
-  return picked.sort((a,b)=> b.clear-a.clear || a.i-b.i);
-}
-
 /* ============================================================
    RENDER
    ============================================================ */
@@ -552,13 +546,14 @@ function cellColor(st){
 function renderBestWindows(){
   const bw=document.getElementById("bestWindows");
   const wins=bestWindows(), n=evLength(), wd=evWeekdays();
+  renderFilters();
   const onlyDays = wd.length<7 ? ` Only ${wd.map(i=>DOW[i]).join(", ")} count.` : "";
-  document.getElementById("bestHint").textContent = (n
-    ? `The best ${n}-day stretch${n>1?"es":""} where nobody has a blocker (✓ = fully free, no maybes either).`
+  document.getElementById("bestHint").textContent = (n>1
+    ? `Longest stretches of ${n}+ days where nobody has a blocker (✓ = fully free, no maybes either).`
     : `Longest stretches where nobody has a blocker (✓ = fully free, no maybes either).`) + onlyDays;
   if(!people().length){ bw.innerHTML=`<div class="emptystate">Best windows appear once people mark the days they can’t make it.</div>`; }
-  else if(!wins.length){ bw.innerHTML = n
-    ? `<div class="emptystate">No ${n}-day stretch works for everyone right now — the heatmap below shows where the fewest people are out.</div>`
+  else if(!wins.length){ bw.innerHTML = n>1
+    ? `<div class="emptystate">No stretch of ${n}+ days works for everyone right now — the heatmap below shows where the fewest people are out.</div>`
     : `<div class="emptystate">Every day has at least one blocker right now — the heatmap below shows where the fewest people are out.</div>`; }
   else bw.innerHTML=wins.map((w,i)=>{
     const partial=w.clear<w.len;
@@ -569,6 +564,30 @@ function renderBestWindows(){
     return `<div class="win ${partial?"partial":""}"><div class="rk">${i+1}</div>
       <div><div class="wt">${span}</div><div class="wd">${sub}</div></div></div>`;
   }).join("");
+}
+function maxLength(){ return rangeLength(ev().start, ev().end); }
+function renderFilters(){
+  const wd=evWeekdays(), n=evLength();
+  document.getElementById("wdFilter").innerHTML=DOW.map((d,i)=>`<button type="button" class="wday${wd.includes(i)?" on":""}" data-wd="${i}" aria-pressed="${wd.includes(i)}">${d}</button>`).join("");
+  document.getElementById("lenVal").textContent = `${n} day${n>1?"s":""}`;
+  document.getElementById("lenDec").disabled = n<=1;
+  document.getElementById("lenInc").disabled = n>=maxLength();
+}
+/* filters are shared: write them onto the event (omit = default) */
+function setFilters(weekdays, days){
+  const next={ ...ev(), updatedAt:Date.now() };
+  delete next.weekdays; delete next.days;
+  if(weekdays.length && weekdays.length<7) next.weekdays=[...weekdays].sort((a,b)=>a-b);
+  if(days>1) next.days=Math.min(days, maxLength());
+  setEv(next); persistEvent(); renderGroup();
+}
+function toggleWeekday(i){
+  const wd=evWeekdays();
+  if(wd.includes(i) && wd.length===1){ toast("Keep at least one day"); return; }
+  setFilters(wd.includes(i) ? wd.filter(x=>x!==i) : wd.concat(i), evLength());
+}
+function stepLength(dir){
+  setFilters(evWeekdays(), Math.max(1, Math.min(maxLength(), evLength()+dir)));
 }
 const BRUSH_LABEL = { block:"Can’t make it", maybe:"Maybe not", none:"Clear" };
 function renderModeBar(){
@@ -904,7 +923,7 @@ function showTab(name){
 }
 
 function openEventEdit(){
-  const t=ev(), wd=evWeekdays();
+  const t=ev();
   openSheet(`
     <h3>Edit event</h3>
     <p class="h">Set the name and the date range to look at. Everyone sees the same.</p>
@@ -912,30 +931,11 @@ function openEventEdit(){
     <div class="field"><label>Find a date</label><div class="two">
       <div><label class="sublabel" for="tStart">between</label><input id="tStart" type="date" value="${t.start}"></div>
       <div><label class="sublabel" for="tEnd">and</label><input id="tEnd" type="date" value="${t.end}"></div></div></div>
-    <div class="field"><label id="tWdLabel">Days to consider</label>
-      <div class="wdays" id="tWdays" role="group" aria-labelledby="tWdLabel">${DOW.map((d,i)=>`<button type="button" class="wday${wd.includes(i)?" on":""}" data-wd="${i}" aria-pressed="${wd.includes(i)}">${d}</button>`).join("")}</div>
-      <p class="fhint">Other days can still be marked, they just don’t count for best windows.</p></div>
-    <div class="field"><label for="tLen">Consecutive days</label>
-      <input id="tLen" type="number" inputmode="numeric" min="1" step="1" value="${evLength()||""}" placeholder="Any — find the longest stretch">
-      <p class="fhint">Leave empty to find the longest stretch that works.</p></div>
     <div class="row">
       <button class="btn" id="tCancel">Cancel</button>
       <button class="btn primary" id="tSave">Save</button>
     </div>
   `);
-  const lenIn=document.getElementById("tLen");
-  const syncMax=()=>{
-    const s=document.getElementById("tStart").value, e=document.getElementById("tEnd").value;
-    if(s&&e) lenIn.max=rangeLength(s<e?s:e, s<e?e:s); else lenIn.removeAttribute("max");
-  };
-  syncMax();
-  document.getElementById("tStart").addEventListener("change",syncMax);
-  document.getElementById("tEnd").addEventListener("change",syncMax);
-  document.getElementById("tWdays").onclick=e=>{
-    const b=e.target.closest("[data-wd]"); if(!b) return;
-    if(b.classList.contains("on") && document.querySelectorAll("#tWdays .wday.on").length===1){ toast("Keep at least one day"); return; }
-    b.classList.toggle("on"); b.setAttribute("aria-pressed",b.classList.contains("on"));
-  };
   document.getElementById("tCancel").onclick=closeSheet;
   document.getElementById("tSave").onclick=()=>{
     const ni=document.getElementById("tName"), name=ni.value.trim();
@@ -943,15 +943,7 @@ function openEventEdit(){
     let s=document.getElementById("tStart").value, e=document.getElementById("tEnd").value;
     if(!s||!e){ toast("Pick both dates"); return; }
     if(e<s){ [s,e]=[e,s]; }
-    const next={ title:name, start:s, end:e, updatedAt:Date.now() };
-    const days=[...document.querySelectorAll("#tWdays .wday.on")].map(b=>Number(b.dataset.wd));
-    if(days.length && days.length<7) next.weekdays=days;          // omitted = every weekday
-    const lv=lenIn.value.trim();
-    if(lv){
-      const n=Math.floor(Number(lv));
-      if(!(n>=1)){ toast("Consecutive days must be at least 1"); lenIn.focus(); return; }
-      next.days=Math.min(n, rangeLength(s,e));                    // omitted = longest stretch
-    }
+    const next={ ...t, title:name, start:s, end:e, updatedAt:Date.now() };   // keep the best-windows filters
     setEv(next);
     persistEvent(); closeSheet(); render();
   };
@@ -1146,6 +1138,9 @@ function bindUI(){
   document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{ showTab(t.dataset.tab); render(); });
   document.getElementById("onlyAllToggle").onclick=()=>{ state.onlyAll=!state.onlyAll; document.querySelector("#onlyAllToggle .switch").classList.toggle("on",state.onlyAll); renderGroup(); };
   document.getElementById("editToggleBtn").onclick=()=>setEditing(!state.editing);
+  document.getElementById("wdFilter").onclick=e=>{ const b=e.target.closest("[data-wd]"); if(b) toggleWeekday(Number(b.dataset.wd)); };
+  document.getElementById("lenDec").onclick=()=>stepLength(-1);
+  document.getElementById("lenInc").onclick=()=>stepLength(1);
   document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; renderEditMonths(); renderModeBar(); });
   document.getElementById("rangeToggle").onclick=()=>{
     state.rangeMode=!state.rangeMode; state.anchor=null;
