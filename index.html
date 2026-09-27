@@ -72,6 +72,66 @@
   .landing-hero .lead{color:var(--muted);font-size:16px;line-height:1.5;margin:0}
   .landing-hero .lead em{color:var(--ink);font-style:normal;font-weight:650}
   .landing-card{max-width:520px}
+  .landing-hero .pills{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
+  .landing-hero .pills li{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;color:#4a514a}
+  .top{display:grid;gap:0 32px;align-items:start}
+  .top .landing-card{width:100%}
+  @media (min-width:900px){
+    .top{grid-template-columns:minmax(0,1fr) 460px;grid-template-areas:"hero create" "join create"}
+    .top .landing-hero{grid-area:hero;padding-top:40px}
+    .top .create{grid-area:create;margin-top:16px}
+    .top .join{grid-area:join;max-width:560px}
+  }
+
+  /* ---------- Marketing sections ---------- */
+  .section{padding:40px 2px 8px}
+  .section > h2{font-family:var(--serif);font-weight:600;font-size:clamp(24px,4.6vw,32px);line-height:1.12;margin:0 0 8px;letter-spacing:-.01em}
+  .section > .sub{color:var(--muted);margin:0 0 20px;max-width:640px}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .grid .card{margin:0}
+  .grid .card h3{margin:0 0 6px;font-size:16px;letter-spacing:-.01em}
+  .grid .card p{margin:0;color:#4a514a;font-size:14.5px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;
+       background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:14px;margin-bottom:10px}
+  .ico{font-size:22px;line-height:1;margin-bottom:10px;display:block}
+
+  .compare{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .compare .card{margin:0}
+  .compare h3{margin:0 0 4px;font-size:16px}
+  .compare .card > p{margin:0 0 14px;color:#4a514a;font-size:14.5px}
+  .compare .us{border-color:#f1c2bd;background:linear-gradient(#fff,#fffaf9)}
+  .tag-label{display:inline-block;font-size:11.5px;font-weight:750;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .us .tag-label{color:var(--accent)}
+
+  /* tiny illustrative calendar strips */
+  .strip{display:grid;grid-template-columns:repeat(14,1fr);gap:4px}
+  .strip span{aspect-ratio:1;border-radius:6px;background:#f4f1ea;border:1px solid var(--line)}
+  .strip .opt{background:#fff;border:2px dashed #c9c1b1}
+  .strip .no{background:#f6d4d0;border-color:#efbcb6}
+  .strip .mb{background:#fbeed3;border-color:#f0d79b}
+  .strip .fr{background:#fff}
+  .strip .win{background:#dff3e6;border-color:#9fd6b2}
+  .strip-cap{color:var(--muted);font-size:12.5px;margin-top:8px}
+
+  .quote{border-left:3px solid var(--accent);padding:4px 0 4px 16px;margin:0;max-width:700px;font-family:var(--serif);font-size:clamp(18px,3.4vw,22px);line-height:1.4}
+  .quote + p{color:#4a514a;max-width:700px;margin:14px 0 0}
+
+  .uses{display:flex;flex-wrap:wrap;gap:10px;padding:0;margin:0;list-style:none}
+  .uses li{display:inline-flex;gap:7px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:600;font-size:14.5px;box-shadow:var(--shadow)}
+
+  .faq{max-width:760px}
+  .faq details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+  .faq summary{font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+";color:var(--accent);font-weight:800}
+  .faq details[open] summary::after{content:"–"}
+  .faq details p{margin:10px 0 0;color:#4a514a;font-size:14.5px}
+  .faq a{color:var(--accent)}
+
+  .cta{text-align:center;padding:44px 16px 12px}
+  .cta h2{font-family:var(--serif);font-weight:600;font-size:clamp(24px,4.6vw,32px);margin:0 0 14px}
+  .cta .btn{font-size:16px;padding:13px 20px;text-decoration:none}
+
   .invitee{display:flex;gap:8px;margin-bottom:8px}
   .invitee input{flex:1;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6}
 
@@ -92,12 +152,16 @@
     <div class="brand"><span class="dot"></span> When Can We Go?</div>
   </header>
 
+  <div class="top">
   <div class="landing-hero">
     <h1>Find a date that works for everyone.</h1>
     <p class="lead">Set up an event — a trip, a dinner, a game night — invite your friends, and let everyone mark the days they <em>can’t</em> make it. The best windows rise to the top. No accounts, just a link to share.</p>
+    <ul class="pills" aria-label="Highlights">
+      <li>✓ Free</li><li>✓ No sign-up, no email</li><li>✓ No ads, no tracking</li><li>✓ Works on any phone</li>
+    </ul>
   </div>
 
-  <div class="card landing-card">
+  <div class="card landing-card create" id="create">
     <h2>Start a new event</h2>
     <p class="hint">Pick a name and the date range you’re considering. You can change all of this later.</p>
     <div class="field"><label>Event name</label><input id="lName" placeholder="e.g. Summer in Portugal, Team dinner, Game night" autocomplete="off"></div>
@@ -113,18 +177,97 @@
     <button class="btn primary" type="button" id="lCreate" style="width:100%;justify-content:center;margin-top:6px">Create event &amp; get link</button>
   </div>
 
-  <div class="card landing-card">
+  <div class="card landing-card join">
     <h2>Join an existing event</h2>
     <p class="hint">Got a link from a friend? Paste the whole link or just the event ID.</p>
     <div class="field"><input id="lJoin" placeholder="https://…/event?e=abc123  —or—  abc123" autocomplete="off" spellcheck="false"></div>
     <button class="btn" type="button" id="lJoinGo" style="width:100%;justify-content:center">Open event →</button>
   </div>
+  </div>
+
+  <main>
+    <section class="section" aria-labelledby="why">
+      <h2 id="why">Why this exists</h2>
+      <p class="sub">Most scheduling tools make someone guess a list of dates first, then ask everyone to vote on them. That works for a one-hour meeting. It falls apart when you want “a long weekend sometime in the next three months”.</p>
+      <div class="compare">
+        <div class="card">
+          <span class="tag-label">Typical date polls</span>
+          <h3>Propose options, then vote</h3>
+          <p>The organizer adds every possible date by hand. Everyone checks each one. If the perfect weekend wasn’t on the list, nobody ever finds out.</p>
+          <div class="strip" aria-hidden="true"><span></span><span></span><span></span><span></span><span class="opt"></span><span class="opt"></span><span></span><span></span><span></span><span></span><span></span><span class="opt"></span><span class="opt"></span><span></span></div>
+          <div class="strip-cap">Only the dashed days were ever asked about.</div>
+        </div>
+        <div class="card us">
+          <span class="tag-label">When Can We Go?</span>
+          <h3>Mark what you can’t do, and that’s it</h3>
+          <p>Pick a broad range. Everyone taps the few days they really can’t make it (or “maybe not”). The app checks every day and finds the free stretches for you.</p>
+          <div class="strip" aria-hidden="true"><span class="fr"></span><span class="no"></span><span class="mb"></span><span class="win"></span><span class="win"></span><span class="win"></span><span class="win"></span><span class="win"></span><span class="no"></span><span class="fr"></span><span class="mb"></span><span class="fr"></span><span class="fr"></span><span class="no"></span></div>
+          <div class="strip-cap">Every day is covered. Green is a window where nobody is blocked.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="how">
+      <h2 id="how">How it works</h2>
+      <p class="sub">About a minute of work for each person.</p>
+      <div class="grid">
+        <div class="card"><span class="num">1</span><h3>Create an event</h3><p>Give it a name and a date range, like “any time between June and August”. No account needed.</p></div>
+        <div class="card"><span class="num">2</span><h3>Share the link</h3><p>Drop it into your group chat. Anyone with the link can open it on their phone or laptop and add their name.</p></div>
+        <div class="card"><span class="num">3</span><h3>Mark your blockers</h3><p>Tap a day to switch between <em>free</em>, <em>can’t make it</em> and <em>maybe not</em>. Everything else counts as free.</p></div>
+        <div class="card"><span class="num">4</span><h3>See the best windows</h3><p>A live heatmap shows the whole group at once, and the longest stretches where nobody is blocked are listed first.</p></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="calendar">
+      <h2 id="calendar">Your calendar is always full. That’s the point.</h2>
+      <blockquote class="quote">Your calendar says you’re busy every single day. We ask which days you <em>really</em> can’t do.</blockquote>
+      <p>That’s why there’s deliberately no calendar import. A recurring stand-up or a dentist appointment you can move shouldn’t kill the team offsite. Only you know which blockers are real, so you mark those, and the “maybe not” option covers the ones you’d rather avoid but could shift.</p>
+    </section>
+
+    <section class="section" aria-labelledby="features">
+      <h2 id="features">What you get</h2>
+      <div class="grid">
+        <div class="card"><span class="ico" aria-hidden="true">🔗</span><h3>Just a link</h3><p>No sign-up, no email, no app to install. The link is the event.</p></div>
+        <div class="card"><span class="ico" aria-hidden="true">🗓️</span><h3>Big date ranges</h3><p>Plan weeks or months ahead without listing a single option by hand.</p></div>
+        <div class="card"><span class="ico" aria-hidden="true">🟠</span><h3>“Maybe not” is allowed</h3><p>Not every conflict is a hard no. Soft blockers are shown separately, so you can decide together.</p></div>
+        <div class="card"><span class="ico" aria-hidden="true">🔥</span><h3>Live group heatmap</h3><p>See at a glance where the blockers cluster and where the group is wide open.</p></div>
+        <div class="card"><span class="ico" aria-hidden="true">🏆</span><h3>Best windows, ranked</h3><p>The longest stretches with no blockers are surfaced automatically, with fully free ones marked.</p></div>
+        <div class="card"><span class="ico" aria-hidden="true">⚡</span><h3>Real-time sync</h3><p>Changes show up for everyone instantly, on every device, and your view is cached for spotty connections.</p></div>
+        <div class="card"><span class="ico" aria-hidden="true">🙋</span><h3>Only you edit you</h3><p>Each device remembers who you are, so you only change your own availability.</p></div>
+        <div class="card"><span class="ico" aria-hidden="true">🔒</span><h3>Private by default</h3><p>No ads, no analytics, no tracking cookies. Data is stored in the EU. <a href="privacy.html" style="color:var(--accent)">Read the privacy policy</a>.</p></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="uses">
+      <h2 id="uses">Made for plans like</h2>
+      <p class="sub">Anything where a group needs to find a day, or a few days in a row, somewhere in a longer stretch of time.</p>
+      <ul class="uses">
+        <li><span aria-hidden="true">🏖️</span>Group vacations</li><li><span aria-hidden="true">🍻</span>Weekend trips with friends</li><li><span aria-hidden="true">🏢</span>Team offsites &amp; company trips</li>
+        <li><span aria-hidden="true">👨‍👩‍👧</span>Family reunions</li><li><span aria-hidden="true">🎲</span>Game nights</li><li><span aria-hidden="true">🍝</span>Dinners &amp; get-togethers</li><li><span aria-hidden="true">🎂</span>Birthday plans</li><li><span aria-hidden="true">⛷️</span>Ski weeks</li>
+      </ul>
+    </section>
+
+    <section class="section faq" aria-labelledby="faq">
+      <h2 id="faq">Questions</h2>
+      <details><summary>Is it really free?</summary><p>Yes. There is no paid tier, no ads, and nothing to unlock.</p></details>
+      <details><summary>Does anyone need an account?</summary><p>No, not even the organizer. You create an event, get a link and share it. People open the link and add their name.</p></details>
+      <details><summary>How is this different from Doodle or When2meet?</summary><p>Those tools ask you to vote on dates someone proposed, or to paint every hour you’re free. Here you only mark the days you can’t make it across a whole range, and the app finds the free stretches. It’s built for days and multi-day windows, not one-hour slots.</p></details>
+      <details><summary>Why can’t I import my calendar?</summary><p>Because a busy calendar has something on almost every day. Whether that stand-up or appointment actually stops you from going is something only you can decide, so you mark the days that really matter.</p></details>
+      <details><summary>Who can see my answers?</summary><p>Everyone who has the event link can see and edit the event, so only share it with the people you’re planning with. A first name or nickname is enough. See the <a href="privacy.html">privacy policy</a> for details.</p></details>
+      <details><summary>Can I delete an event or a person?</summary><p>You can remove a person and their markings directly in the event. To delete a whole event, get in touch via the <a href="imprint.html">imprint</a> and include the link.</p></details>
+    </section>
+
+    <section class="cta">
+      <h2>Ready to find a date?</h2>
+      <a class="btn primary" href="#create" id="ctaCreate">Start a new event →</a>
+    </section>
+  </main>
 
   <footer class="site-footer">
     <p class="foot-note">Everything syncs to everyone with the link. No account needed.</p>
     <a href="/">Home</a><span class="sep">•</span>
-    <a href="imprint.html">Imprint</a><span class="sep">•</span>
-    <a href="privacy.html">Privacy</a>
+    <a href="imprint.html">Imprint (Impressum)</a><span class="sep">•</span>
+    <a href="privacy.html">Privacy Policy</a>
     <br>© 2026 Robin-Manuel Thiel
   </footer>
 </div>
@@ -239,6 +382,11 @@ function init(){
   document.getElementById("lCreate").onclick=createEvent;
   document.getElementById("lJoinGo").onclick=joinEvent;
   document.getElementById("lJoin").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); joinEvent(); } });
+  document.getElementById("ctaCreate").onclick=e=>{
+    e.preventDefault();
+    document.getElementById("create").scrollIntoView({behavior:"smooth",block:"center"});
+    setTimeout(()=>document.getElementById("lName").focus({preventScroll:true}),400);
+  };
 }
 init();
 </script>
