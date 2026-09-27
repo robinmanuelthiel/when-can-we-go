@@ -93,31 +93,30 @@
   .card h2{margin:0 0 2px;font-size:17px;letter-spacing:-.01em}
   .card .hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 
-  /* ---------- Edit-mode bar ---------- */
-  .modebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px}
+  /* ---------- Edit-mode bar (sticks under the tabs while editing) ---------- */
+  .modebar{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap;padding:12px 14px}
   .modebar .mtxt{flex:1 1 220px;min-width:0;font-size:14px;line-height:1.45;color:var(--muted)}
   .modebar .mtxt strong{color:var(--ink)}
+  .modebar .mctl{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap;margin-left:auto}
+  /* range-fill picker: always its own line below, so nothing above it moves */
+  .modebar .mrow{flex:1 0 100%;display:flex}
   .modebar .btn{padding:12px 18px;font-size:15px}
   .modebar.editing{position:sticky;top:68px;z-index:25;border-color:#f1c2bd;background:#fffaf8}
-  /* narrow screens: button on its own row + fixed 2-line text, so both modes are the same height */
+  /* narrow screens: controls get their own row(s), text keeps a fixed 2-line height */
   @media(max-width:559px){
     .modebar .mtxt{flex-basis:100%;min-height:calc(2 * 1.45em)}
-    .modebar .btn{flex:1 0 100%;justify-content:center}
+    .modebar .mctl{flex:1 0 100%}
+    .modebar .mctl .btn{flex:1 0 auto;justify-content:center}
+    .modebar.editing .mctl .btn{flex:0 0 auto;margin-left:auto}
+    .modebar .brushes{flex:1 1 auto}
+    .modebar .brush{flex:1 1 auto;justify-content:center;padding:8px 6px;gap:5px;font-size:13px;white-space:nowrap}
   }
-  /* view legend and edit toolbar share ONE grid cell, so the card keeps the
-     same height in both modes and the calendar never jumps when you toggle */
-  .slot{display:grid}
-  .slot > *{grid-area:1/1;min-width:0}
-  .slot > .off{visibility:hidden;pointer-events:none}
 
-  /* ---------- Brush bar (edit mode) ---------- */
-  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  /* ---------- Range-fill brushes (edit mode) ---------- */
   .brushes{display:flex;gap:6px;flex-wrap:wrap;background:#f3eee3;padding:4px;border-radius:13px}
   .brush{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:10px;font-weight:700;font-size:14px;color:var(--muted)}
   .brush .sw{width:14px;height:14px;border-radius:5px;border:1px solid rgba(0,0,0,.08)}
   .brush.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
-  .brush:disabled{opacity:.4;cursor:default}
-  .brush[data-b="cycle"] .sw{background:linear-gradient(135deg,#fff 0 33%,var(--block) 33% 66%,var(--maybe) 66%)}
   .brush[data-b="block"] .sw{background:var(--block)}
   .brush[data-b="maybe"] .sw{background:var(--maybe)}
   .brush[data-b="none"] .sw{background:#fff;border-style:dashed;border-color:#c9cfc9}
@@ -138,7 +137,9 @@
   .day.has{color:var(--ink)}
   .day:active{transform:scale(.94)}
   .day.empty{visibility:hidden}
-  .day.out{opacity:.32;pointer-events:none}
+  /* outside the date range: just the number, no tile — clearly not tappable */
+  .day.out,.months.editing .day.out{background:transparent!important;border-color:transparent!important;color:#b9beb6!important;opacity:.7;pointer-events:none}
+  .day.out .mk,.day.out .cnt{display:none}
   /* edit mode: my own states (what I CAN'T make) */
   .months.editing .day.has{background:#fff;user-select:none;-webkit-user-select:none}
   .months.editing .day.s-block{background:var(--block-bg);border-color:#f1c2bd;color:#a32d23}
@@ -149,6 +150,12 @@
   .day .cnt{font-size:11px;font-weight:700;opacity:.85}
   .day.full{border-color:#D3E2D8}
   .day.dim{opacity:.25}
+  /* weekday not considered for best windows: still editable, just faded */
+  .day.skip{opacity:.45}
+  .day.skip.dim{opacity:.2}
+  .months.editing .day.dim{opacity:.35}
+  .day.skip.out{opacity:.7}
+  .dow span.skip{opacity:.4}
 
   .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
   .legend .it{display:flex;align-items:center;gap:6px}
@@ -158,10 +165,33 @@
   .scale .bar i{width:16px;height:14px;display:block}
 
   /* ---------- Best windows ---------- */
+  .filters-wrap{container-type:inline-size;margin:0 0 12px}
+  .filters{display:flex;gap:10px 14px;align-items:center}
+  .wdays{display:flex;gap:4px;flex-wrap:wrap}
+  .wday{min-width:40px;padding:7px 8px;border-radius:10px;border:1px solid var(--line);background:#fbfaf6;font-weight:700;font-size:13px;color:var(--muted)}
+  .wday.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .stepper{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:650;color:var(--muted)}
+  .stepper .sbox{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fbfaf6}
+  .stepper .sbox button{width:32px;height:32px;font-size:17px;font-weight:700;color:var(--ink)}
+  .stepper .sbox button:disabled{opacity:.3;cursor:default}
+  .stepper .sval{min-width:88px;padding:0 4px;text-align:center;color:var(--muted);font-weight:500;white-space:nowrap}
+  .stepper .sval b{color:var(--ink);font-weight:750;margin-left:.3em}
+  .stepper .sval input{width:2ch;padding:2px 0;margin:0 1px 0 2px;border:none;border-radius:6px;background:transparent;font:inherit;font-weight:750;color:var(--ink);text-align:right;cursor:text}
+  .stepper .sval input:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff;text-align:center}
+  /* too narrow for one row: stack both controls, each full width */
+  @container (max-width:540px){
+    .filters{flex-direction:column;align-items:stretch}
+    .stepper .sbox{flex:1;justify-content:space-between}
+    .wdays{flex-wrap:nowrap}
+    .wday{flex:1 1 0;min-width:0;padding:7px 0}
+  }
   .win{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;margin-bottom:9px;background:#f5faf6}
   .win .rk{width:26px;height:26px;border-radius:50%;background:var(--yes);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
   .win.partial{background:#fbf7ef}.win.partial .rk{background:#c8ad6a}
   .win .wt{font-weight:750}.win .wd{color:var(--muted);font-size:13px}
+  .win .wbody{flex:1;min-width:0}
+  .win .icsbtn{flex:none;color:var(--muted)}
+  .win .icsbtn:hover{color:var(--ink)}
   .emptystate{color:var(--muted);font-size:14px;text-align:center;padding:18px}
 
   /* ---------- People ---------- */
@@ -248,7 +278,7 @@
 
   <!-- GROUP (the one and only calendar: view mode ⇄ edit mode) -->
   <section id="tab-group">
-    <div class="card slot">
+    <div class="card">
       <div class="legend" id="viewLegend">
         <div class="it"><span class="sw" style="background:#F5FAF6"></span>Everyone free</div>
         <div class="it"><span class="sw" style="background:var(--maybe-bg)"></span>Only maybes</div>
@@ -256,25 +286,30 @@
         <div style="flex:1"></div>
         <button class="toggle" id="onlyAllToggle"><span class="switch"></span>Only days that work</button>
       </div>
-      <div class="toolbar off" id="editToolbar">
-        <div class="brushes" id="brushes">
-          <button class="brush active" data-b="cycle" title="Each tap cycles Free → Can’t make it → Maybe not"><span class="sw"></span>Cycle</button>
-          <button class="brush" data-b="block"><span class="sw"></span>Can’t make it</button>
-          <button class="brush" data-b="maybe"><span class="sw"></span>Maybe not</button>
-          <button class="brush" data-b="none"><span class="sw"></span>Clear</button>
-        </div>
-        <div style="flex:1"></div>
-        <button class="toggle" id="rangeToggle"><span class="switch"></span>Range fill</button>
-      </div>
     </div>
     <div class="card">
       <h2>Best windows</h2>
-      <p class="hint">Longest stretches where nobody has a blocker (✓ = fully free, no maybes either).</p>
+      <p class="hint" id="bestHint">Longest stretches where nobody has a blocker.</p>
+      <div class="filters-wrap"><div class="filters">
+        <div class="wdays" id="wdFilter" role="group" aria-label="Days to consider"></div>
+        <div class="stepper">
+          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><label class="sval" for="lenInput">min.<input id="lenInput" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Minimum consecutive days" value="1"><b id="lenUnit">day</b></label><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
+      </div></div>
       <div id="bestWindows"></div>
     </div>
     <div class="card modebar" id="modeBar">
       <div class="mtxt" id="modeText"></div>
-      <button class="btn primary" id="editToggleBtn">✎ Edit my availability</button>
+      <div class="mctl">
+        <button class="toggle hide" id="rangeToggle" aria-pressed="false"><span class="switch"></span>Range fill</button>
+        <button class="btn primary" id="editToggleBtn">✎ Edit my availability</button>
+      </div>
+      <div class="mrow hide" id="brushRow">
+        <div class="brushes" id="brushes" role="group" aria-label="Fill range with">
+          <button class="brush active" data-b="block"><span class="sw"></span>Can’t make it</button>
+          <button class="brush" data-b="maybe"><span class="sw"></span>Maybe not</button>
+          <button class="brush" data-b="none"><span class="sw"></span>Clear</button>
+        </div>
+      </div>
     </div>
     <div class="months" id="groupMonths"></div>
   </section>
@@ -328,7 +363,7 @@ let state = {
   data: null,            // {v, trip:{title,start,end,updatedAt}, people:{pid:{name,color,days,updatedAt,deleted}}}
   me: null,              // pid of "you" on this device — the ONLY calendar you can edit
   editing: false,        // group calendar in edit mode (tapping a day changes MY availability)
-  brush: "cycle",        // edit brush: cycle | block | maybe | none
+  brush: "block",        // range-fill state: block | maybe | none (single taps always cycle)
   rangeMode: false,      // range fill: tap a first and a last day, fill everything between
   anchor: null,          // range fill: first day picked
   tab: "group",
@@ -424,7 +459,7 @@ function setDay(pid,key,val){
   p.updatedAt=Date.now();
   persistPersonDebounced(pid);
 }
-/* tapping a day in edit mode cycles: Free → Can't make it → Maybe not → Free */
+/* tapping a day in edit mode cycles: Clear → Can't make it → Maybe not → Clear */
 const CYCLE = { none:"block", block:"maybe", maybe:"none" };
 function nextState(pid,key){ const p=personById(pid); return CYCLE[(p&&p.days&&p.days[key])||"none"]; }
 function avatar(p,size){ return `<span class="ava" style="background:${p.color};width:${size}px;height:${size}px;font-size:${Math.round(size*.46)}px">${escapeHtml(p.name.trim().charAt(0).toUpperCase()||"?")}</span>`; }
@@ -450,17 +485,25 @@ function eventDays(){
   for(let d=new Date(s); d<=e; d=addDays(d,1)) out.push(ymd(d));
   return out;
 }
+/* optional best-windows filters, shared on the event (set in the Best windows card):
+   weekdays = Mon=0…Sun=6 to consider (missing = all), days = minimum window length (missing = 1) */
+const ALL_WEEKDAYS=[0,1,2,3,4,5,6];
+function evWeekdays(){ const w=ev().weekdays; return Array.isArray(w)&&w.length ? w.map(Number) : ALL_WEEKDAYS; }
+function evLength(){ const n=Number(ev().days); return Number.isInteger(n)&&n>=1 ? Math.min(n, maxLength()) : 1; }
+function rangeLength(s,e){ return Math.round((parseYmd(e)-parseYmd(s))/864e5)+1; }
+function considered(key){ return evWeekdays().includes(mondayIdx(parseYmd(key))); }
 function bestWindows(){
+  const n=evLength();
   const days=eventDays(); const runs=[]; let cur=null;
   days.forEach(k=>{ const st=dayStats(k);
-    if(st.works){ if(!cur) cur={start:k,end:k,len:1,clear:st.clear?1:0}; else {cur.end=k;cur.len++; if(st.clear)cur.clear++;} }
+    if(st.works && considered(k)){ if(!cur) cur={start:k,end:k,len:1,clear:st.clear?1:0}; else {cur.end=k;cur.len++; if(st.clear)cur.clear++;} }
     else { if(cur){runs.push(cur);cur=null;} }
   });
   if(cur) runs.push(cur);
+  runs.splice(0, runs.length, ...runs.filter(r=>r.len>=n));
   runs.sort((a,b)=> b.len-a.len || b.clear-a.clear);
   return runs.slice(0,4);
 }
-
 /* ============================================================
    RENDER
    ============================================================ */
@@ -484,7 +527,8 @@ function monthCells(year,month,renderCell){
   const first=new Date(year,month,1);
   const lead=mondayIdx(first);
   const dim=new Date(year,month+1,0).getDate();
-  let html=`<div class="dow">${DOW.map(d=>`<span>${d}</span>`).join("")}</div><div class="grid">`;
+  const wd=evWeekdays();
+  let html=`<div class="dow">${DOW.map((d,i)=>`<span${wd.includes(i)?"":` class="skip"`}>${d}</span>`).join("")}</div><div class="grid">`;
   for(let i=0;i<lead;i++) html+=`<div class="day empty"></div>`;
   for(let d=1;d<=dim;d++){ const key=ymd(new Date(year,month,d)); html+=renderCell(key,d); }
   html+=`</div>`;
@@ -516,9 +560,15 @@ function cellColor(st){
 }
 function renderBestWindows(){
   const bw=document.getElementById("bestWindows");
-  const wins=bestWindows();
+  const wins=bestWindows(), n=evLength();
+  renderFilters();
+  document.getElementById("bestHint").textContent = (n>1
+    ? `Longest stretches of ${n}+ days where nobody has a blocker.`
+    : `Longest stretches where nobody has a blocker.`);
   if(!people().length){ bw.innerHTML=`<div class="emptystate">Best windows appear once people mark the days they can’t make it.</div>`; }
-  else if(!wins.length){ bw.innerHTML=`<div class="emptystate">Every day has at least one blocker right now. The heatmap below shows where the fewest people are out.</div>`; }
+  else if(!wins.length){ bw.innerHTML = n>1
+    ? `<div class="emptystate">No stretch of ${n}+ days works for everyone right now. The heatmap below shows where the fewest people are out.</div>`
+    : `<div class="emptystate">Every day has at least one blocker right now. The heatmap below shows where the fewest people are out.</div>`; }
   else bw.innerHTML=wins.map((w,i)=>{
     const partial=w.clear<w.len;
     const span=fmtRange(parseYmd(w.start),parseYmd(w.end));
@@ -526,28 +576,83 @@ function renderBestWindows(){
       ? `${w.len} day${w.len>1?"s":""} open · ${w.clear} fully free, ${w.len-w.clear} with maybes`
       : `${w.len} day${w.len>1?"s":""} open · ✓ everyone free`;
     return `<div class="win ${partial?"partial":""}"><div class="rk">${i+1}</div>
-      <div><div class="wt">${span}</div><div class="wd">${sub}</div></div></div>`;
+      <div class="wbody"><div class="wt">${span}</div><div class="wd">${sub}</div></div>
+      <button type="button" class="iconbtn icsbtn" data-ics="${w.start}|${w.end}" title="Add to calendar" aria-label="Add ${span} to calendar">${calendarAddIcon()}</button></div>`;
   }).join("");
+}
+function calendarAddIcon(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M12 13v6M9 16h6"/></svg>`; }
+/* download an all-day .ics event covering start…end (DTEND is exclusive per RFC 5545) */
+function downloadIcs(start,end){
+  const esc=s=>String(s).replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/([,;])/g,"\\$1");
+  const d=k=>k.replace(/-/g,"");
+  const title=ev().title||"Untitled event";
+  const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+Z$/,"Z");
+  const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//When Can We Go//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${start}-${end}-${uid()}@whencanwego`,
+    `DTSTAMP:${stamp}`,
+    `DTSTART;VALUE=DATE:${d(start)}`,
+    `DTEND;VALUE=DATE:${d(ymd(addDays(parseYmd(end),1)))}`,
+    `SUMMARY:${esc(title)}`,
+    `DESCRIPTION:${esc(location.href)}`,
+    `URL:${location.href}`,
+    "END:VEVENT","END:VCALENDAR"].join("\r\n")+"\r\n";
+  const blob=new Blob([ics],{type:"text/calendar;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`${(title.replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-")||"event")}-${start}.ics`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function maxLength(){ return rangeLength(ev().start, ev().end); }
+function renderFilters(){
+  const wd=evWeekdays(), n=evLength();
+  document.getElementById("wdFilter").innerHTML=DOW.map((d,i)=>`<button type="button" class="wday${wd.includes(i)?" on":""}" data-wd="${i}" aria-pressed="${wd.includes(i)}">${d}</button>`).join("");
+  const li=document.getElementById("lenInput");
+  if(document.activeElement!==li){ li.value=n; sizeLenInput(); }     // don't clobber typing on a live sync
+  li.setAttribute("aria-valuemax",maxLength());
+  document.getElementById("lenUnit").textContent = n>1 ? "days" : "day";
+  document.getElementById("lenDec").disabled = n<=1;
+  document.getElementById("lenInc").disabled = n>=maxLength();
+}
+/* filters are shared: write them onto the event (omit = default) */
+function setFilters(weekdays, days){
+  const next={ ...ev(), updatedAt:Date.now() };
+  delete next.weekdays; delete next.days;
+  if(weekdays.length && weekdays.length<7) next.weekdays=[...weekdays].sort((a,b)=>a-b);
+  if(days>1) next.days=Math.min(days, maxLength());
+  setEv(next); persistEvent(); renderGroup({ keepCalendar:false });   // you're tapping the filters, so let the calendar move
+}
+function toggleWeekday(i){
+  const wd=evWeekdays();
+  if(wd.includes(i) && wd.length===1){ toast("Keep at least one day"); return; }
+  setFilters(wd.includes(i) ? wd.filter(x=>x!==i) : wd.concat(i), evLength());
+}
+function sizeLenInput(){ const li=document.getElementById("lenInput"); li.style.width=Math.max(1,li.value.length)+0.6+"ch"; }
+/* typed value: clamp to 1…range length; anything unparseable falls back to the current value */
+function commitLengthInput(){
+  const li=document.getElementById("lenInput");
+  const v=parseInt(li.value,10);
+  if(!Number.isFinite(v)){ li.value=evLength(); sizeLenInput(); return; }
+  const n=Math.max(1, Math.min(maxLength(), v));
+  li.value=n; sizeLenInput();
+  if(n!==evLength()) setFilters(evWeekdays(), n); else renderFilters();
+}
+function stepLength(dir){
+  setFilters(evWeekdays(), Math.max(1, Math.min(maxLength(), evLength()+dir)));
 }
 const BRUSH_LABEL = { block:"Can’t make it", maybe:"Maybe not", none:"Clear" };
 function renderModeBar(){
   const bar=document.getElementById("modeBar"), txt=document.getElementById("modeText"), btn=document.getElementById("editToggleBtn");
   const me=state.me && personById(state.me);
   bar.classList.toggle("editing",state.editing);
-  document.getElementById("viewLegend").classList.toggle("off",state.editing);
-  document.getElementById("editToolbar").classList.toggle("off",!state.editing);
+  document.getElementById("rangeToggle").classList.toggle("hide",!state.editing);
   updateBrushUI();
   if(state.editing){
     const who=`<strong>${escapeHtml(me.name)}</strong>`;
-    if(state.rangeMode){
-      txt.innerHTML = state.anchor
-        ? `Range from <strong>${fmtShort(parseYmd(state.anchor))}</strong>. Now tap the last day.`
-        : `Editing ${who} · Range fill: tap the first day, then the last day.`;
-    } else {
-      txt.innerHTML = state.brush==="cycle"
-        ? `Editing ${who} · tap a day to cycle Free → Can’t make it → Maybe not.`
-        : `Editing ${who} · tap a day to mark it <strong>${BRUSH_LABEL[state.brush]}</strong>.`;
-    }
+    if(!state.rangeMode) txt.innerHTML=`Editing ${who} · tap a day: Can’t make it → Maybe not → Clear.`;
+    else if(state.anchor) txt.innerHTML=`Range from <strong>${fmtShort(parseYmd(state.anchor))}</strong>. Now tap the last day.`;
+    else txt.innerHTML=`Fill with <strong>${BRUSH_LABEL[state.brush]}</strong>: tap the first day, then the last day.`;
     btn.textContent="✓ Done";
   } else {
     txt.innerHTML= me
@@ -557,18 +662,34 @@ function renderModeBar(){
   }
 }
 function updateBrushUI(){
-  document.querySelectorAll("#brushes .brush").forEach(b=>{
-    b.classList.toggle("active",b.dataset.b===state.brush);
-    if(b.dataset.b==="cycle") b.disabled=state.rangeMode;   // a range needs one fixed state to fill with
-  });
-  document.querySelector("#rangeToggle .switch").classList.toggle("on",state.rangeMode);
+  document.querySelectorAll("#brushes .brush").forEach(b=>b.classList.toggle("active",b.dataset.b===state.brush));
+  document.getElementById("brushRow").classList.toggle("hide",!state.editing || !state.rangeMode);
+  const rt=document.getElementById("rangeToggle");
+  rt.querySelector(".switch").classList.toggle("on",state.rangeMode);
+  rt.setAttribute("aria-pressed",String(state.rangeMode));
 }
 function myCellInner(key,d){
   const s=(personById(state.me).days||{})[key];
   const mk=s==="block"?"✕":s==="maybe"?"~":"";
   return { cls: s?"s-"+s:"", html: `${d}${mk?`<span class="mk">${mk}</span>`:""}` };
 }
-function renderGroup(){
+/* Re-rendering the group view can change the height of everything above the
+   calendar (best windows, bar text) — e.g. when a save round-trips from the
+   server while you're tapping days. Keep the calendar pinned where it was on
+   screen so the day under your finger doesn't move. */
+function keepCalendarPinned(fn){
+  const cal=document.getElementById("groupMonths");
+  const visible=!document.getElementById("tab-group").classList.contains("hide");
+  const before=visible && cal.offsetHeight ? cal.getBoundingClientRect().top : null;
+  fn();
+  if(before!==null){ const d=cal.getBoundingClientRect().top-before; if(Math.abs(d)>0.5) window.scrollBy(0,d); }
+}
+function renderGroup({ keepCalendar=true }={}){
+  if(keepCalendar) keepCalendarPinned(renderGroupInner); else renderGroupInner();
+}
+/* the edit bar is stuck to the top → changing its height must not shift the calendar */
+function modeBarStuck(){ const b=document.getElementById("modeBar"); return state.editing && b.getBoundingClientRect().top<=parseFloat(getComputedStyle(b).top)+1; }
+function renderGroupInner(){
   // red "can't make it" scale
   const sb=document.getElementById("scaleBar");
   const total=people().length||1;
@@ -586,6 +707,7 @@ function renderGroup(){
     const out=!inRange(key);
     const st=dayStats(key);
     const cls=["day","has"]; if(out)cls.push("out");
+    if(!considered(key))cls.push("skip");
     if(st.clear)cls.push("full");
     if(state.onlyAll && !st.works)cls.push("dim");
     const bg=out?"":`style="background:${cellColor(st)}"`;
@@ -599,7 +721,8 @@ function renderGroup(){
 function renderEditMonths(){
   document.getElementById("groupMonths").innerHTML=eachMonth((y,m)=>monthCells(y,m,(key,d)=>{
     const c=myCellInner(key,d);
-    const cls=["day","has"]; if(!inRange(key))cls.push("out"); if(c.cls)cls.push(c.cls); if(state.anchor===key)cls.push("anchor");
+    const cls=["day","has"]; if(!inRange(key))cls.push("out"); if(!considered(key))cls.push("skip"); if(c.cls)cls.push(c.cls); if(state.anchor===key)cls.push("anchor");
+    if(state.onlyAll && inRange(key) && !dayStats(key).works)cls.push("dim");
     return `<button class="${cls.join(" ")}" data-ymd="${key}">${c.html}</button>`;
   }));
 }
@@ -636,20 +759,18 @@ function paintDay(cell,val){
   if(!state.editing || !state.me || !inRange(key)) return;
   setDay(state.me,key,val);
   updateMyCell(cell,key);
-  // best windows refresh on "Done" — re-rendering them now would shift the calendar under your finger
+  keepCalendarPinned(renderBestWindows);   // live update, without moving the calendar under your finger
 }
 
-/* the state a tap/drag on `key` applies: the next state when cycling, else the picked brush */
-function brushValue(key){ return state.brush==="cycle" ? nextState(state.me,key) : state.brush; }
 function tapDay(cell){
   const key=cell.dataset.ymd;
   if(!inRange(key)) return;
-  if(!state.rangeMode){ paintDay(cell,brushValue(key)); return; }
-  if(!state.anchor){ state.anchor=key; cell.classList.add("anchor"); renderModeBar(); return; }
+  if(!state.rangeMode){ paintDay(cell,nextState(state.me,key)); return; }
+  if(!state.anchor){ state.anchor=key; cell.classList.add("anchor"); keepCalendarPinned(renderModeBar); return; }
   const [a,b]=[state.anchor,key].sort();
   for(let d=parseYmd(a); d<=parseYmd(b); d=addDays(d,1)){ const k=ymd(d); if(inRange(k)) setDay(state.me,k,state.brush); }
   state.anchor=null;
-  renderEditMonths(); renderModeBar();
+  keepCalendarPinned(()=>{ renderEditMonths(); renderModeBar(); });
 }
 
 function bindCalendarEvents(){
@@ -669,7 +790,7 @@ function bindCalendarEvents(){
     dragged=false; paintVal=null;
     if(!state.editing || state.rangeMode || e.pointerType!=="mouse" || e.button!==0) return;
     const c=e.target.closest(".day[data-ymd]"); if(!c||!inRange(c.dataset.ymd)) return;
-    paintVal={ val:brushValue(c.dataset.ymd), start:c };
+    paintVal={ val:nextState(state.me,c.dataset.ymd), start:c };
   });
   cal.addEventListener("pointerover",e=>{
     if(!paintVal) return;
@@ -688,7 +809,7 @@ function bindCalendarEvents(){
 function setEditing(on){
   if(on && !state.me){ openIdentity({ onPicked:()=>setEditing(true) }); return; }
   state.editing=!!on;
-  paintVal=null; dragged=false; state.anchor=null;
+  paintVal=null; dragged=false; state.anchor=null; state.rangeMode=false;
   if(state.tab!=="group") showTab("group");
   render();
 }
@@ -882,7 +1003,8 @@ function openEventEdit(){
     let s=document.getElementById("tStart").value, e=document.getElementById("tEnd").value;
     if(!s||!e){ toast("Pick both dates"); return; }
     if(e<s){ [s,e]=[e,s]; }
-    setEv({ title:name, start:s, end:e, updatedAt:Date.now() });
+    const next={ ...t, title:name, start:s, end:e, updatedAt:Date.now() };   // keep the best-windows filters
+    setEv(next);
     persistEvent(); closeSheet(); render();
   };
 }
@@ -916,9 +1038,10 @@ function openDayDetail(key){
   const head = st.block>0 ? `${st.block} of ${st.total} can’t make it`
              : st.maybe>0 ? `Nobody’s blocked · ${st.maybe} maybe`
              : `🎉 everyone’s free!`;
+  const skipNote = considered(key) ? "" : ` · ${DOW[mondayIdx(d)]}s aren’t considered for best windows`;
   openSheet(`
     <h3>${DOW[mondayIdx(d)]}, ${fmtFull(d)}</h3>
-    <p class="h">${head}</p>
+    <p class="h">${head}${skipNote}</p>
     ${body}
     <div class="row">
       <button class="btn" id="closeDet">Close</button>
@@ -1075,18 +1198,31 @@ function bindUI(){
   document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{ showTab(t.dataset.tab); render(); });
   document.getElementById("onlyAllToggle").onclick=()=>{ state.onlyAll=!state.onlyAll; document.querySelector("#onlyAllToggle .switch").classList.toggle("on",state.onlyAll); renderGroup(); };
   document.getElementById("editToggleBtn").onclick=()=>setEditing(!state.editing);
-  document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; renderEditMonths(); renderModeBar(); });
-  document.getElementById("rangeToggle").onclick=()=>{
-    state.rangeMode=!state.rangeMode; state.anchor=null;
-    if(state.rangeMode && state.brush==="cycle") state.brush="block";   // range needs a fixed state
-    renderEditMonths(); renderModeBar();
-  };
+  document.getElementById("wdFilter").onclick=e=>{ const b=e.target.closest("[data-wd]"); if(b) toggleWeekday(Number(b.dataset.wd)); };
+  document.getElementById("lenDec").onclick=()=>stepLength(-1);
+  document.getElementById("lenInc").onclick=()=>stepLength(1);
+  const li=document.getElementById("lenInput");
+  li.addEventListener("focus",()=>li.select());
+  li.addEventListener("input",()=>{ li.value=li.value.replace(/\D/g,"").slice(0,4); sizeLenInput(); });
+  li.addEventListener("change",commitLengthInput);
+  li.addEventListener("keydown",e=>{
+    if(e.key==="Enter"){ e.preventDefault(); li.blur(); }
+    else if(e.key==="Escape"){ li.value=evLength(); li.blur(); }
+    else if(e.key==="ArrowUp"||e.key==="ArrowDown"){ e.preventDefault(); stepLength(e.key==="ArrowUp"?1:-1); li.value=evLength(); sizeLenInput(); li.select(); }
+  });
+  const rerenderEdit=()=>{ const f=()=>{ renderEditMonths(); renderModeBar(); }; if(modeBarStuck()) keepCalendarPinned(f); else f(); };
+  document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; rerenderEdit(); });
+  document.getElementById("rangeToggle").onclick=()=>{ state.rangeMode=!state.rangeMode; state.anchor=null; rerenderEdit(); };
   document.getElementById("shareBtn").onclick=doShare;
   document.getElementById("settingsBtn").onclick=openSettings;
   document.getElementById("editEventBtn").onclick=openEventEdit;
   document.getElementById("addPersonBtn").onclick=openAddPerson;
   document.getElementById("peopleList").addEventListener("click",e=>{
     const rn=e.target.closest("[data-ren]"); if(rn) openRename(rn.dataset.ren);
+  });
+  document.getElementById("bestWindows").addEventListener("click",e=>{
+    const b=e.target.closest("[data-ics]"); if(!b) return;
+    const [s,en]=b.dataset.ics.split("|"); downloadIcs(s,en);
   });
   bindCalendarEvents();
 }
