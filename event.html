@@ -93,35 +93,24 @@
   .card h2{margin:0 0 2px;font-size:17px;letter-spacing:-.01em}
   .card .hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 
-  /* ---------- Edit-mode bar ---------- */
-  .modebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px}
+  /* ---------- Edit-mode bar (sticks under the tabs while editing) ---------- */
+  .modebar{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap;padding:12px 14px}
   .modebar .mtxt{flex:1 1 220px;min-width:0;font-size:14px;line-height:1.45;color:var(--muted)}
   .modebar .mtxt strong{color:var(--ink)}
+  .modebar .mctl{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap;margin-left:auto}
   .modebar .btn{padding:12px 18px;font-size:15px}
-  .modebar.editing{border-color:#f1c2bd;background:#fffaf8}
-  /* narrow screens: button on its own row + fixed 2-line text, so both modes are the same height */
+  .modebar.editing{position:sticky;top:68px;z-index:25;border-color:#f1c2bd;background:#fffaf8}
+  /* narrow screens: controls get their own row(s), text keeps a fixed 2-line height */
   @media(max-width:559px){
     .modebar .mtxt{flex-basis:100%;min-height:calc(2 * 1.45em)}
-    .modebar .btn{flex:1 0 100%;justify-content:center}
+    .modebar .mctl{flex:1 0 100%}
+    .modebar .mctl .btn{flex:1 0 auto;justify-content:center}
+    .modebar.editing .mctl .btn{flex:0 0 auto;margin-left:auto}
+    .modebar .brushes{order:3;flex:1 0 100%}
+    .modebar .brush{flex:1 1 auto;justify-content:center;padding:8px 6px;gap:5px;font-size:13px;white-space:nowrap}
   }
-  /* ---------- Editing dock (fixed to the bottom while editing) ---------- */
-  .editdock{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:0 12px calc(12px + env(safe-area-inset-bottom));pointer-events:none}
-  .editdock .dock-in{pointer-events:auto;max-width:760px;margin:0 auto;background:#fffaf8;border:1px solid #f1c2bd;border-radius:18px;
-       box-shadow:0 10px 34px rgba(31,36,33,.2);padding:10px 12px;display:flex;flex-direction:column;gap:9px}
-  .editdock .dock-txt{font-size:13.5px;line-height:1.4;color:var(--muted)}
-  .editdock .dock-txt strong{color:var(--ink)}
-  .editdock .dock-row{display:flex;align-items:center;gap:10px}
-  .editdock .dock-row .sp{flex:1}
-  .editdock .btn{padding:10px 18px;font-size:15px}
-  @media(max-width:559px){
-    .editdock .dock-row{flex-wrap:wrap}
-    .editdock .brushes{order:3;flex:1 0 100%}
-    .editdock .brush{flex:1 1 auto;justify-content:center;padding:8px 6px;gap:5px;font-size:13px;white-space:nowrap}
-  }
-  body.editing .wrap{padding-bottom:calc(var(--dock-h,0px) + 16px)}
-  body.editing .toast{bottom:calc(var(--dock-h,0px) + 24px)}
 
-  /* ---------- Range-fill brushes (edit dock) ---------- */
+  /* ---------- Range-fill brushes (edit mode) ---------- */
   .brushes{display:flex;gap:6px;flex-wrap:wrap;background:#f3eee3;padding:4px;border-radius:13px}
   .brush{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:10px;font-weight:700;font-size:14px;color:var(--muted)}
   .brush .sw{width:14px;height:14px;border-radius:5px;border:1px solid rgba(0,0,0,.08)}
@@ -305,24 +294,17 @@
     </div>
     <div class="card modebar" id="modeBar">
       <div class="mtxt" id="modeText"></div>
-      <button class="btn primary" id="editToggleBtn">✎ Edit my availability</button>
-    </div>
-    <div class="months" id="groupMonths"></div>
-    <div class="editdock hide" id="editDock" role="toolbar" aria-label="Editing">
-      <div class="dock-in">
-        <div class="dock-txt" id="dockText"></div>
-        <div class="dock-row">
-          <button class="toggle" id="rangeToggle" aria-pressed="false"><span class="switch"></span>Range fill</button>
-          <div class="brushes hide" id="brushes" role="group" aria-label="Fill range with">
-            <button class="brush active" data-b="block"><span class="sw"></span>Can’t make it</button>
-            <button class="brush" data-b="maybe"><span class="sw"></span>Maybe not</button>
-            <button class="brush" data-b="none"><span class="sw"></span>Clear</button>
-          </div>
-          <div class="sp"></div>
-          <button class="btn primary" id="doneBtn">✓ Done</button>
+      <div class="mctl">
+        <button class="toggle hide" id="rangeToggle" aria-pressed="false"><span class="switch"></span>Range fill</button>
+        <div class="brushes hide" id="brushes" role="group" aria-label="Fill range with">
+          <button class="brush active" data-b="block"><span class="sw"></span>Can’t make it</button>
+          <button class="brush" data-b="maybe"><span class="sw"></span>Maybe not</button>
+          <button class="brush" data-b="none"><span class="sw"></span>Clear</button>
         </div>
+        <button class="btn primary" id="editToggleBtn">✎ Edit my availability</button>
       </div>
     </div>
+    <div class="months" id="groupMonths"></div>
   </section>
 
   <!-- PEOPLE -->
@@ -607,7 +589,7 @@ function setFilters(weekdays, days){
   delete next.weekdays; delete next.days;
   if(weekdays.length && weekdays.length<7) next.weekdays=[...weekdays].sort((a,b)=>a-b);
   if(days>1) next.days=Math.min(days, maxLength());
-  setEv(next); persistEvent(); renderGroup();
+  setEv(next); persistEvent(); renderGroup({ keepCalendar:false });   // you're tapping the filters, so let the calendar move
 }
 function toggleWeekday(i){
   const wd=evWeekdays();
@@ -630,33 +612,26 @@ function stepLength(dir){
 const BRUSH_LABEL = { block:"Can’t make it", maybe:"Maybe not", none:"Clear" };
 function renderModeBar(){
   const bar=document.getElementById("modeBar"), txt=document.getElementById("modeText"), btn=document.getElementById("editToggleBtn");
-  const dock=document.getElementById("editDock"), dtxt=document.getElementById("dockText");
   const me=state.me && personById(state.me);
   bar.classList.toggle("editing",state.editing);
-  document.body.classList.toggle("editing",state.editing);
-  dock.classList.toggle("hide",!state.editing);
+  document.getElementById("rangeToggle").classList.toggle("hide",!state.editing);
   updateBrushUI();
   if(state.editing){
-    txt.innerHTML=`Editing <strong>${escapeHtml(me.name)}</strong> · tap a day to switch between Can’t make it, Maybe not and Clear.`;
+    const who=`<strong>${escapeHtml(me.name)}</strong>`;
+    if(!state.rangeMode) txt.innerHTML=`Editing ${who} · tap a day: Can’t make it → Maybe not → Clear.`;
+    else if(state.anchor) txt.innerHTML=`Range from <strong>${fmtShort(parseYmd(state.anchor))}</strong> — now tap the last day.`;
+    else txt.innerHTML=`Fill with <strong>${BRUSH_LABEL[state.brush]}</strong>: tap the first day, then the last day.`;
     btn.textContent="✓ Done";
-    if(!state.rangeMode) dtxt.innerHTML=`Tap a day: <strong>Can’t make it</strong> → <strong>Maybe not</strong> → <strong>Clear</strong>.`;
-    else if(state.anchor) dtxt.innerHTML=`Range from <strong>${fmtShort(parseYmd(state.anchor))}</strong> — now tap the last day.`;
-    else dtxt.innerHTML=`Fill with <strong>${BRUSH_LABEL[state.brush]}</strong>: tap the first day, then the last day.`;
   } else {
     txt.innerHTML= me
       ? `Viewing as <strong>${escapeHtml(me.name)}</strong>. Tap a day to see who’s free.`
       : `Viewing the whole group. Tap a day to see who’s free.`;
     btn.textContent="✎ Edit my availability";
   }
-  syncDockHeight();
-}
-function syncDockHeight(){
-  const dock=document.getElementById("editDock");
-  document.body.style.setProperty("--dock-h", state.editing ? dock.offsetHeight+"px" : "0px");
 }
 function updateBrushUI(){
   document.querySelectorAll("#brushes .brush").forEach(b=>b.classList.toggle("active",b.dataset.b===state.brush));
-  document.getElementById("brushes").classList.toggle("hide",!state.rangeMode);
+  document.getElementById("brushes").classList.toggle("hide",!state.editing || !state.rangeMode);
   const rt=document.getElementById("rangeToggle");
   rt.querySelector(".switch").classList.toggle("on",state.rangeMode);
   rt.setAttribute("aria-pressed",String(state.rangeMode));
@@ -666,7 +641,23 @@ function myCellInner(key,d){
   const mk=s==="block"?"✕":s==="maybe"?"~":"";
   return { cls: s?"s-"+s:"", html: `${d}${mk?`<span class="mk">${mk}</span>`:""}` };
 }
-function renderGroup(){
+/* Re-rendering the group view can change the height of everything above the
+   calendar (best windows, bar text) — e.g. when a save round-trips from the
+   server while you're tapping days. Keep the calendar pinned where it was on
+   screen so the day under your finger doesn't move. */
+function keepCalendarPinned(fn){
+  const cal=document.getElementById("groupMonths");
+  const visible=!document.getElementById("tab-group").classList.contains("hide");
+  const before=visible && cal.offsetHeight ? cal.getBoundingClientRect().top : null;
+  fn();
+  if(before!==null){ const d=cal.getBoundingClientRect().top-before; if(Math.abs(d)>0.5) window.scrollBy(0,d); }
+}
+function renderGroup({ keepCalendar=true }={}){
+  if(keepCalendar) keepCalendarPinned(renderGroupInner); else renderGroupInner();
+}
+/* the edit bar is stuck to the top → changing its height must not shift the calendar */
+function modeBarStuck(){ const b=document.getElementById("modeBar"); return state.editing && b.getBoundingClientRect().top<=parseFloat(getComputedStyle(b).top)+1; }
+function renderGroupInner(){
   // red "can't make it" scale
   const sb=document.getElementById("scaleBar");
   const total=people().length||1;
@@ -736,18 +727,18 @@ function paintDay(cell,val){
   if(!state.editing || !state.me || !inRange(key)) return;
   setDay(state.me,key,val);
   updateMyCell(cell,key);
-  // best windows refresh on "Done" — re-rendering them now would shift the calendar under your finger
+  keepCalendarPinned(renderBestWindows);   // live update, without moving the calendar under your finger
 }
 
 function tapDay(cell){
   const key=cell.dataset.ymd;
   if(!inRange(key)) return;
   if(!state.rangeMode){ paintDay(cell,nextState(state.me,key)); return; }
-  if(!state.anchor){ state.anchor=key; cell.classList.add("anchor"); renderModeBar(); return; }
+  if(!state.anchor){ state.anchor=key; cell.classList.add("anchor"); keepCalendarPinned(renderModeBar); return; }
   const [a,b]=[state.anchor,key].sort();
   for(let d=parseYmd(a); d<=parseYmd(b); d=addDays(d,1)){ const k=ymd(d); if(inRange(k)) setDay(state.me,k,state.brush); }
   state.anchor=null;
-  renderEditMonths(); renderModeBar();
+  keepCalendarPinned(()=>{ renderEditMonths(); renderModeBar(); });
 }
 
 function bindCalendarEvents(){
@@ -1187,13 +1178,9 @@ function bindUI(){
     else if(e.key==="Escape"){ li.value=evLength(); li.blur(); }
     else if(e.key==="ArrowUp"||e.key==="ArrowDown"){ e.preventDefault(); stepLength(e.key==="ArrowUp"?1:-1); li.value=evLength(); sizeLenInput(); li.select(); }
   });
-  document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; renderEditMonths(); renderModeBar(); });
-  document.getElementById("rangeToggle").onclick=()=>{
-    state.rangeMode=!state.rangeMode; state.anchor=null;
-    renderEditMonths(); renderModeBar();
-  };
-  document.getElementById("doneBtn").onclick=()=>setEditing(false);
-  window.addEventListener("resize",syncDockHeight);
+  const rerenderEdit=()=>{ const f=()=>{ renderEditMonths(); renderModeBar(); }; if(modeBarStuck()) keepCalendarPinned(f); else f(); };
+  document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; rerenderEdit(); });
+  document.getElementById("rangeToggle").onclick=()=>{ state.rangeMode=!state.rangeMode; state.anchor=null; rerenderEdit(); };
   document.getElementById("shareBtn").onclick=doShare;
   document.getElementById("settingsBtn").onclick=openSettings;
   document.getElementById("editEventBtn").onclick=openEventEdit;
