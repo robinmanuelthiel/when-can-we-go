@@ -98,26 +98,34 @@
   .modebar .mtxt{flex:1 1 220px;min-width:0;font-size:14px;line-height:1.45;color:var(--muted)}
   .modebar .mtxt strong{color:var(--ink)}
   .modebar .btn{padding:12px 18px;font-size:15px}
-  .modebar.editing{position:sticky;top:68px;z-index:25;border-color:#f1c2bd;background:#fffaf8}
+  .modebar.editing{border-color:#f1c2bd;background:#fffaf8}
   /* narrow screens: button on its own row + fixed 2-line text, so both modes are the same height */
   @media(max-width:559px){
     .modebar .mtxt{flex-basis:100%;min-height:calc(2 * 1.45em)}
     .modebar .btn{flex:1 0 100%;justify-content:center}
   }
-  /* view legend and edit toolbar share ONE grid cell, so the card keeps the
-     same height in both modes and the calendar never jumps when you toggle */
-  .slot{display:grid}
-  .slot > *{grid-area:1/1;min-width:0}
-  .slot > .off{visibility:hidden;pointer-events:none}
+  /* ---------- Editing dock (fixed to the bottom while editing) ---------- */
+  .editdock{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:0 12px calc(12px + env(safe-area-inset-bottom));pointer-events:none}
+  .editdock .dock-in{pointer-events:auto;max-width:760px;margin:0 auto;background:#fffaf8;border:1px solid #f1c2bd;border-radius:18px;
+       box-shadow:0 10px 34px rgba(31,36,33,.2);padding:10px 12px;display:flex;flex-direction:column;gap:9px}
+  .editdock .dock-txt{font-size:13.5px;line-height:1.4;color:var(--muted)}
+  .editdock .dock-txt strong{color:var(--ink)}
+  .editdock .dock-row{display:flex;align-items:center;gap:10px}
+  .editdock .dock-row .sp{flex:1}
+  .editdock .btn{padding:10px 18px;font-size:15px}
+  @media(max-width:559px){
+    .editdock .dock-row{flex-wrap:wrap}
+    .editdock .brushes{order:3;flex:1 0 100%}
+    .editdock .brush{flex:1 1 auto;justify-content:center;padding:8px 6px;gap:5px;font-size:13px;white-space:nowrap}
+  }
+  body.editing .wrap{padding-bottom:calc(var(--dock-h,0px) + 16px)}
+  body.editing .toast{bottom:calc(var(--dock-h,0px) + 24px)}
 
-  /* ---------- Brush bar (edit mode) ---------- */
-  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  /* ---------- Range-fill brushes (edit dock) ---------- */
   .brushes{display:flex;gap:6px;flex-wrap:wrap;background:#f3eee3;padding:4px;border-radius:13px}
   .brush{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:10px;font-weight:700;font-size:14px;color:var(--muted)}
   .brush .sw{width:14px;height:14px;border-radius:5px;border:1px solid rgba(0,0,0,.08)}
   .brush.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
-  .brush:disabled{opacity:.4;cursor:default}
-  .brush[data-b="cycle"] .sw{background:linear-gradient(135deg,#fff 0 33%,var(--block) 33% 66%,var(--maybe) 66%)}
   .brush[data-b="block"] .sw{background:var(--block)}
   .brush[data-b="maybe"] .sw{background:var(--maybe)}
   .brush[data-b="none"] .sw{background:#fff;border-style:dashed;border-color:#c9cfc9}
@@ -154,6 +162,7 @@
   /* weekday not considered for best windows: still editable, just faded */
   .day.skip{opacity:.45}
   .day.skip.dim{opacity:.2}
+  .months.editing .day.dim{opacity:.35}
   .day.skip.out{opacity:.7}
   .dow span.skip{opacity:.4}
 
@@ -275,23 +284,13 @@
 
   <!-- GROUP (the one and only calendar: view mode ⇄ edit mode) -->
   <section id="tab-group">
-    <div class="card slot">
+    <div class="card">
       <div class="legend" id="viewLegend">
         <div class="it"><span class="sw" style="background:#F5FAF6"></span>Everyone free</div>
         <div class="it"><span class="sw" style="background:var(--maybe-bg)"></span>Only maybes</div>
         <div class="scale"><span class="bar" id="scaleBar"></span><span>Someone can’t make it</span></div>
         <div style="flex:1"></div>
         <button class="toggle" id="onlyAllToggle"><span class="switch"></span>Only days that work</button>
-      </div>
-      <div class="toolbar off" id="editToolbar">
-        <div class="brushes" id="brushes">
-          <button class="brush active" data-b="cycle" title="Each tap cycles Free → Can’t make it → Maybe not"><span class="sw"></span>Cycle</button>
-          <button class="brush" data-b="block"><span class="sw"></span>Can’t make it</button>
-          <button class="brush" data-b="maybe"><span class="sw"></span>Maybe not</button>
-          <button class="brush" data-b="none"><span class="sw"></span>Clear</button>
-        </div>
-        <div style="flex:1"></div>
-        <button class="toggle" id="rangeToggle"><span class="switch"></span>Range fill</button>
       </div>
     </div>
     <div class="card">
@@ -309,6 +308,21 @@
       <button class="btn primary" id="editToggleBtn">✎ Edit my availability</button>
     </div>
     <div class="months" id="groupMonths"></div>
+    <div class="editdock hide" id="editDock" role="toolbar" aria-label="Editing">
+      <div class="dock-in">
+        <div class="dock-txt" id="dockText"></div>
+        <div class="dock-row">
+          <button class="toggle" id="rangeToggle" aria-pressed="false"><span class="switch"></span>Range fill</button>
+          <div class="brushes hide" id="brushes" role="group" aria-label="Fill range with">
+            <button class="brush active" data-b="block"><span class="sw"></span>Can’t make it</button>
+            <button class="brush" data-b="maybe"><span class="sw"></span>Maybe not</button>
+            <button class="brush" data-b="none"><span class="sw"></span>Clear</button>
+          </div>
+          <div class="sp"></div>
+          <button class="btn primary" id="doneBtn">✓ Done</button>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- PEOPLE -->
@@ -360,7 +374,7 @@ let state = {
   data: null,            // {v, trip:{title,start,end,updatedAt}, people:{pid:{name,color,days,updatedAt,deleted}}}
   me: null,              // pid of "you" on this device — the ONLY calendar you can edit
   editing: false,        // group calendar in edit mode (tapping a day changes MY availability)
-  brush: "cycle",        // edit brush: cycle | block | maybe | none
+  brush: "block",        // range-fill state: block | maybe | none (single taps always cycle)
   rangeMode: false,      // range fill: tap a first and a last day, fill everything between
   anchor: null,          // range fill: first day picked
   tab: "group",
@@ -456,7 +470,7 @@ function setDay(pid,key,val){
   p.updatedAt=Date.now();
   persistPersonDebounced(pid);
 }
-/* tapping a day in edit mode cycles: Free → Can't make it → Maybe not → Free */
+/* tapping a day in edit mode cycles: Clear → Can't make it → Maybe not → Clear */
 const CYCLE = { none:"block", block:"maybe", maybe:"none" };
 function nextState(pid,key){ const p=personById(pid); return CYCLE[(p&&p.days&&p.days[key])||"none"]; }
 function avatar(p,size){ return `<span class="ava" style="background:${p.color};width:${size}px;height:${size}px;font-size:${Math.round(size*.46)}px">${escapeHtml(p.name.trim().charAt(0).toUpperCase()||"?")}</span>`; }
@@ -616,36 +630,36 @@ function stepLength(dir){
 const BRUSH_LABEL = { block:"Can’t make it", maybe:"Maybe not", none:"Clear" };
 function renderModeBar(){
   const bar=document.getElementById("modeBar"), txt=document.getElementById("modeText"), btn=document.getElementById("editToggleBtn");
+  const dock=document.getElementById("editDock"), dtxt=document.getElementById("dockText");
   const me=state.me && personById(state.me);
   bar.classList.toggle("editing",state.editing);
-  document.getElementById("viewLegend").classList.toggle("off",state.editing);
-  document.getElementById("editToolbar").classList.toggle("off",!state.editing);
+  document.body.classList.toggle("editing",state.editing);
+  dock.classList.toggle("hide",!state.editing);
   updateBrushUI();
   if(state.editing){
-    const who=`<strong>${escapeHtml(me.name)}</strong>`;
-    if(state.rangeMode){
-      txt.innerHTML = state.anchor
-        ? `Range from <strong>${fmtShort(parseYmd(state.anchor))}</strong> — now tap the last day.`
-        : `Editing ${who} · Range fill: tap the first day, then the last day.`;
-    } else {
-      txt.innerHTML = state.brush==="cycle"
-        ? `Editing ${who} · tap a day to cycle Free → Can’t make it → Maybe not.`
-        : `Editing ${who} · tap a day to mark it <strong>${BRUSH_LABEL[state.brush]}</strong>.`;
-    }
+    txt.innerHTML=`Editing <strong>${escapeHtml(me.name)}</strong> · tap a day to switch between Can’t make it, Maybe not and Clear.`;
     btn.textContent="✓ Done";
+    if(!state.rangeMode) dtxt.innerHTML=`Tap a day: <strong>Can’t make it</strong> → <strong>Maybe not</strong> → <strong>Clear</strong>.`;
+    else if(state.anchor) dtxt.innerHTML=`Range from <strong>${fmtShort(parseYmd(state.anchor))}</strong> — now tap the last day.`;
+    else dtxt.innerHTML=`Fill with <strong>${BRUSH_LABEL[state.brush]}</strong>: tap the first day, then the last day.`;
   } else {
     txt.innerHTML= me
       ? `Viewing as <strong>${escapeHtml(me.name)}</strong>. Tap a day to see who’s free.`
       : `Viewing the whole group. Tap a day to see who’s free.`;
     btn.textContent="✎ Edit my availability";
   }
+  syncDockHeight();
+}
+function syncDockHeight(){
+  const dock=document.getElementById("editDock");
+  document.body.style.setProperty("--dock-h", state.editing ? dock.offsetHeight+"px" : "0px");
 }
 function updateBrushUI(){
-  document.querySelectorAll("#brushes .brush").forEach(b=>{
-    b.classList.toggle("active",b.dataset.b===state.brush);
-    if(b.dataset.b==="cycle") b.disabled=state.rangeMode;   // a range needs one fixed state to fill with
-  });
-  document.querySelector("#rangeToggle .switch").classList.toggle("on",state.rangeMode);
+  document.querySelectorAll("#brushes .brush").forEach(b=>b.classList.toggle("active",b.dataset.b===state.brush));
+  document.getElementById("brushes").classList.toggle("hide",!state.rangeMode);
+  const rt=document.getElementById("rangeToggle");
+  rt.querySelector(".switch").classList.toggle("on",state.rangeMode);
+  rt.setAttribute("aria-pressed",String(state.rangeMode));
 }
 function myCellInner(key,d){
   const s=(personById(state.me).days||{})[key];
@@ -685,6 +699,7 @@ function renderEditMonths(){
   document.getElementById("groupMonths").innerHTML=eachMonth((y,m)=>monthCells(y,m,(key,d)=>{
     const c=myCellInner(key,d);
     const cls=["day","has"]; if(!inRange(key))cls.push("out"); if(!considered(key))cls.push("skip"); if(c.cls)cls.push(c.cls); if(state.anchor===key)cls.push("anchor");
+    if(state.onlyAll && inRange(key) && !dayStats(key).works)cls.push("dim");
     return `<button class="${cls.join(" ")}" data-ymd="${key}">${c.html}</button>`;
   }));
 }
@@ -724,12 +739,10 @@ function paintDay(cell,val){
   // best windows refresh on "Done" — re-rendering them now would shift the calendar under your finger
 }
 
-/* the state a tap/drag on `key` applies: the next state when cycling, else the picked brush */
-function brushValue(key){ return state.brush==="cycle" ? nextState(state.me,key) : state.brush; }
 function tapDay(cell){
   const key=cell.dataset.ymd;
   if(!inRange(key)) return;
-  if(!state.rangeMode){ paintDay(cell,brushValue(key)); return; }
+  if(!state.rangeMode){ paintDay(cell,nextState(state.me,key)); return; }
   if(!state.anchor){ state.anchor=key; cell.classList.add("anchor"); renderModeBar(); return; }
   const [a,b]=[state.anchor,key].sort();
   for(let d=parseYmd(a); d<=parseYmd(b); d=addDays(d,1)){ const k=ymd(d); if(inRange(k)) setDay(state.me,k,state.brush); }
@@ -754,7 +767,7 @@ function bindCalendarEvents(){
     dragged=false; paintVal=null;
     if(!state.editing || state.rangeMode || e.pointerType!=="mouse" || e.button!==0) return;
     const c=e.target.closest(".day[data-ymd]"); if(!c||!inRange(c.dataset.ymd)) return;
-    paintVal={ val:brushValue(c.dataset.ymd), start:c };
+    paintVal={ val:nextState(state.me,c.dataset.ymd), start:c };
   });
   cal.addEventListener("pointerover",e=>{
     if(!paintVal) return;
@@ -773,7 +786,7 @@ function bindCalendarEvents(){
 function setEditing(on){
   if(on && !state.me){ openIdentity({ onPicked:()=>setEditing(true) }); return; }
   state.editing=!!on;
-  paintVal=null; dragged=false; state.anchor=null;
+  paintVal=null; dragged=false; state.anchor=null; state.rangeMode=false;
   if(state.tab!=="group") showTab("group");
   render();
 }
@@ -1177,9 +1190,10 @@ function bindUI(){
   document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; renderEditMonths(); renderModeBar(); });
   document.getElementById("rangeToggle").onclick=()=>{
     state.rangeMode=!state.rangeMode; state.anchor=null;
-    if(state.rangeMode && state.brush==="cycle") state.brush="block";   // range needs a fixed state
     renderEditMonths(); renderModeBar();
   };
+  document.getElementById("doneBtn").onclick=()=>setEditing(false);
+  window.addEventListener("resize",syncDockHeight);
   document.getElementById("shareBtn").onclick=doShare;
   document.getElementById("settingsBtn").onclick=openSettings;
   document.getElementById("editEventBtn").onclick=openEventEdit;
