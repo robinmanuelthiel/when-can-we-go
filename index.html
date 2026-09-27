@@ -97,12 +97,12 @@
     animation:doodle-float 7s ease-in-out infinite alternate}
   .doodle svg{overflow:visible;filter:url(#rough)}
   .doodle path{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;
-    stroke-dasharray:1;stroke-dashoffset:1}
+    stroke-dasharray:1;stroke-dashoffset:1;opacity:0}
   .doodle.in path{animation:doodle-draw .9s cubic-bezier(.6,.05,.3,1) forwards;animation-delay:calc(var(--d,0s) + var(--dd,0s))}
   .doodle.qm path{stroke-width:3}
   .doodle.qm path:last-child{stroke-width:5}
   .doodle.inline{position:relative;display:inline-block;vertical-align:baseline;margin-left:8px;z-index:auto}
-  @keyframes doodle-draw{to{stroke-dashoffset:0}}
+  @keyframes doodle-draw{from{opacity:1;stroke-dashoffset:1}to{opacity:1;stroke-dashoffset:0}}
   @keyframes doodle-float{from{transform:translateY(0) rotate(var(--r,0deg))}to{transform:translateY(-5px) rotate(calc(var(--r,0deg) + 3deg))}}
   .d-cal{display:none}
   .d-cal .cal-arrow{display:none;position:absolute;left:318px;top:-34px}
@@ -141,7 +141,7 @@
   .cta-btn{position:relative;display:inline-block}
   .d-cta-l{left:-82px;top:-18px}
   .d-cta-r{right:-82px;top:-18px;--dd:.2s}
-  @media (prefers-reduced-motion:reduce){.doodle{animation:none}.doodle path,.doodle.in path{animation:none;stroke-dashoffset:0}}
+  @media (prefers-reduced-motion:reduce){.doodle{animation:none}.doodle path,.doodle.in path{animation:none;stroke-dashoffset:0;opacity:1}}
 
   /* ---------- Marketing sections ---------- */
   .section{padding:40px 2px 8px}
