@@ -60,7 +60,7 @@ async function backendInit(){
     const app = appMod.initializeApp(FIREBASE_CONFIG);
     db = FB.getDatabase(app);
     return true;
-  }catch(e){ console.warn("Firebase unavailable — running local-only.",e); db=null; return false; }
+  }catch(e){ console.warn("Firebase unavailable, running local-only.",e); db=null; return false; }
 }
 
 /* ---------- misc helpers ---------- */
