@@ -91,7 +91,7 @@
 
 
   /* ---------- Hand-drawn doodles ---------- */
-  @media (max-width:1239px){.wrap{overflow-x:clip}}
+  @media (max-width:1239px){html,body{overflow-x:clip}}
   .section,.cta,.landing-hero{position:relative;isolation:isolate}
   .doodle{position:absolute;z-index:-1;pointer-events:none;color:#b3a28c;line-height:0;
     animation:doodle-float 7s ease-in-out infinite alternate}
@@ -172,6 +172,8 @@
   .compare .us{border:2px solid var(--accent);background:linear-gradient(160deg,#fff 0%,var(--accent-soft) 100%);
                box-shadow:0 2px 4px rgba(224,82,74,.08),0 16px 40px rgba(224,82,74,.16)}
   .compare .us h3{font-size:18px}
+  @media (max-width:1139px){.compare .card.us{margin-right:16px}}
+  @media (max-width:759px){.compare .card.us{margin-left:16px;box-shadow:0 2px 4px rgba(224,82,74,.08),0 12px 26px rgba(224,82,74,.14)}}
   .compare .card:not(.us){background:#fbfaf6;box-shadow:none}
   .us-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
   .us-head img{width:60px;height:60px;margin:-6px -4px -6px -8px;flex:none;object-fit:contain}
