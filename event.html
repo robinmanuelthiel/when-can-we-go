@@ -176,7 +176,8 @@
   .stepper .sbox button:disabled{opacity:.3;cursor:default}
   .stepper .sval{min-width:88px;padding:0 4px;text-align:center;color:var(--muted);font-weight:500;white-space:nowrap}
   .stepper .sval b{color:var(--ink);font-weight:750;margin-left:.3em}
-  .stepper .sval input{width:2ch;padding:2px 0;margin:0 1px 0 2px;border:none;border-radius:6px;background:transparent;font:inherit;font-weight:750;color:var(--ink);text-align:right;cursor:text}
+  .stepper .sval input{width:2ch;padding:2px 0;margin:0 1px 0 2px;border:none;border-radius:6px;background:transparent;font:inherit;font-weight:750;color:var(--ink);text-align:right;cursor:text;-moz-appearance:textfield;appearance:textfield}
+  .stepper .sval input::-webkit-outer-spin-button,.stepper .sval input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   .stepper .sval input:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff;text-align:center}
   /* too narrow for one row: stack both controls, each full width */
   @container (max-width:540px){
@@ -296,7 +297,7 @@
       <div class="filters-wrap"><div class="filters">
         <div class="wdays" id="wdFilter" role="group" aria-label="Days to consider"></div>
         <div class="stepper">
-          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><label class="sval" for="lenInput">min.<input id="lenInput" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Minimum consecutive days" value="1"><b id="lenUnit">day</b></label><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
+          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><label class="sval" for="lenInput">min.<input id="lenInput" name="min-days" type="number" min="1" step="1" autocomplete="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" data-bwignore="true" data-form-type="other" aria-label="Minimum consecutive days" value="1"><b id="lenUnit">day</b></label><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
       </div></div>
       <div id="bestWindows"></div>
     </div>
@@ -636,7 +637,7 @@ function renderFilters(){
   document.getElementById("wdFilter").innerHTML=DOW.map((d,i)=>`<button type="button" class="wday${wd.includes(i)?" on":""}" data-wd="${i}" aria-pressed="${wd.includes(i)}">${d}</button>`).join("");
   const li=document.getElementById("lenInput");
   if(document.activeElement!==li){ li.value=n; sizeLenInput(); }     // don't clobber typing on a live sync
-  li.setAttribute("aria-valuemax",maxLength());
+  li.max=maxLength();
   document.getElementById("lenUnit").textContent = n>1 ? "days" : "day";
   document.getElementById("lenDec").disabled = n<=1;
   document.getElementById("lenInc").disabled = n>=maxLength();
