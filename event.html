@@ -201,7 +201,7 @@
   .person .nm{font-weight:700}
   .person .meta{color:var(--muted);font-size:13px}
   .person .sp{flex:1}
-  .person .role{padding:7px 8px;border:1px solid var(--line);border-radius:10px;background:#fbfaf6;font-family:inherit;font-size:13px;font-weight:650;color:var(--ink)}
+  .person .role{padding:7px 10px;border:1px solid var(--line);border-radius:10px;background-color:#fbfaf6;font-family:inherit;font-size:13px;font-weight:650;color:var(--ink)}
   .iconbtn{padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--card)}
   .iconbtn svg{width:16px;height:16px;display:block}
   .head-actions .iconbtn{padding:10px;box-shadow:var(--shadow)}
@@ -220,9 +220,11 @@
   .field-actions .iconbtn{height:46px;display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
   .field{margin-bottom:13px}
   .field label{display:block;font-weight:650;font-size:13px;margin-bottom:5px;color:#4a514a}
-  .field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6;font-family:inherit;font-size:16px;color:inherit}
+  .field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background-color:#fbfaf6;font-family:inherit;font-size:16px;color:inherit}
   .field .two{display:flex;gap:10px}.field .two > *{flex:1;min-width:0}
   .field .two .sublabel{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
+  /* all dropdowns: custom chevron with breathing room from the right border */
+  select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b716a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:14px 14px;padding-right:36px!important;cursor:pointer}
   .field input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;min-height:46px;color:var(--ink);-webkit-text-fill-color:var(--ink)}
   .field input[type=date]::-webkit-date-and-time-value{text-align:left;color:var(--ink)}
   @media (max-width:480px){.field .two{flex-direction:column}}
