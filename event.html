@@ -176,8 +176,8 @@
   .stepper .sbox button:disabled{opacity:.3;cursor:default}
   .stepper .sval{min-width:88px;padding:0 4px;text-align:center;color:var(--muted);font-weight:500;white-space:nowrap}
   .stepper .sval b{color:var(--ink);font-weight:750;margin-left:.3em}
-  .stepper .sval input{width:2ch;padding:2px 0;margin:0 1px 0 2px;border:none;border-radius:6px;background:transparent;font:inherit;font-weight:750;color:var(--ink);text-align:right;cursor:text}
-  .stepper .sval input:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff;text-align:center}
+  .stepper .sval .lenval{display:inline-block;min-width:1ch;padding:2px 1px;margin:0 1px 0 2px;border-radius:6px;font-weight:750;color:var(--ink);text-align:center;cursor:text;outline:none}
+  .stepper .sval .lenval:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff;text-align:center}
   /* too narrow for one row: stack both controls, each full width */
   @container (max-width:540px){
     .filters{flex-direction:column;align-items:stretch}
@@ -293,7 +293,7 @@
       <div class="filters-wrap"><div class="filters">
         <div class="wdays" id="wdFilter" role="group" aria-label="Days to consider"></div>
         <div class="stepper">
-          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><label class="sval" for="lenInput">min.<input id="lenInput" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" data-bwignore="true" data-form-type="other" aria-label="Minimum consecutive days" value="1"><b id="lenUnit">day</b></label><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
+          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><span class="sval" onclick="if(event.target===this)document.getElementById('lenInput').focus()">min.<span id="lenInput" class="lenval" role="spinbutton" contenteditable="true" tabindex="0" inputmode="numeric" enterkeyhint="done" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Minimum consecutive days" aria-valuemin="1" aria-valuenow="1">1</span><b id="lenUnit">day</b></span><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
       </div></div>
       <div id="bestWindows"></div>
     </div>
@@ -609,7 +609,8 @@ function renderFilters(){
   const wd=evWeekdays(), n=evLength();
   document.getElementById("wdFilter").innerHTML=DOW.map((d,i)=>`<button type="button" class="wday${wd.includes(i)?" on":""}" data-wd="${i}" aria-pressed="${wd.includes(i)}">${d}</button>`).join("");
   const li=document.getElementById("lenInput");
-  if(document.activeElement!==li){ li.value=n; sizeLenInput(); }     // don't clobber typing on a live sync
+  if(document.activeElement!==li) li.textContent=n;     // don't clobber typing on a live sync
+  li.setAttribute("aria-valuenow",n);
   li.setAttribute("aria-valuemax",maxLength());
   document.getElementById("lenUnit").textContent = n>1 ? "days" : "day";
   document.getElementById("lenDec").disabled = n<=1;
@@ -628,14 +629,15 @@ function toggleWeekday(i){
   if(wd.includes(i) && wd.length===1){ toast("Keep at least one day"); return; }
   setFilters(wd.includes(i) ? wd.filter(x=>x!==i) : wd.concat(i), evLength());
 }
-function sizeLenInput(){ const li=document.getElementById("lenInput"); li.style.width=Math.max(1,li.value.length)+0.6+"ch"; }
+/* the length field is a contenteditable spinbutton, not an <input>, so password managers / OTP autofill extensions leave it alone */
+function selectAllIn(el){ const r=document.createRange(); r.selectNodeContents(el); const s=getSelection(); s.removeAllRanges(); s.addRange(r); }
 /* typed value: clamp to 1…range length; anything unparseable falls back to the current value */
 function commitLengthInput(){
   const li=document.getElementById("lenInput");
-  const v=parseInt(li.value,10);
-  if(!Number.isFinite(v)){ li.value=evLength(); sizeLenInput(); return; }
+  const v=parseInt(li.textContent,10);
+  if(!Number.isFinite(v)){ li.textContent=evLength(); return; }
   const n=Math.max(1, Math.min(maxLength(), v));
-  li.value=n; sizeLenInput();
+  li.textContent=n;
   if(n!==evLength()) setFilters(evWeekdays(), n); else renderFilters();
 }
 function stepLength(dir){
@@ -1202,13 +1204,19 @@ function bindUI(){
   document.getElementById("lenDec").onclick=()=>stepLength(-1);
   document.getElementById("lenInc").onclick=()=>stepLength(1);
   const li=document.getElementById("lenInput");
-  li.addEventListener("focus",()=>li.select());
-  li.addEventListener("input",()=>{ li.value=li.value.replace(/\D/g,"").slice(0,4); sizeLenInput(); });
-  li.addEventListener("change",commitLengthInput);
+  let justFocused=false;
+  li.addEventListener("focus",()=>{ justFocused=true; selectAllIn(li); });
+  li.addEventListener("mouseup",()=>{ if(justFocused && getSelection().isCollapsed) selectAllIn(li); justFocused=false; });
+  li.addEventListener("input",()=>{
+    const clean=li.textContent.replace(/\D/g,"").slice(0,4);
+    if(clean!==li.textContent || li.children.length){ li.textContent=clean; const r=document.createRange(); r.selectNodeContents(li); r.collapse(false); const s=getSelection(); s.removeAllRanges(); s.addRange(r); }
+  });
+  li.addEventListener("paste",e=>{ e.preventDefault(); document.execCommand("insertText",false,(e.clipboardData.getData("text/plain")||"").replace(/\D/g,"")); });
+  li.addEventListener("blur",commitLengthInput);
   li.addEventListener("keydown",e=>{
     if(e.key==="Enter"){ e.preventDefault(); li.blur(); }
-    else if(e.key==="Escape"){ li.value=evLength(); li.blur(); }
-    else if(e.key==="ArrowUp"||e.key==="ArrowDown"){ e.preventDefault(); stepLength(e.key==="ArrowUp"?1:-1); li.value=evLength(); sizeLenInput(); li.select(); }
+    else if(e.key==="Escape"){ li.textContent=evLength(); li.blur(); }
+    else if(e.key==="ArrowUp"||e.key==="ArrowDown"){ e.preventDefault(); stepLength(e.key==="ArrowUp"?1:-1); li.textContent=evLength(); selectAllIn(li); }
   });
   const rerenderEdit=()=>{ const f=()=>{ renderEditMonths(); renderModeBar(); }; if(modeBarStuck()) keepCalendarPinned(f); else f(); };
   document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; rerenderEdit(); });
