@@ -176,8 +176,9 @@
   .stepper .sbox button:disabled{opacity:.3;cursor:default}
   .stepper .sval{min-width:88px;padding:0 4px;text-align:center;color:var(--muted);font-weight:500;white-space:nowrap}
   .stepper .sval b{color:var(--ink);font-weight:750;margin-left:.3em}
-  .stepper .sval .lenval{display:inline-block;min-width:1ch;padding:2px 1px;margin:0 1px 0 2px;border-radius:6px;font-weight:750;color:var(--ink);text-align:center;cursor:text;outline:none}
+  .stepper .sval .lenval{display:inline-block;min-width:1ch;padding:2px 1px;margin:0 1px 0 2px;border-radius:6px;font-weight:750;color:var(--ink);text-align:center;cursor:pointer;outline:none;user-select:none;-webkit-user-select:none}
   .stepper .sval .lenval:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff;text-align:center}
+  .stepper .sval .lenval.fresh{background:var(--accent);color:#fff}
   /* too narrow for one row: stack both controls, each full width */
   @container (max-width:540px){
     .filters{flex-direction:column;align-items:stretch}
@@ -293,7 +294,7 @@
       <div class="filters-wrap"><div class="filters">
         <div class="wdays" id="wdFilter" role="group" aria-label="Days to consider"></div>
         <div class="stepper">
-          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><span class="sval" onclick="if(event.target===this)document.getElementById('lenInput').focus()">min.<span id="lenInput" class="lenval" role="spinbutton" contenteditable="true" tabindex="0" inputmode="numeric" enterkeyhint="done" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Minimum consecutive days" aria-valuemin="1" aria-valuenow="1">1</span><b id="lenUnit">day</b></span><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
+          <span class="sbox"><button type="button" id="lenDec" aria-label="Fewer days">−</button><span class="sval" onclick="if(event.target===this)document.getElementById('lenInput').focus()">min.<span id="lenInput" class="lenval" role="spinbutton" tabindex="0" aria-label="Minimum consecutive days" aria-valuemin="1" aria-valuenow="1">1</span><b id="lenUnit">day</b></span><button type="button" id="lenInc" aria-label="More days">+</button></span></div>
       </div></div>
       <div id="bestWindows"></div>
     </div>
@@ -629,8 +630,8 @@ function toggleWeekday(i){
   if(wd.includes(i) && wd.length===1){ toast("Keep at least one day"); return; }
   setFilters(wd.includes(i) ? wd.filter(x=>x!==i) : wd.concat(i), evLength());
 }
-/* the length field is a contenteditable spinbutton, not an <input>, so password managers / OTP autofill extensions leave it alone */
-function selectAllIn(el){ const r=document.createRange(); r.selectNodeContents(el); const s=getSelection(); s.removeAllRanges(); s.addRange(r); }
+/* the length field is a plain focusable spinbutton (no <input>, no contenteditable) that reads digits from keydown,
+   so password managers / OTP autofill extensions have nothing to hook onto */
 /* typed value: clamp to 1…range length; anything unparseable falls back to the current value */
 function commitLengthInput(){
   const li=document.getElementById("lenInput");
@@ -1204,19 +1205,18 @@ function bindUI(){
   document.getElementById("lenDec").onclick=()=>stepLength(-1);
   document.getElementById("lenInc").onclick=()=>stepLength(1);
   const li=document.getElementById("lenInput");
-  let justFocused=false;
-  li.addEventListener("focus",()=>{ justFocused=true; selectAllIn(li); });
-  li.addEventListener("mouseup",()=>{ if(justFocused && getSelection().isCollapsed) selectAllIn(li); justFocused=false; });
-  li.addEventListener("input",()=>{
-    const clean=li.textContent.replace(/\D/g,"").slice(0,4);
-    if(clean!==li.textContent || li.children.length){ li.textContent=clean; const r=document.createRange(); r.selectNodeContents(li); r.collapse(false); const s=getSelection(); s.removeAllRanges(); s.addRange(r); }
-  });
-  li.addEventListener("paste",e=>{ e.preventDefault(); document.execCommand("insertText",false,(e.clipboardData.getData("text/plain")||"").replace(/\D/g,"")); });
-  li.addEventListener("blur",commitLengthInput);
+  let typed="";     // digits typed since focus; "fresh" = the next digit replaces the shown value
+  const fresh=on=>li.classList.toggle("fresh",on);
+  li.addEventListener("focus",()=>{ typed=""; fresh(true); });
+  li.addEventListener("blur",()=>{ fresh(false); if(typed) commitLengthInput(); else li.textContent=evLength(); typed=""; });
   li.addEventListener("keydown",e=>{
-    if(e.key==="Enter"){ e.preventDefault(); li.blur(); }
-    else if(e.key==="Escape"){ li.textContent=evLength(); li.blur(); }
-    else if(e.key==="ArrowUp"||e.key==="ArrowDown"){ e.preventDefault(); stepLength(e.key==="ArrowUp"?1:-1); li.textContent=evLength(); selectAllIn(li); }
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    if(/^[0-9]$/.test(e.key)){ e.preventDefault(); typed=(typed+e.key).slice(0,4); li.textContent=typed; fresh(false); }
+    else if(e.key==="Backspace"||e.key==="Delete"){ e.preventDefault(); typed=li.classList.contains("fresh")?"":typed.slice(0,-1); li.textContent=typed||"\u00a0"; fresh(false); }
+    else if(e.key==="Enter"){ e.preventDefault(); li.blur(); }
+    else if(e.key==="Escape"){ typed=""; li.textContent=evLength(); li.blur(); }
+    else if(e.key==="ArrowUp"||e.key==="ArrowDown"||e.key==="PageUp"||e.key==="PageDown"){ e.preventDefault(); typed=""; stepLength(/Up$/.test(e.key)?1:-1); li.textContent=evLength(); fresh(true); }
+    else if(e.key==="Home"||e.key==="End"){ e.preventDefault(); typed=""; setFilters(evWeekdays(), e.key==="Home"?1:maxLength()); li.textContent=evLength(); fresh(true); }
   });
   const rerenderEdit=()=>{ const f=()=>{ renderEditMonths(); renderModeBar(); }; if(modeBarStuck()) keepCalendarPinned(f); else f(); };
   document.querySelectorAll("#brushes .brush").forEach(b=>b.onclick=()=>{ state.brush=b.dataset.b; state.anchor=null; rerenderEdit(); });
