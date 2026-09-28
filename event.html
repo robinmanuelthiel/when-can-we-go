@@ -201,6 +201,7 @@
   .person .nm{font-weight:700}
   .person .meta{color:var(--muted);font-size:13px}
   .person .sp{flex:1}
+  .person .role{padding:7px 10px;border:1px solid var(--line);border-radius:10px;background-color:#fbfaf6;font-family:inherit;font-size:13px;font-weight:650;color:var(--ink)}
   .iconbtn{padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--card)}
   .iconbtn svg{width:16px;height:16px;display:block}
   .head-actions .iconbtn{padding:10px;box-shadow:var(--shadow)}
@@ -219,9 +220,11 @@
   .field-actions .iconbtn{height:46px;display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
   .field{margin-bottom:13px}
   .field label{display:block;font-weight:650;font-size:13px;margin-bottom:5px;color:#4a514a}
-  .field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6;font-family:inherit;font-size:16px;color:inherit}
+  .field input,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background-color:#fbfaf6;font-family:inherit;font-size:16px;color:inherit}
   .field .two{display:flex;gap:10px}.field .two > *{flex:1;min-width:0}
   .field .two .sublabel{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
+  /* all dropdowns: custom chevron with breathing room from the right border */
+  select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b716a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:14px 14px;padding-right:36px!important;cursor:pointer}
   .field input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;min-height:46px;color:var(--ink);-webkit-text-fill-color:var(--ink)}
   .field input[type=date]::-webkit-date-and-time-value{text-align:left;color:var(--ink)}
   @media (max-width:480px){.field .two{flex-direction:column}}
@@ -318,7 +321,7 @@
   <section id="tab-people" class="hide">
     <div class="card">
       <h2>Who’s answered</h2>
-      <p class="hint">Everyone on this event. You can only change <strong>your own</strong> availability. Use “Edit my availability” in the Group overview.</p>
+      <p class="hint">Everyone on this event. You can only change <strong>your own</strong> availability. Use “Edit my availability” in the Group overview. Mark people as <strong>optional</strong> if the plan can still work without them.</p>
       <div id="peopleList"></div>
       <button class="btn primary" id="addPersonBtn" style="margin-top:14px;width:100%;justify-content:center">+ Add a person</button>
     </div>
@@ -474,10 +477,13 @@ function dayStats(key){
     else free.push(p);
   });
   const total=ppl.length;
-  return { block, maybe, total, blocked, maybes, free,
-           works: total>0 && block===0,                 // candidate: nobody has a hard blocker
+  const optBlocked=blocked.filter(p=>p.optional);
+  return { block, maybe, total, blocked, maybes, free, optBlocked,
+           works: total>0 && block===optBlocked.length,  // candidate: no mandatory person has a hard blocker
+           everyone: total>0 && block===0,               // nobody (mandatory or optional) has a hard blocker
            clear: total>0 && block===0 && maybe===0 };   // fully free: no blockers, no maybes
 }
+function hasOptional(){ return people().some(([,p])=>p.optional); }
 
 /* ---------- iterate event days ---------- */
 function eventDays(){
@@ -492,17 +498,31 @@ function evWeekdays(){ const w=ev().weekdays; return Array.isArray(w)&&w.length 
 function evLength(){ const n=Number(ev().days); return Number.isInteger(n)&&n>=1 ? Math.min(n, maxLength()) : 1; }
 function rangeLength(s,e){ return Math.round((parseYmd(e)-parseYmd(s))/864e5)+1; }
 function considered(key){ return evWeekdays().includes(mondayIdx(parseYmd(key))); }
-function bestWindows(){
-  const n=evLength();
-  const days=eventDays(); const runs=[]; let cur=null;
-  days.forEach(k=>{ const st=dayStats(k);
-    if(st.works && considered(k)){ if(!cur) cur={start:k,end:k,len:1,clear:st.clear?1:0}; else {cur.end=k;cur.len++; if(st.clear)cur.clear++;} }
-    else { if(cur){runs.push(cur);cur=null;} }
+/* runs of consecutive considered days matching ok(st); each run tracks fully free days
+   and which optional people are out somewhere in it */
+function windowRuns(ok){
+  const runs=[]; let cur=null;
+  eventDays().forEach(k=>{ const st=dayStats(k);
+    if(ok(st) && considered(k)){
+      if(!cur) cur={start:k,end:k,len:0,clear:0,optOut:new Set()};
+      cur.end=k; cur.len++; if(st.clear)cur.clear++;
+      st.optBlocked.forEach(p=>cur.optOut.add(p.name));
+    }
+    else if(cur){ runs.push(cur); cur=null; }
   });
   if(cur) runs.push(cur);
-  runs.splice(0, runs.length, ...runs.filter(r=>r.len>=n));
-  runs.sort((a,b)=> b.len-a.len || b.clear-a.clear);
-  return runs.slice(0,4);
+  return runs;
+}
+/* windows where everyone can come always rank first; with optional people, windows
+   where only the mandatory people can come follow (they're never shown as green) */
+function bestWindows(){
+  const n=evLength();
+  const byLen=(a,b)=> b.len-a.len || b.clear-a.clear;
+  const all=windowRuns(st=>st.everyone).filter(r=>r.len>=n).sort(byLen);
+  const mand=hasOptional()
+    ? windowRuns(st=>st.works).filter(r=>r.len>=n && r.optOut.size).sort(byLen)
+    : [];
+  return all.concat(mand).slice(0,4);
 }
 /* ============================================================
    RENDER
@@ -562,19 +582,25 @@ function renderBestWindows(){
   const bw=document.getElementById("bestWindows");
   const wins=bestWindows(), n=evLength();
   renderFilters();
+  const opt=hasOptional();
   document.getElementById("bestHint").textContent = (n>1
     ? `Longest stretches of ${n}+ days where nobody has a blocker.`
-    : `Longest stretches where nobody has a blocker.`);
+    : `Longest stretches where nobody has a blocker.`)
+    + (opt ? ` Then stretches where all mandatory people can come.` : ``);
   if(!people().length){ bw.innerHTML=`<div class="emptystate">Best windows appear once people mark the days they can’t make it.</div>`; }
   else if(!wins.length){ bw.innerHTML = n>1
-    ? `<div class="emptystate">No stretch of ${n}+ days works for everyone right now. The heatmap below shows where the fewest people are out.</div>`
-    : `<div class="emptystate">Every day has at least one blocker right now. The heatmap below shows where the fewest people are out.</div>`; }
+    ? `<div class="emptystate">No stretch of ${n}+ days works for ${opt?"all mandatory people":"everyone"} right now. The heatmap below shows where the fewest people are out.</div>`
+    : `<div class="emptystate">Every day has at least one ${opt?"mandatory ":""}blocker right now. The heatmap below shows where the fewest people are out.</div>`; }
   else bw.innerHTML=wins.map((w,i)=>{
-    const partial=w.clear<w.len;
+    const mandOnly=w.optOut.size>0;
+    const partial=mandOnly || w.clear<w.len;
     const span=fmtRange(parseYmd(w.start),parseYmd(w.end));
-    const sub=partial
-      ? `${w.len} day${w.len>1?"s":""} open · ${w.clear} fully free, ${w.len-w.clear} with maybes`
-      : `${w.len} day${w.len>1?"s":""} open · ✓ everyone free`;
+    const days=`${w.len} day${w.len>1?"s":""} open`;
+    const sub=mandOnly
+      ? `${days} · <strong>only mandatory people can come</strong> · ${escapeHtml([...w.optOut].join(", "))} (optional) can’t make it`
+      : partial
+      ? `${days} · ${w.clear} fully free, ${w.len-w.clear} with maybes`
+      : `${days} · ✓ everyone free`;
     return `<div class="win ${partial?"partial":""}"><div class="rk">${i+1}</div>
       <div class="wbody"><div class="wt">${span}</div><div class="wd">${sub}</div></div>
       <button type="button" class="iconbtn icsbtn" data-ics="${w.start}|${w.end}" title="Add to calendar" aria-label="Add ${span} to calendar">${calendarAddIcon()}</button></div>`;
@@ -740,6 +766,10 @@ function renderPeople(){
       <div><div class="nm">${escapeHtml(p.name)}${pid===state.me?" · you":""}</div>
         <div class="meta">${block} can’t make it · ${maybe} maybe</div></div>
       <div class="sp"></div>
+      <select class="role" data-role="${pid}" aria-label="${escapeHtml(p.name)} is">
+        <option value="mandatory"${p.optional?"":" selected"}>Mandatory</option>
+        <option value="optional"${p.optional?" selected":""}>Optional</option>
+      </select>
       <button class="iconbtn" data-ren="${pid}" title="Rename or remove">✎</button>
     </div>`;
   }).join("");
@@ -1029,13 +1059,13 @@ function openRename(pid){
 
 function openDayDetail(key){
   const st=dayStats(key); const d=parseYmd(key);
-  const row=(p,tag,label)=>`<div class="det-row">${avatar(p,26)}<span style="flex:1;font-weight:650">${escapeHtml(p.name)}</span><span class="tag ${tag}">${label}</span></div>`;
+  const row=(p,tag,label)=>`<div class="det-row">${avatar(p,26)}<span style="flex:1;font-weight:650">${escapeHtml(p.name)}${p.optional?` <span style="color:var(--muted);font-weight:500">(optional)</span>`:""}</span><span class="tag ${tag}">${label}</span></div>`;
   let body="";
   st.blocked.forEach(p=>body+=row(p,"block","can’t make it"));
   st.maybes.forEach(p=>body+=row(p,"maybe","maybe not"));
   st.free.forEach(p=>body+=row(p,"free","free"));
   if(!st.total) body=`<div class="emptystate">No answers yet.</div>`;
-  const head = st.block>0 ? `${st.block} of ${st.total} can’t make it`
+  const head = st.block>0 ? `${st.block} of ${st.total} can’t make it${st.works?" · all optional, mandatory people can come":""}`
              : st.maybe>0 ? `Nobody’s blocked · ${st.maybe} maybe`
              : `🎉 everyone’s free!`;
   const skipNote = considered(key) ? "" : ` · ${DOW[mondayIdx(d)]}s aren’t considered for best windows`;
@@ -1219,6 +1249,12 @@ function bindUI(){
   document.getElementById("addPersonBtn").onclick=openAddPerson;
   document.getElementById("peopleList").addEventListener("click",e=>{
     const rn=e.target.closest("[data-ren]"); if(rn) openRename(rn.dataset.ren);
+  });
+  document.getElementById("peopleList").addEventListener("change",e=>{
+    const sel=e.target.closest("[data-role]"); if(!sel) return;
+    const pid=sel.dataset.role, p=personById(pid); if(!p) return;
+    if(sel.value==="optional") p.optional=true; else delete p.optional;
+    touchPerson(pid); persistPerson(pid); render();
   });
   document.getElementById("bestWindows").addEventListener("click",e=>{
     const b=e.target.closest("[data-ics]"); if(!b) return;

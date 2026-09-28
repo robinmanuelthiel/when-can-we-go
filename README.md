@@ -11,6 +11,9 @@ whole group is free.
   a day to cycle *Free → Can't make it → Maybe not*.
 - You only edit your own availability. Who you are is remembered per device and
   can be changed deliberately via ⚙ Settings → "Viewing as".
+- People are *Mandatory* (default) or *Optional* (People tab). Best windows
+  where everyone can come rank first; windows where only the mandatory people
+  can come are shown in yellow and name the optional people who can't make it.
 - Data syncs live across devices via Firebase Realtime Database.
 - The room id lives in the URL (`/event?e=<id>`), so the share link *is* the
   room. Old `/trip?t=<id>` links keep working and redirect.
